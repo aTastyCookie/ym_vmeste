@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <a href="{{ path('admin_user_create') }}">New User</a>
+
+    <h2>Users list</h2>
+
+    {% if user_created %}
+        <div>{{ user_created }}</div>
+    {% endif %}
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Changed</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <ul>
+                        {% for role in user.roles %}
+                            <li>{{ role.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        {% for status in user.statuses %}
+                            <li>{{ status.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ user.created|date("d/m/Y") }}</td>
+                <td>{{ user.changed|date("d/m/Y") }}</td>
+                <td>
+                    <ul>
+                        <li><a href="{{ path('admin_user_edit', { 'id':user.id, 'page': page }) }}">Edit</a></li>
+                        {% for status in user.statuses %}
+                            {% if status.status == 'BLOCKED' %}
+                                <li><a href="{{ path('admin_user_activate', { 'id':user.id, 'page': page  }) }}">Activate</a></li>
+                            {% else %}
+                                <li><a href="{{ path('admin_user_block', { 'id':user.id, 'page': page  }) }}">Block</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {#<li><a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">Delete</a></li>#}
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for pageId in pages %}
+        <a href="{{ path('admin_user', { 'page': pageId }) }}">{{ pageId }}</a>
+    {% endfor %}
+
+
+{% endblock %}

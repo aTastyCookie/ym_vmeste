@@ -1,0 +1,69 @@
+vmeste_saas:
+    path: /
+    defaults: { _controller: VmesteSaasBundle:Auth:login }
+
+login:
+    path: /login
+    defaults: { _controller: VmesteSaasBundle:Auth:login }
+
+logout:
+    path: /logout
+
+login_check:
+    path: /login_check
+
+forgot_pass:
+    path: /forgot-pass
+    defaults: { _controller: VmesteSaasBundle:Auth:forgotPassword }
+
+recover_pass:
+    path: /recover-pass/{token}
+    defaults: { _controller: VmesteSaasBundle:Auth:recoverPassword, token: null }
+
+admin_home:
+    path: /admin/home
+    defaults: { _controller: VmesteSaasBundle:Administrator:home }
+
+admin_user:
+    path: /admin/user
+    defaults: { _controller: VmesteSaasBundle:User:home }
+
+admin_user_create:
+    path: /admin/user/create
+    defaults: { _controller: VmesteSaasBundle:User:create }
+
+admin_user_edit:
+    path: /admin/user/edit
+    defaults: { _controller: VmesteSaasBundle:User:edit }
+
+admin_user_block:
+    path: /admin/user/block
+    defaults: { _controller: VmesteSaasBundle:User:block }
+
+admin_user_activate:
+    path: /admin/user/activate
+    defaults: { _controller: VmesteSaasBundle:User:activate }
+
+admin_user_delete:
+    path: /admin/user/delete
+    defaults: { _controller: VmesteSaasBundle:User:delete }
+
+
+customer_home:
+    path: /customer/home
+    defaults: { _controller: VmesteSaasBundle:Customer:home }
+
+customer_campaign:
+    path: /campaign/home
+    defaults: { _controller: VmesteSaasBundle:Campaign:home }
+
+customer_campaign_create:
+    path: /campaign/create
+    defaults: { _controller: VmesteSaasBundle:Campaign:create }
+
+#vmeste_administrator_login:
+#     path:     /contact
+#     defaults: { _controller: AcmeDemoBundle:Main:contact }
+#     methods:  [GET]
+
+

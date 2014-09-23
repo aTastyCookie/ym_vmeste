@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <a href="{{ path('customer_campaign_create') }}">New Campaign</a>
+
+    <h2>Users list</h2>
+
+    {% if user_created %}
+        <div>{{ user_created }}</div>
+    {% endif %}
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Shortcode</th>
+            <th>Отчеты</th>
+            <th>Donated</th>
+            <th>Registered</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for campaign in campaigns %}
+           {# <tr>
+                <td>{{ campaign. }}</td>
+                <td>{{ campaign.email }}</td>
+                <td>
+                    &#123;&#35;<ul>
+                        {% for role in user.roles %}
+                            <li>{{ role.name }}</li>
+                        {% endfor %}
+                    </ul>&#35;&#125;
+                </td>
+                <td>{{ campaign.created|date("d/m/Y") }}</td>
+                <td>{{ campaign.changed|date("d/m/Y") }}</td>
+                <td>
+                    &#123;&#35; <ul>
+                         {% for status in user.statuses %}
+                             <li>{{ status.name }}</li>
+                         {% endfor %}
+                     </ul>&#35;&#125;
+                </td>
+            </tr>#}
+        {% endfor %}
+    </table>
+
+    {% for pageId in pages %}
+        <a href="{{ path('admin_user', { 'page': pageId }) }}">{{ pageId }}</a>
+    {% endfor %}
+
+
+{% endblock %}
