@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h2>Settings</h2>
+
+    <h3>Email settings</h3>
+    <div>
+        <form action="{{ path('update_email_settings') }}" method="post">
+            <ul>
+                <li><input type="email" name="notification_email" placeholder="no-reply@your.domain"></li>
+                <li><input type="text" name="sender_name" placeholder="John Doe"></li>
+                <li><input type="email" name="sender_email" placeholder="your.email@your.domain"></li>
+                <li>
+                    <button type="submit" id="form_save" name="save">Save email settings</button>
+                </li>
+            </ul>
+        </form>
+    </div>
+
+    <h3>Yandex.Kassa Settings</h3>
+    <div>
+        <form action="{{ path('update_yk_settings') }}" method="post">
+            <ul>
+                <li><label>shopId:
+                        <input type="text" name="yandex_shopid">
+                    </label></li>
+                <li><label>scid:
+                        <input type="text" name="yandex_scid">
+                    </label></li>
+                <li><label>shoppw:
+                        <input type="text" name="yandex_shoppw">
+                    </label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_pt_pc">
+                        PC</label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_pt_ac">
+                        AC</label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_pt_wm">
+                        WM</label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_pt_mc">
+                        MC</label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_pt_gp">
+                        GP</label></li>
+                <li><label>
+                        <input type="checkbox" name="yandex_sandbox">
+                        Sandbox mode</label></li>
+                <li>
+                    <button type="submit" id="form_save" name="save">Save email settings</button>
+                </li>
+            </ul>
+        </form>
+    </div>
+
+    <h3>User settings</h3>
+    <div>
+        <form action="{{ path('update_customer_password') }}" method="post">
+            <ul>
+                <li><label>Old password:
+                        <input type="password" name="old_password">
+                    </label></li>
+                <li><label>New password:
+                        <input type="password" name="new_password">
+                    </label></li>
+                <li><label>Repeat new password:
+                        <input type="email" name="new_password_repeat">
+                    </label></li>
+                <li>
+                    <button type="submit" id="form_save" name="save">Save email settings</button>
+                </li>
+            </ul>
+        </form>
+    </div>
+
+    {# {{ form(form) }}#}
+
+{% endblock %}

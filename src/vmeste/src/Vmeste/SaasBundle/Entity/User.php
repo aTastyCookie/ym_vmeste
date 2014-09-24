@@ -78,6 +78,12 @@ class User implements UserInterface, \Serializable
      **/
     private $campaigns;
 
+    /**
+     * @ORM\OneToOne(targetEntity="Settings")
+     * @ORM\JoinColumn(name="settings_id", referencedColumnName="id")
+     **/
+    protected $settings;
+
 
     public function __construct()
     {
@@ -421,5 +427,28 @@ class User implements UserInterface, \Serializable
     public function getCampaigns()
     {
         return $this->campaigns;
+    }
+
+    /**
+     * Set settings
+     *
+     * @param \Vmeste\SaasBundle\Entity\Settings $settings
+     * @return User
+     */
+    public function setSettings(\Vmeste\SaasBundle\Entity\Settings $settings = null)
+    {
+        $this->settings = $settings;
+
+        return $this;
+    }
+
+    /**
+     * Get settings
+     *
+     * @return \Vmeste\SaasBundle\Entity\Settings 
+     */
+    public function getSettings()
+    {
+        return $this->settings;
     }
 }

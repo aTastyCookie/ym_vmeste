@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Index</title>
+    <link rel="stylesheet" href="{{ asset('bundles/saasbundle/campaign/payment/css/font.css') }}" />
+    <link rel="stylesheet" href="{{ asset('bundles/saasbundle/campaign/payment/css/styles.css') }}" />
+    <script src="{{ asset('bundles/saasbundle/campaign/payment/js/libs/jquery-2.1.1.min.js') }}"></script>
+    <script src="{{ asset('bundles/saasbundle/campaign/payment/js/app.js') }}"></script>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <header>
+        <div class="content">
+            <h1>{{ campaign.title }}</h1>
+
+            <div class="logo"></div>
+        </div>
+    </header>
+    <div class="line"></div>
+    <div class="content">
+        <h2>Мы собираем деньги ...</h2>
+        <p>{{ campaign.formIntro }}
+            <a href="#">Подробнее</a>
+        </p>
+
+        <div class="large_img">
+            <img src="{{ campaign.image }}{#{{ asset('bundles/saasbundle/campaign/payment/img/smaple_img.png') }}#}">
+        </div>
+        <div class="line"></div>
+        <h2>Ваша помощь проекту</h2>
+    </div>
+    <form method="POST" enctype="text/plain" id="payment_form" autocomplete="off" action="https://demomoney.yandex.ru/eshop.xml">
+
+        <input name="shopId" value="{#{{ campaign.yandexkassa.shopid }}#}" type="hidden"/>
+        <input name="scid" value="{#{{ campaign.yandexkassa.scid }}#}" type="hidden"/>
+        <input name="customerNumber" value="{{ customerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
+        <input name="noIDcustomerNumber" value="{{ noIDcustomerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
+        <input name="orderNumber" value="{{ campaign.id }}" type="hidden"/>
+
+        <div class="amount">
+            <div class="content">
+                <div class="fields">
+                    <div class="item">
+                        <input type="text" class="value" placeholder="сумма" name="sum" value="{{ campaign.minAmount }}" />
+                        <p class="rouble_sign">
+                            <span class="rur">a</span>
+                        </p>
+                        <span class="error_msg" data-missing="Вы не заполнили это поле"></span>
+                    </div>
+                    <div class="item times_box">
+                        <select class="times" id="times" name="rebillingOn">
+                            <option value="0">отправить один раз</option>
+                            <option value="1">отправлять каждый месяц</option>
+                        </select>
+
+                        <div class="tooltip">
+                            <span>Деньги будут автоматически списываться с банковской карты, <br>данные которой вы укажете. Отменить это можно в любой момент.</span>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="user_form">
+                <div class="fields">
+                    <div class="item">
+                        <label for="fio">Имя и фамилия</label>
+                        <input type="text" id="fio" />
+                        <span class="error_msg" data-missing="Пожалуйста, укажите свои имя и фамилию — фонд <br>не может принять анонимный перевод."></span>
+                    </div>
+                    <div class="item">
+                        <label for="email">Email</label>
+                        <input type="text" id="email">
+            <span class="error_msg" data-invalid="Здесь что-то не так. Проверьте адрес и попробуйте еще раз."
+                  data-missing="Пожалуйста, укажите адрес своей электронной почты — фонд <br>не может принять анонимный перевод."></span>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="fields comment" style="display: none;">
+                    <div class="item">
+                        <label for="comment">Комментарий</label>
+                        <textarea id="comment" placeholder="При желании вы можете указать, на что именно переводите деньги."></textarea>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="add_comment_box">
+                    <a href="#" id="add_comment">Добавить комментарий</a>
+                    <a href="#" id="remove_comment">Убрать комментарий</a>
+                </div>
+            </div>
+            <div id="all_payments" class="all_payments">
+                <div class="line"></div>
+                <h2>Способ перевода</h2>
+
+                <div class="payment_options" id="payment_options">
+                    <input type="radio" id="yd_option" name="payment_type" value="PC">
+
+                    <div class="item">
+                        <label for="yd_option">
+                            <i class="yd"></i>
+                            <p>Яндекс.Деньги</p>
+                            <span>платеж со счета или банковской карты</span>
+                        </label>
+
+                        <div class="over"></div>
+                    </div>
+                    <input type="radio" id="nalik_option" name="payment_type" value="GP">
+
+                    <div class="item">
+                        <label for="nalik_option">
+                            <i class="nalik"></i>
+                            <p>Наличные</p>
+                            <span>через терминалы и салоны связи</span>
+                        </label>
+
+                        <div class="over"></div>
+                    </div>
+                    <input type="radio" id="bc_option" name="payment_type" value="AC">
+
+                    <div class="item" data-over="monthly">
+                        <label for="bc_option">
+                            <i class="bc"></i>
+                            <p>Банковская карта</p>
+                            <span>VISA, MasterCard, Maestro</span>
+                        </label>
+
+                        <div class="over"></div>
+                    </div>
+                    <input type="radio" id="wm_option" name="payment_type" value="WM">
+
+                    <div class="item">
+                        <label for="wm_option">
+                            <i class="wm"></i>
+                            <p>WebMoney</p>
+                            <span>с рублевого WM-кошелька</span>
+                        </label>
+
+                        <div class="over"></div>
+                    </div>
+                    <input type="radio" id="mobile_option" name="payment_type" value="MC">
+
+                    <div class="item">
+                        <label for="mobile_option">
+                            <i class="mobile"></i>
+                            <p>Счет мобильного телефона</p>
+                            <span>МТС, Билайн, Мегафон</span>
+                        </label>
+
+                        <div class="over"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="line"></div>
+        <div class="content">
+            <div class="make_donation">
+                <button type="submit" class="btn yellow">Перевести</button>
+                <div id="monthly_type_icon" class="monthly_type_icon"><img src="img/visa-3.jpg"></div>
+                <p class="tip">Нажимая кнопку, я принимаю <a href="#" target="_blank">условия договора.</a></p>
+
+            </div>
+        </div>
+    </form>
+    <div class="page-buffer"></div>
+</div>
+<footer>
+    <div class="share">
+        <span>Поделиться в сетях:</span><a href="#" class="fb"></a><a href="#" class="vk"></a><a href="#" class="twit"></a>
+    </div>
+</footer>
+</body>
+</html>

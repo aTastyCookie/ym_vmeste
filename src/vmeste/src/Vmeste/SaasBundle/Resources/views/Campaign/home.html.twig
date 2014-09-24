@@ -6,8 +6,8 @@
 
     <h2>Users list</h2>
 
-    {% if user_created %}
-        <div>{{ user_created }}</div>
+    {% if campaign_created %}
+        <div>{{ campaign_created }}</div>
     {% endif %}
     <table>
         <tr>
@@ -16,35 +16,53 @@
             <th>Отчеты</th>
             <th>Donated</th>
             <th>Registered</th>
+            <th>Status</th>
             <th>Actions</th>
         </tr>
 
         {% for campaign in campaigns %}
-           {# <tr>
-                <td>{{ campaign. }}</td>
-                <td>{{ campaign.email }}</td>
+            <tr>
+                <td>{{ campaign.title }}</td>
+                <td><a href="{{ campaign_url }}{{ campaign.id }}">{{ campaign_url }}{{ campaign.id }}</a></td>
                 <td>
-                    &#123;&#35;<ul>
+                    {#<ul>
                         {% for role in user.roles %}
                             <li>{{ role.name }}</li>
                         {% endfor %}
-                    </ul>&#35;&#125;
+                    </ul>#}
                 </td>
-                <td>{{ campaign.created|date("d/m/Y") }}</td>
+                <td>0.00 {{ campaign.currency }}</td>
                 <td>{{ campaign.changed|date("d/m/Y") }}</td>
+                <td>{{ campaign.status.name }}</td>
                 <td>
-                    &#123;&#35; <ul>
-                         {% for status in user.statuses %}
-                             <li>{{ status.name }}</li>
-                         {% endfor %}
-                     </ul>&#35;&#125;
+                    <ul>
+                        <li>
+                            <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">Edit</a>
+                        </li>
+
+                        {% if campaign.status.status != 'ON_MODERATION' %}
+                            {% if campaign.status.status == 'BLOCKED' %}
+                                <li>
+                                    <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Activate</a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">Block</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                        <li>
+                            <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">Delete</a>
+                        </li>
+
+                    </ul>
                 </td>
-            </tr>#}
+            </tr>
         {% endfor %}
     </table>
 
     {% for pageId in pages %}
-        <a href="{{ path('admin_user', { 'page': pageId }) }}">{{ pageId }}</a>
+        <a href="{{ path('customer_campaign', { 'page': pageId }) }}">{{ pageId }}</a>
     {% endfor %}
 
 

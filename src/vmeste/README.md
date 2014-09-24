@@ -17,3 +17,4 @@ INSERT INTO `vmeste_db_v2`.`role` (`name`, `role`) VALUES ('User', 'ROLE_USER');
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('1', 'Active', 'ACTIVE');
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('2', 'Blocked', 'BLOCKED');
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('3', 'Deleted', 'DELETED');
+INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('4', 'On moderation', 'ON_MODERATION');

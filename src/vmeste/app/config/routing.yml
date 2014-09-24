@@ -61,6 +61,44 @@ customer_campaign_create:
     path: /campaign/create
     defaults: { _controller: VmesteSaasBundle:Campaign:create }
 
+customer_campaign_edit:
+    path: /campaign/edit
+    defaults: { _controller: VmesteSaasBundle:Campaign:edit }
+
+customer_campaign_activate:
+    path: /campaign/activate
+    defaults: { _controller: VmesteSaasBundle:Campaign:activate }
+
+customer_campaign_block:
+    path: /campaign/block
+    defaults: { _controller: VmesteSaasBundle:Campaign:block }
+
+customer_campaign_delete:
+    path: /campaign/delete
+    defaults: { _controller: VmesteSaasBundle:Campaign:delete }
+
+customer_settings:
+    path: /customer/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:editSettings }
+
+update_email_settings:
+    path: /customer/update/email/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateEmailSettings }
+
+update_yk_settings:
+    path: /customer/update/yk/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateYkSettings }
+
+update_customer_password:
+    path: /customer/update/password
+    defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
+
+# Outside
+
+payment_page:
+    path: /payment/{campaignId}
+    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignId: null }
+
 #vmeste_administrator_login:
 #     path:     /contact
 #     defaults: { _controller: AcmeDemoBundle:Main:contact }

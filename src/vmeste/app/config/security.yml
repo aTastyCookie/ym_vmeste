@@ -40,8 +40,10 @@ security:
     access_control:
          - { path: ^/login, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/login_check, role: IS_AUTHENTICATED_ANONYMOUSLY }
-         - { path: ^/forgot_pass, role: S_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/forgot_pass, role: IS_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/payment, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/logout, roles: { ROLE_USER, ROLE_ADMIN } }
          - { path: ^/customer, role: ROLE_USER }
+         - { path: ^/campaign, role: ROLE_USER }
          - { path: ^/admin, role: ROLE_ADMIN }
         #- { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }

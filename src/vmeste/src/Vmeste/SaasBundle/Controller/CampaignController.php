@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
 
@@ -29,9 +30,9 @@ class CampaignController extends Controller
     public function homeAction()
     {
 
-        $userSuccessfullyCreatedMessage = null;
-        if($this->getRequest()->query->get("user_creation") == 'success')
-            $userSuccessfullyCreatedMessage = "New user has been created successfully!";
+        $campaignSuccessfullyCreatedMessage = null;
+        if ($this->getRequest()->query->get("campaign_creation") == 'success')
+            $campaignSuccessfullyCreatedMessage = "New campaign has been created successfully!";
 
 
         $limit = 2;
@@ -42,15 +43,18 @@ class CampaignController extends Controller
         $em = $this->getDoctrine()->getManager();
         $queryBuilder = $em->createQueryBuilder();
 
-        $queryBuilder->select('c')->from('Vmeste\SaasBundle\Entity\Campaign', 'c');
+        $queryBuilder->select('c')->from('Vmeste\SaasBundle\Entity\Campaign', 'c')
+            ->leftJoin('Vmeste\SaasBundle\Entity\Status', 's', 'WITH', 'c.status = s.id')
+            ->where('s.status <> ?1')
+            ->setParameter(1, 'DELETED');
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
-        $paginator = new Paginator($queryBuilder, $fetchJoinCollection = true);
+        $paginator = new Paginator($queryBuilder, $fetchJoinCollection = false);
 
         $totalItems = count($paginator);
 
-        $pageCount = (int) ceil($totalItems / $limit);
+        $pageCount = (int)ceil($totalItems / $limit);
 
         $pageNumberArray = array();
 
@@ -76,7 +80,12 @@ class CampaignController extends Controller
             }
         }
 
-        return array('campaigns' => $paginator, 'pages' => $pageNumberArray, 'page' => $page, 'user_created' => $userSuccessfullyCreatedMessage);
+        return array(
+            'campaigns' => $paginator,
+            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/payment/",
+            'pages' => $pageNumberArray,
+            'page' => $page,
+            'campaign_created' => $campaignSuccessfullyCreatedMessage);
     }
 
     /**
@@ -87,45 +96,45 @@ class CampaignController extends Controller
 
         $currentUser = $this->get('security.context')->getToken()->getUser();
 
-
         $form = $this->createFormBuilder()
             ->add('title', 'text', array('constraints' => array(
-                new NotBlank(),
-                'label' => ''
-            )))
+                new NotBlank()
+            ), 'label' => ''))
             ->add('min_amount', 'text', array('constraints' => array(
-                new NotBlank(),
-                'label' => ''
-            )))
+                new NotBlank()
+            ), 'label' => ''))
             ->add('currency', 'choice', array(
                 'choices' => array(
                     'RUB' => 'RUB',
                 ),
                 'label' => 'Currency',
-//                'constraints' => array(
-//                    new Choice(array(
-//                            'choices' => array('ROLE_USER', 'ROLE_ADMIN'),
-//                            'message' => 'Choose a valid role.',
-//                        )
-//                )
-            ))
+                'constraints' => array(
+                    new Choice(array(
+                            'choices' => array('RUB'),
+                            'message' => 'Choose a valid currency.',
+                        )
+                    )
+                )))
+            ->add('form_image', 'text', array('constraints' => array(
+                new Url()
+            ), 'label' => 'Url for image'))
             // Please enter content of donation form box.
-            ->add('form_intro', 'text', array('constraints' => array(
+            ->add('form_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
-            ),'label' => 'Please enter content of donation form box'))
+            ), 'label' => 'Please enter content of donation form box'))
 
             // Your donors must be agree with Terms & Conditions before donating
-            ->add('form_terms', 'text', array('constraints' => array(
+            ->add('form_terms', 'textarea', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Your donors must be agree with Terms & Conditions before donating'))
 
             // Please enter content of top donors box.
-            ->add('top_intro', 'text', array('constraints' => array(
+            ->add('top_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Please enter content of top donors box.'))
 
             // Recent donors box content
-            ->add('recent_intro', 'text', array('constraints' => array(
+            ->add('recent_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Recent donors box content'))
 
@@ -142,20 +151,22 @@ class CampaignController extends Controller
 
             $campaign = new Campaign();
             $campaign->setTitle($data['title']);
-            $campaign->setImage($data['image']);
+            $campaign->setImage($data['form_image']);
+            $campaign->setCurrency($data['currency']);
+            $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
-
             $campaign->setFormTerms($data['form_terms']);
             $campaign->setTopIntro($data['top_intro']);
             $campaign->setRecentIntro($data['recent_intro']);
-
+            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ON_MODERATION'));
+            $campaign->setStatus($status);
 
             $campaign->setUser($currentUser);
 
             $em->persist($campaign);
             $em->flush();
 
-            return $this->redirect($this->generateUrl('campaign_home', array('user_creation' => 'success')));
+            return $this->redirect($this->generateUrl('customer_campaign', array('campaign_creation' => 'success')));
         }
 
 
@@ -174,79 +185,117 @@ class CampaignController extends Controller
 
         $id = $this->getRequest()->query->get("id");
 
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $id));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
         $form = $this->createFormBuilder()
-            ->add('email', 'text', array('constraints' => array(
-                new NotBlank(),
-                new Email(),
-            ), 'data' => $user->getEmail()))
-            ->add('username', 'text', array('constraints' => array(
-                new NotBlank(),
-                new Length(array('min' => 3, 'max' => 25)),
-            ),  'data' => $user->getUsername()))
-            ->add('password', 'repeated', array(
-                'type' => 'password',
-                'invalid_message' => 'The password fields must match.',
-                'options' => array('attr' => array('class' => 'password-field')),
-                'required' => false,
-                'first_options' => array('label' => 'Password'),
-                'second_options' => array('label' => 'Repeat Password'),
-                'constraints' => array(
-                    new Length(array('min' => 6, 'max' => 64)),
-                )))
-            ->add('role', 'choice', array(
-                'choices' => array(
-                    'ROLE_USER' => 'User',
-                    'ROLE_ADMIN' => 'Administrator',
+            ->add(
+                'title',
+                'text',
+                array('constraints' => array(
+                    new NotBlank()
                 ),
-                'data' => $user->getRole(),
-                'label' => 'Role',
+                    'label' => '',
+                    'data' => $campaign->getTitle()))
+            ->add(
+                'min_amount',
+                'text',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                    'label' => '',
+                    'data' => $campaign->getMinAmount()))
+            ->add(
+                'currency', 'choice', array(
+                'choices' => array(
+                    'RUB' => 'RUB',
+                ),
+                'label' => 'Currency',
                 'constraints' => array(
                     new Choice(array(
-                            'choices' => array('ROLE_USER', 'ROLE_ADMIN'),
-                            'message' => 'Choose a valid role.',
+                            'choices' => array('RUB'),
+                            'message' => 'Choose a valid currency.',
                         )
                     )
-                )))
-            ->add('save', 'submit', array('label' => 'Update User'))
+                ),
+                'data' => $campaign->getCurrency()))
+            ->add(
+                'form_image',
+                'text',
+                array('constraints' => array(
+                    new Url()
+                ),
+                'label' => 'Url for image',
+                'data' => $campaign->getImage()))
+            // Please enter content of donation form box.
+            ->add(
+                'form_intro',
+                'textarea',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                'label' => 'Please enter content of donation form box',
+                'data' => $campaign->getFormIntro()))
+            // Your donors must be agree with Terms & Conditions before donating
+            ->add(
+                'form_terms',
+                'textarea',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                'label' => 'Your donors must be agree with Terms & Conditions before donating',
+                'data' => $campaign->getFormTerms()))
+
+            // Please enter content of top donors box.
+            ->add(
+                'top_intro',
+                'textarea',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                'label' => 'Please enter content of top donors box.',
+                'data' => $campaign->getTopIntro()))
+            // Recent donors box content
+            ->add(
+                'recent_intro',
+                'textarea',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                'label' => 'Recent donors box content',
+                'data' => $campaign->getRecentIntro()))
+
+            ->add('save', 'submit', array('label' => 'Update Campaign'))
             ->getForm();
 
         $form->handleRequest($request);
+
         if ($form->isValid()) {
 
             $data = $form->getData();
 
-            $user->setUsername($data['username']);
-            $user->setEmail($data['email']);
-            if($data['password'] != NULL) {
-                $user->setPassword($data['password']);
-            }
+            $em = $this->getDoctrine()->getManager();
 
-            if($data['role'] != $user->getRole()) {
+            $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-                $currentRole = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $user->getRole()));
-                $user->removeRole($currentRole);
-                $currentRole->removeUser($user);
+            $campaign->setTitle($data['title']);
+            $campaign->setImage($data['form_image']);
+            $campaign->setCurrency($data['currency']);
+            $campaign->setMinAmount($data['min_amount']);
+            $campaign->setFormIntro($data['form_intro']);
+            $campaign->setFormTerms($data['form_terms']);
+            $campaign->setTopIntro($data['top_intro']);
+            $campaign->setRecentIntro($data['recent_intro']);
+            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ON_MODERATION'));
+            $campaign->setStatus($status);
 
-                $newRole = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
-                $user->addRole($newRole);
-                $newRole->addUser($user);
-            }
-
-            $em->persist($user);
+            $em->persist($campaign);
             $em->flush();
-
-            return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
         }
 
-
-        //return $this->redirect($this->generateUrl('admin_user', array('user_modifying' => 'success')));
 
         return array(
             'form' => $form->createView(),
         );
-
     }
 
     public function blockAction()
@@ -256,20 +305,16 @@ class CampaignController extends Controller
         $page = $this->getRequest()->query->get("page");
 
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $id));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        $statuses = $user->getStatuses();
-        $currentStatus = $statuses[0];
-
-        $user->removeStatus($currentStatus);
 
         $statusBlocked = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'BLOCKED'));
-        $user->addStatus($statusBlocked);
+        $campaign->setStatus($statusBlocked);
 
-        $em->persist($user);
+        $em->persist($campaign);
         $em->flush();
 
-        return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
+        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
     }
 
     public function activateAction()
@@ -279,20 +324,16 @@ class CampaignController extends Controller
         $page = $this->getRequest()->query->get("page");
 
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $id));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        $statuses = $user->getStatuses();
-        $currentStatus = $statuses[0];
-
-        $user->removeStatus($currentStatus);
 
         $statusActivated = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
-        $user->addStatus($statusActivated);
+        $campaign->setStatus($statusActivated);
 
-        $em->persist($user);
+        $em->persist($campaign);
         $em->flush();
 
-        return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
+        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
     }
 
     /**
@@ -300,9 +341,31 @@ class CampaignController extends Controller
      */
     public function deleteAction()
     {
+        $id = $this->getRequest()->query->get("id");
+        $page = $this->getRequest()->query->get("page");
 
+        $em = $this->getDoctrine()->getManager();
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
+        $statusActivated = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'DELETED'));
+        $campaign->setStatus($statusActivated);
+
+        $em->persist($campaign);
+        $em->flush();
+
+        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+    }
+
+    /**
+     * @Template
+     */
+    public function paymentPageAction($campaignId)
+    {
+
+        $em = $this->getDoctrine()->getManager();
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+        return array('campaign' => $campaign, 'customerNumber' => time(), 'noIDcustomerNumber' => time());
     }
 
 } 

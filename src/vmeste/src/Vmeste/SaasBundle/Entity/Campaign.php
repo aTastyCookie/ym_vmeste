@@ -61,24 +61,29 @@ class Campaign {
     protected $recentIntro;
 
     /**
+     * @ORM\ManyToMany(targetEntity="Donor")
+     * @ORM\JoinTable(name="campaigns_donors",
+     *      joinColumns={@ORM\JoinColumn(name="donor_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="campaign_id", referencedColumnName="id", unique=true)}
+     *      )
+     **/
+    protected $donors;
+
+    /**
      * @ORM\Column(type="decimal", name="min_amount", scale=2, precision=8)
      */
     protected $minAmount;
 
     /**
-     * @ORM\Column(type="string", length=2, options={"fixed" = true})
+     * @ORM\Column(type="string", length=8, options={"fixed" = true})
      */
     protected $currency;
 
     /**
-     * @ORM\OneToMany(targetEntity="EmailTemplate", mappedBy="campaign")
+     * @ORM\ManyToOne(targetEntity="Status")
+     * @ORM\JoinColumn(name="status_id", referencedColumnName="id")
      **/
-    protected $successEmailTemplate;
-
-    /**
-     * @ORM\OneToMany(targetEntity="EmailTemplate", mappedBy="campaign")
-     **/
-    protected $failEmailTemplate;
+    private $status;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned"=true})
@@ -89,6 +94,11 @@ class Campaign {
      * @ORM\Column(type="integer", options={"unsigned"=true})
      */
     protected $changed;
+
+    public function __construct()
+    {
+        $this->donors = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
 
     /**
@@ -138,15 +148,6 @@ class Campaign {
     public function updateDate()
     {
         $this->setChanged();
-    }
-    
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->successEmailTemplate = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->failEmailTemplate = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -367,68 +368,58 @@ class Campaign {
     }
 
     /**
-     * Add successEmailTemplate
+     * Set status
      *
-     * @param \Vmeste\SaasBundle\Entity\EmailTemplate $successEmailTemplate
+     * @param \Vmeste\SaasBundle\Entity\Status $status
      * @return Campaign
      */
-    public function addSuccessEmailTemplate(\Vmeste\SaasBundle\Entity\EmailTemplate $successEmailTemplate)
+    public function setStatus(\Vmeste\SaasBundle\Entity\Status $status = null)
     {
-        $this->successEmailTemplate[] = $successEmailTemplate;
+        $this->status = $status;
 
         return $this;
     }
 
     /**
-     * Remove successEmailTemplate
+     * Get status
      *
-     * @param \Vmeste\SaasBundle\Entity\EmailTemplate $successEmailTemplate
+     * @return \Vmeste\SaasBundle\Entity\Status 
      */
-    public function removeSuccessEmailTemplate(\Vmeste\SaasBundle\Entity\EmailTemplate $successEmailTemplate)
+    public function getStatus()
     {
-        $this->successEmailTemplate->removeElement($successEmailTemplate);
+        return $this->status;
     }
 
     /**
-     * Get successEmailTemplate
+     * Add donors
      *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getSuccessEmailTemplate()
-    {
-        return $this->successEmailTemplate;
-    }
-
-    /**
-     * Add failEmailTemplate
-     *
-     * @param \Vmeste\SaasBundle\Entity\EmailTemplate $failEmailTemplate
+     * @param \Vmeste\SaasBundle\Entity\Donor $donors
      * @return Campaign
      */
-    public function addFailEmailTemplate(\Vmeste\SaasBundle\Entity\EmailTemplate $failEmailTemplate)
+    public function addDonor(\Vmeste\SaasBundle\Entity\Donor $donors)
     {
-        $this->failEmailTemplate[] = $failEmailTemplate;
+        $this->donors[] = $donors;
 
         return $this;
     }
 
     /**
-     * Remove failEmailTemplate
+     * Remove donors
      *
-     * @param \Vmeste\SaasBundle\Entity\EmailTemplate $failEmailTemplate
+     * @param \Vmeste\SaasBundle\Entity\Donor $donors
      */
-    public function removeFailEmailTemplate(\Vmeste\SaasBundle\Entity\EmailTemplate $failEmailTemplate)
+    public function removeDonor(\Vmeste\SaasBundle\Entity\Donor $donors)
     {
-        $this->failEmailTemplate->removeElement($failEmailTemplate);
+        $this->donors->removeElement($donors);
     }
 
     /**
-     * Get failEmailTemplate
+     * Get donors
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getFailEmailTemplate()
+    public function getDonors()
     {
-        return $this->failEmailTemplate;
+        return $this->donors;
     }
 }
