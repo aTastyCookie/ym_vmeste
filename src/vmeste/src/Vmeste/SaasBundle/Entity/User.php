@@ -79,9 +79,8 @@ class User implements UserInterface, \Serializable
     private $campaigns;
 
     /**
-     * @ORM\OneToOne(targetEntity="Settings")
-     * @ORM\JoinColumn(name="settings_id", referencedColumnName="id")
-     **/
+     * @ORM\ManyToMany(targetEntity="Settings", inversedBy="users")
+     */
     protected $settings;
 
 
@@ -429,23 +428,34 @@ class User implements UserInterface, \Serializable
         return $this->campaigns;
     }
 
+
     /**
-     * Set settings
+     * Add settings
      *
      * @param \Vmeste\SaasBundle\Entity\Settings $settings
      * @return User
      */
-    public function setSettings(\Vmeste\SaasBundle\Entity\Settings $settings = null)
+    public function addSetting(\Vmeste\SaasBundle\Entity\Settings $settings)
     {
-        $this->settings = $settings;
+        $this->settings[] = $settings;
 
         return $this;
     }
 
     /**
+     * Remove settings
+     *
+     * @param \Vmeste\SaasBundle\Entity\Settings $settings
+     */
+    public function removeSetting(\Vmeste\SaasBundle\Entity\Settings $settings)
+    {
+        $this->settings->removeElement($settings);
+    }
+
+    /**
      * Get settings
      *
-     * @return \Vmeste\SaasBundle\Entity\Settings 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getSettings()
     {

@@ -7,10 +7,13 @@
     <h3>Email settings</h3>
     <div>
         <form action="{{ path('update_email_settings') }}" method="post">
+            {{ email_setting_errors | raw }}
             <ul>
-                <li><input type="email" name="notification_email" placeholder="no-reply@your.domain"></li>
-                <li><input type="text" name="sender_name" placeholder="John Doe"></li>
-                <li><input type="email" name="sender_email" placeholder="your.email@your.domain"></li>
+                <li><input type="email" name="notification_email" placeholder="no-reply@your.domain"
+                           value="{{ notification_email }}"></li>
+                <li><input type="text" name="sender_name" placeholder="John Doe" value="{{ sender_name }}"></li>
+                <li><input type="email" name="sender_email" placeholder="your.email@your.domain"
+                           value="{{ sender_email }}"></li>
                 <li>
                     <button type="submit" id="form_save" name="save">Save email settings</button>
                 </li>
@@ -23,31 +26,31 @@
         <form action="{{ path('update_yk_settings') }}" method="post">
             <ul>
                 <li><label>shopId:
-                        <input type="text" name="yandex_shopid">
+                        <input type="text" name="yandex_shopid" value="{{ shopid }}">
                     </label></li>
                 <li><label>scid:
-                        <input type="text" name="yandex_scid">
+                        <input type="text" name="yandex_scid" value="{{ scid }}">
                     </label></li>
                 <li><label>shoppw:
-                        <input type="text" name="yandex_shoppw">
+                        <input type="text" name="yandex_shoppw" value="{{ shoppw }}">
                     </label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_pt_pc">
+                        <input type="checkbox" name="yandex_pt_pc" {{ pc ? 'checked' : '' }}>
                         PC</label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_pt_ac">
+                        <input type="checkbox" name="yandex_pt_ac" {{ ac ? 'checked' : '' }}>
                         AC</label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_pt_wm">
+                        <input type="checkbox" name="yandex_pt_wm" {{ wm ? 'checked' : '' }}>
                         WM</label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_pt_mc">
+                        <input type="checkbox" name="yandex_pt_mc" {{ mc ? 'checked' : '' }}>
                         MC</label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_pt_gp">
+                        <input type="checkbox" name="yandex_pt_gp" {{ gp ? 'checked' : '' }}>
                         GP</label></li>
                 <li><label>
-                        <input type="checkbox" name="yandex_sandbox">
+                        <input type="checkbox" name="yandex_sandbox" {{ sandbox ? 'checked' : '' }}>
                         Sandbox mode</label></li>
                 <li>
                     <button type="submit" id="form_save" name="save">Save email settings</button>
@@ -59,6 +62,7 @@
     <h3>User settings</h3>
     <div>
         <form action="{{ path('update_customer_password') }}" method="post">
+            {{ password_setting_errors | raw }}
             <ul>
                 <li><label>Old password:
                         <input type="password" name="old_password">
@@ -67,7 +71,7 @@
                         <input type="password" name="new_password">
                     </label></li>
                 <li><label>Repeat new password:
-                        <input type="email" name="new_password_repeat">
+                        <input type="password" name="new_password_repeat">
                     </label></li>
                 <li>
                     <button type="submit" id="form_save" name="save">Save email settings</button>
@@ -75,7 +79,5 @@
             </ul>
         </form>
     </div>
-
-    {# {{ form(form) }}#}
 
 {% endblock %}

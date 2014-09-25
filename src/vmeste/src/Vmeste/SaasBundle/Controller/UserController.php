@@ -17,7 +17,9 @@ use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Entity\YandexKassa;
 
 class UserController extends Controller
 {
@@ -137,6 +139,19 @@ class UserController extends Controller
             $user->setPassword($data['password']);
             $role = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
             $user->addRole($role);
+
+            if($data['role'] == 'ROLE_USER') {
+
+                $settings = new Settings();
+                $yandexKassa = new YandexKassa();
+
+                $em->persist($yandexKassa);
+                $em->persist($settings);
+
+                $settings->setYandexKassa($yandexKassa);
+                $user->addSetting($settings);
+            }
+
             $role->addUser($user);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $user->addStatus($status);

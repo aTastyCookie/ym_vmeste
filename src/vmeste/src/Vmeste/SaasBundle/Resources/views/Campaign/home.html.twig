@@ -2,60 +2,66 @@
 
 {% block body %}
 
-    <a href="{{ path('customer_campaign_create') }}">New Campaign</a>
-
-    <h2>Users list</h2>
-
+    <h2>Campaigns</h2>
+<div class="row">
+	<div class="span12">
+		<div class="btn-group pull-right">
+    		<a class="btn btn-primary" href="{{ path('customer_campaign_create') }}">Add New Campaign</a>
+    		<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+			<ul class="dropdown-menu">
+				<li><a href="{{ path('customer_campaign_create') }}">Add New Campaign</a></li>
+				<li><a href="" onclick="return submitOperation();">Delete All Campaigns</a></li>				
+			</ul>
+		</div>
+	</div>
+</div>
     {% if campaign_created %}
         <div>{{ campaign_created }}</div>
     {% endif %}
-    <table>
+    <table class="table table-striped">
         <tr>
             <th>Title</th>
             <th>Shortcode</th>
-            <th>Отчеты</th>
-            <th>Donated</th>
-            <th>Registered</th>
+            <th style="width: 100px; text-align: right;">Отчеты</th>
+            <th style="width: 100px; text-align: right;">Donated</th>
+            <th style="width: 120px;">Registered</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th style="width: 80px;">Actions</th>
         </tr>
 
         {% for campaign in campaigns %}
             <tr>
                 <td>{{ campaign.title }}</td>
                 <td><a href="{{ campaign_url }}{{ campaign.id }}">{{ campaign_url }}{{ campaign.id }}</a></td>
-                <td>
+                <td style="text-align: right;">
                     {#<ul>
                         {% for role in user.roles %}
                             <li>{{ role.name }}</li>
                         {% endfor %}
                     </ul>#}
                 </td>
-                <td>0.00 {{ campaign.currency }}</td>
+                <td style="text-align: right;">0.00 {{ campaign.currency }}</td>
                 <td>{{ campaign.changed|date("d/m/Y") }}</td>
                 <td>{{ campaign.status.name }}</td>
                 <td>
-                    <ul>
-                        <li>
-                            <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">Edit</a>
-                        </li>
+                        <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">
+                        	<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Edit record" border="0">
+                        </a>
+                     
 
                         {% if campaign.status.status != 'ON_MODERATION' %}
                             {% if campaign.status.status == 'BLOCKED' %}
-                                <li>
-                                    <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Activate</a>
-                                </li>
+                            <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Activate</a>   
                             {% else %}
-                                <li>
-                                    <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">Block</a>
-                                </li>
+                            <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
+                            	<img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Block record" border="0">
+                            </a>
                             {% endif %}
                         {% endif %}
-                        <li>
-                            <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">Delete</a>
-                        </li>
-
-                    </ul>
+                            <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
+                            	<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Delete record" border="0">
+                            </a>
+                        
                 </td>
             </tr>
         {% endfor %}

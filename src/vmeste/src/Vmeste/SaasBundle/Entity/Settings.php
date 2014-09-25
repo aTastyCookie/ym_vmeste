@@ -50,6 +50,10 @@ class Settings {
      **/
     protected $yandexKassa;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="User", mappedBy="settings")
+     */
+    protected $user;
 
     /**
      * Get id
@@ -174,5 +178,45 @@ class Settings {
     public function getYandexKassa()
     {
         return $this->yandexKassa;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->user = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add user
+     *
+     * @param \Vmeste\SaasBundle\Entity\User $user
+     * @return Settings
+     */
+    public function addUser(\Vmeste\SaasBundle\Entity\User $user)
+    {
+        $this->user[] = $user;
+
+        return $this;
+    }
+
+    /**
+     * Remove user
+     *
+     * @param \Vmeste\SaasBundle\Entity\User $user
+     */
+    public function removeUser(\Vmeste\SaasBundle\Entity\User $user)
+    {
+        $this->user->removeElement($user);
+    }
+
+    /**
+     * Get user
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }

@@ -245,12 +245,6 @@ class AuthController extends Controller
 
         $logger = $this->get('logger');
 
-
-        /**
-         *
-         * FIXME Write own password comparasion
-         */
-
         $request = $this->get('request');
 
         if ($request->isMethod('POST')) {
@@ -279,12 +273,11 @@ class AuthController extends Controller
 
                 $doctrine = $this->getDoctrine();
                 $em = $doctrine->getManager();
-                $conn = $doctrine->getConnection();
 
                 $recoverToken = $em->getRepository('Vmeste\SaasBundle\Entity\RecoverToken')
                     ->findOneBy(array('token' => $token, 'active' => self::ACTIVE));
 
-                if($recoverToken == null) {
+                if ($recoverToken == null) {
                     array_push($errorMessageArray, "Token doesn't exist!");
                     $hideForm = true;
                 } else {
@@ -296,7 +289,7 @@ class AuthController extends Controller
 
                     if ($user != null) {
 
-                        $user->setPassword($password);
+                        $user->setPassword(Hash::generatePasswordHash($password));
                         $recoverToken->setActive(0);
 
                         $em->persist($user);
@@ -316,16 +309,16 @@ class AuthController extends Controller
 
             } else {
 
-                if(count($tokenErrorList) != 0)
+                if (count($tokenErrorList) != 0)
                     array_push($errorMessageArray, $tokenErrorList[0]->getMessage());
 
-                if(count($passwordErrorList) != 0)
+                if (count($passwordErrorList) != 0)
                     array_push($errorMessageArray, $passwordErrorList[0]->getMessage());
 
-                if(count($passwordRepeatErrorList) != 0)
-                    array_push($errorMessageArray,$passwordRepeatErrorList[0]->getMessage());
+                if (count($passwordRepeatErrorList) != 0)
+                    array_push($errorMessageArray, $passwordRepeatErrorList[0]->getMessage());
 
-                if(!$passwordsEqual)
+                if (!$passwordsEqual)
                     array_push($errorMessageArray, "Passwords are not equal!");
             }
         }

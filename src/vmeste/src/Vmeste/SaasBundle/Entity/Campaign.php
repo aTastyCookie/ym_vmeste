@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Campaign {
 
     /**
-     * @ORM\Column(type="integer", name="id")
+     * @ORM\Column(type="integer", name="id", options={"unsigned"=true})
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */

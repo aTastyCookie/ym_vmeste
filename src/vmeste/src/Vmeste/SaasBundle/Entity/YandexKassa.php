@@ -27,47 +27,47 @@ class YandexKassa
     /**
      * @ORM\Column(type="string")
      */
-    protected $shopId;
+    protected $shopId = '';
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $scid;
+    protected $scid = '';
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $shoppw;
+    protected $shoppw = '';
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $pc;
+    protected $pc = 0;
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $ac;
+    protected $ac = 0;
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $wm;
+    protected $wm = 0;
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $mc;
+    protected $mc = 0;
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $gp;
+    protected $gp = 0;
 
     /**
      * @ORM\Column(type="smallint")
      */
-    protected $sandbox;
+    protected $sandbox = 1;
 
 
 
