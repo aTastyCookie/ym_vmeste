@@ -41,12 +41,19 @@ class CampaignController extends Controller
         $page = $this->getRequest()->query->get("page", 1);
 
         $em = $this->getDoctrine()->getManager();
+
+        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('c')->from('Vmeste\SaasBundle\Entity\Campaign', 'c')
             ->leftJoin('Vmeste\SaasBundle\Entity\Status', 's', 'WITH', 'c.status = s.id')
             ->where('s.status <> ?1')
-            ->setParameter(1, 'DELETED');
+            ->andWhere('c.user = ?2')
+            ->setParameter(1, 'DELETED')
+            ->setParameter(2, $user);
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
@@ -224,8 +231,8 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new Url()
                 ),
-                'label' => 'Url for image',
-                'data' => $campaign->getImage()))
+                    'label' => 'Url for image',
+                    'data' => $campaign->getImage()))
             // Please enter content of donation form box.
             ->add(
                 'form_intro',
@@ -233,8 +240,8 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                'label' => 'Please enter content of donation form box',
-                'data' => $campaign->getFormIntro()))
+                    'label' => 'Please enter content of donation form box',
+                    'data' => $campaign->getFormIntro()))
             // Your donors must be agree with Terms & Conditions before donating
             ->add(
                 'form_terms',
@@ -242,8 +249,8 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                'label' => 'Your donors must be agree with Terms & Conditions before donating',
-                'data' => $campaign->getFormTerms()))
+                    'label' => 'Your donors must be agree with Terms & Conditions before donating',
+                    'data' => $campaign->getFormTerms()))
 
             // Please enter content of top donors box.
             ->add(
@@ -252,8 +259,8 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                'label' => 'Please enter content of top donors box.',
-                'data' => $campaign->getTopIntro()))
+                    'label' => 'Please enter content of top donors box.',
+                    'data' => $campaign->getTopIntro()))
             // Recent donors box content
             ->add(
                 'recent_intro',
@@ -261,8 +268,8 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                'label' => 'Recent donors box content',
-                'data' => $campaign->getRecentIntro()))
+                    'label' => 'Recent donors box content',
+                    'data' => $campaign->getRecentIntro()))
 
             ->add('save', 'submit', array('label' => 'Update Campaign'))
             ->getForm();
@@ -361,11 +368,15 @@ class CampaignController extends Controller
      */
     public function paymentPageAction($campaignId)
     {
-
         $em = $this->getDoctrine()->getManager();
-        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => (int)$campaignId));
+        $user = $campaign->getUser();
+        $settingsCollection = $user->getSettings();
+        $userSettings = $settingsCollection[0];
+        $yandexKassa = $userSettings->getYandexKassa();
 
-        return array('campaign' => $campaign, 'customerNumber' => time(), 'noIDcustomerNumber' => time());
+        return array('campaign' => $campaign, 'yandexKassa' => $yandexKassa, 'customerNumber' => time(), 'noIDcustomerNumber' => time());
+
     }
 
 } 

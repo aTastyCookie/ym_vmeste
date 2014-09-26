@@ -33,12 +33,11 @@
     </div>
     <form method="POST" enctype="text/plain" id="payment_form" autocomplete="off" action="https://demomoney.yandex.ru/eshop.xml">
 
-        <input name="shopId" value="{#{{ campaign.yandexkassa.shopid }}#}" type="hidden"/>
-        <input name="scid" value="{#{{ campaign.yandexkassa.scid }}#}" type="hidden"/>
+        <input name="shopId" value="{{ yandexKassa.shopid }}" type="hidden"/>
+        <input name="scid" value="{{ yandexKassa.scid }}" type="hidden"/>
         <input name="customerNumber" value="{{ customerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
         <input name="noIDcustomerNumber" value="{{ noIDcustomerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
         <input name="orderNumber" value="{{ campaign.id }}" type="hidden"/>
-        <input name="cms_name" value="vmeste" type="hidden"/>
 
         <div class="amount">
             <div class="content">

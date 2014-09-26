@@ -18,3 +18,4 @@ INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('1', 'Activ
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('2', 'Blocked', 'BLOCKED');
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('3', 'Deleted', 'DELETED');
 INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('4', 'On moderation', 'ON_MODERATION');
+INSERT INTO `vmeste_db_v2`.`status` (`id`, `name`, `status`) VALUES ('7', 'Pending', 'PENDING');

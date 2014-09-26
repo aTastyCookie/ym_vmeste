@@ -5,3 +5,5 @@ src/vmeste/src/Vmeste/SaasBundle/Entity/User.php~
 src/vmeste/src/Vmeste/SaasBundle/Entity/Campaign.php~
 src/vmeste/src/Vmeste/SaasBundle/Entity/EmailTemplate.php~
 src/vmeste/src/Vmeste/SaasBundle/Entity/Recurrent.php~
+src/vmeste/src/Vmeste/SaasBundle/Entity/Settings.php~
+src/vmeste/src/Vmeste/SaasBundle/Entity/YandexKassa.php~
