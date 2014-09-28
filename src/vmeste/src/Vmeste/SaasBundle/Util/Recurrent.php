@@ -1,6 +1,9 @@
 <?php
 namespace Vmeste\SaasBundle\Util;
 use Vmeste\SaasBundle\Entity\Recurrent;
+use Vmeste\SaasBundle\Entity\Transaction;
+use Vmeste\SaasBundle\Entity\Donor;
+use Vmeste\SaasBundle\Entity\Campaign;
 
 class Recurrent {
 	const SSL_VERIFYPEER = false;
@@ -129,44 +132,37 @@ class Recurrent {
 			$result['techMessage'] = $response->getAttribute('techMessage');
 		}
 		
-// CHANGE IT	
-		$donor = $icpdo->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ON_MODERATION'));
-		//$donor = $icpdo->get_row("SELECT * FROM ".$icdb->prefix."donors WHERE id = $item_number;");
+		$donor = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $recur['donor_id']));
 		
-		$payer_email = '';
-    	if($donor) {
-			$payer_email = $donor['email'];
+    	if(!$donor) {
+			return false;
 		}
 		
 		if($result['error'] == 0) {
 			// Insert transaction
-			
+// !!!!!			
 			$mc_currency = "RUB";
 			$payment_status = "Completed";
 			$transaction_type = "donate";
-			$txn_id = 0;
-// CHANGE IT
-			$sql = "INSERT INTO ".$this->icpdo->prefix."transactions (
-				donor_id, payer_name, payer_email, gross, currency, payment_status, 
-				transaction_type, txn_id, details, created) VALUES (
-				'".$recur['donor_id']."',
-				'".floatval($recur['amount'])."',
-				'".$mc_currency."',
-				'".$payment_status."',
-				'YMKassa: ".$transaction_type."',
-				'".$txn_id."',
-				'".mysql_real_escape_string(json_encode($result))."',
-				'".time()."'
-			)";
-			$this->icpdo->query($sql);
+			
+			$transaction = new Transaction();
+			$transaction->setDates();
+			$transaction->setCurrency($mc_currency);
+			$transaction->setDetails(mysql_real_escape_string(json_encode($result)));
+			$transaction->setDonor($recur['donor_id']);
+			$transaction->setGross(floatval($recur['amount']));
+			$transaction->setPaymentStatus($payment_status);
+			$transaction->setTransactionType($transaction_type);
+			//$transaction->setUser()
+
 			$attempt = 0;
 			$success_date = time();
 		} else {
 			if($recur['attempt'] == 3) {
-				$this->notify_about_auto_deleting($payer_email);
+				$this->notify_about_auto_deleting($donor->getEmail());
 // CHANGE IT
-				$this->icpdo->query("DELETE FROM ".$icpdo->prefix."recurrents WHERE id = ".$recur['id'].";");
-				$this->icpdo->query("UPDATE ".$icpdo->prefix."donors 
+				$this->icpdo->query("DELETE FROM ".$this->icpdo->prefix."recurrents WHERE id = ".$recur['id'].";");
+				$this->icpdo->query("UPDATE ".$this->icpdo->prefix."donors 
 									SET deleted = 1
 									WHERE id = ".$recur['donor_id'].";");
 				$attempt = 4;
@@ -179,7 +175,7 @@ class Recurrent {
 		
 		if($attempt<4) {
 // CHANGE IT
-			$this->icpdo->query("UPDATE ".$icpdo->prefix."recurrents 
+			$this->icpdo->query("UPDATE ".$this->icpdo->prefix."recurrents 
 					SET clientOrderId = '$orderId',
 						orderNumber = '".$recur['campaign_id'] . '-' .$orderId."',
 						last_operation_time = '".time()."',

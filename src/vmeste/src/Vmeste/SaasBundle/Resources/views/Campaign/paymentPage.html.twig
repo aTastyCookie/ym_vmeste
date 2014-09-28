@@ -22,7 +22,7 @@
     <div class="content">
         <h2>Мы собираем деньги ...</h2>
         <p>{{ campaign.formIntro }}
-            <a href="#">Подробнее</a>
+            <!--<a href="#">Подробнее</a>-->
         </p>
 
         <div class="large_img">
@@ -37,7 +37,7 @@
         <input name="scid" value="{{ yandexKassa.scid }}" type="hidden"/>
         <input name="customerNumber" value="{{ customerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
         <input name="noIDcustomerNumber" value="{{ noIDcustomerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
-        <input name="orderNumber" value="{{ campaign.id }}" type="hidden"/>
+        <input name="orderNumber" value="{{ campaign.id }}-{{ uniqueId }}" type="hidden"/>
 
         <div class="amount">
             <div class="content">
@@ -68,12 +68,12 @@
                 <div class="fields">
                     <div class="item">
                         <label for="fio">Имя и фамилия</label>
-                        <input type="text" id="fio" />
+                        <input type="text" id="fio" name="customerName" />
                         <span class="error_msg" data-missing="Пожалуйста, укажите свои имя и фамилию — фонд <br>не может принять анонимный перевод."></span>
                     </div>
                     <div class="item">
                         <label for="email">Email</label>
-                        <input type="text" id="email">
+                        <input type="text" id="email" name="customerEmail">
             <span class="error_msg" data-invalid="Здесь что-то не так. Проверьте адрес и попробуйте еще раз."
                   data-missing="Пожалуйста, укажите адрес своей электронной почты — фонд <br>не может принять анонимный перевод."></span>
                     </div>
@@ -82,7 +82,7 @@
                 <div class="fields comment" style="display: none;">
                     <div class="item">
                         <label for="comment">Комментарий</label>
-                        <textarea id="comment" placeholder="При желании вы можете указать, на что именно переводите деньги."></textarea>
+                        <textarea id="comment" name="customerComment" placeholder="При желании вы можете указать, на что именно переводите деньги."></textarea>
                     </div>
                     <div class="clearfix"></div>
                 </div>

@@ -23,32 +23,32 @@ class Transaction
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id; //user_id int(11) UNSIGNED NOT NULL,
+    protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="transactions")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Campaign", inversedBy="transactions")
+     * @ORM\JoinColumn(name="campaign_id", referencedColumnName="id")
      **/
-    protected $user;
+    protected $campaign;
 
+    /**
+     * @ORM\Column(type="integer", name="donor_id", options={"unsigned"=true})
+     **/
+    protected $donor_id;
+    
     /**
      * @ORM\ManyToOne(targetEntity="Donor", inversedBy="transactions")
      * @ORM\JoinColumn(name="donor_id", referencedColumnName="id")
      **/
-    protected $donor; //donor_id int(11) NOT NULL,
+    protected $donor;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="bigint", name="invoiceId")
      */
-    protected $payerName; //payer_name varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+    protected $invoiceId;
 
     /**
-     * @ORM\Column(type="string")
-     */
-    protected $payerEmail;
-
-    /**
-     * @ORM\Column(type="decimal", name="min_amount", scale=2, precision=8)
+     * @ORM\Column(type="decimal", name="gross", scale=2, precision=8)
      */
     protected $gross; //gross float NOT NULL,
 
@@ -82,6 +82,11 @@ class Transaction
      */
     protected $created;
 
+    /**
+     * @ORM\Column(type="integer", options={"unsigned"=true})
+     */
+    protected $changed;
+
 
     /**
      * @return mixed
@@ -100,17 +105,46 @@ class Transaction
     }
 
     /**
+     * @return mixed
+     */
+    public function getChanged()
+    {
+        return $this->changed;
+    }
+
+    /**
+     * @internal param mixed $changed
+     */
+    public function setChanged()
+    {
+        $this->changed = time();
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function setDates()
     {
         $this->setCreated();
+        $this->setChanged();
     }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function updateDate()
+    {
+        $this->setChanged();
+    }
+
+
+
+
 
     /**
      * Get id
      *
-     * @return integer
+     * @return integer 
      */
     public function getId()
     {
@@ -118,95 +152,26 @@ class Transaction
     }
 
     /**
-     * Set user
+     * Set invoiceId
      *
-     * @param \Vmeste\SaasBundle\Entity\User $user
+     * @param integer $invoiceId
      * @return Transaction
      */
-    public function setUser(\Vmeste\SaasBundle\Entity\User $user = null)
+    public function setInvoiceId($invoiceId)
     {
-        $this->user = $user;
+        $this->invoiceId = $invoiceId;
 
         return $this;
     }
 
     /**
-     * Get user
+     * Get invoiceId
      *
-     * @return \Vmeste\SaasBundle\Entity\User
+     * @return integer 
      */
-    public function getUser()
+    public function getInvoiceId()
     {
-        return $this->user;
-    }
-
-    /**
-     * Set donor
-     *
-     * @param \Vmeste\SaasBundle\Entity\User $donor
-     * @return Transaction
-     */
-    public function setDonor(\Vmeste\SaasBundle\Entity\User $donor = null)
-    {
-        $this->donor = $donor;
-
-        return $this;
-    }
-
-    /**
-     * Get donor
-     *
-     * @return \Vmeste\SaasBundle\Entity\User
-     */
-    public function getDonor()
-    {
-        return $this->donor;
-    }
-
-    /**
-     * Set payerName
-     *
-     * @param string $payerName
-     * @return Transaction
-     */
-    public function setPayerName($payerName)
-    {
-        $this->payerName = $payerName;
-
-        return $this;
-    }
-
-    /**
-     * Get payerName
-     *
-     * @return string 
-     */
-    public function getPayerName()
-    {
-        return $this->payerName;
-    }
-
-    /**
-     * Set payerEmail
-     *
-     * @param string $payerEmail
-     * @return Transaction
-     */
-    public function setPayerEmail($payerEmail)
-    {
-        $this->payerEmail = $payerEmail;
-
-        return $this;
-    }
-
-    /**
-     * Get payerEmail
-     *
-     * @return string 
-     */
-    public function getPayerEmail()
-    {
-        return $this->payerEmail;
+        return $this->invoiceId;
     }
 
     /**
@@ -345,5 +310,51 @@ class Transaction
     public function getDetails()
     {
         return $this->details;
+    }
+
+    /**
+     * Set campaign
+     *
+     * @param \Vmeste\SaasBundle\Entity\Campaign $campaign
+     * @return Transaction
+     */
+    public function setCampaign(\Vmeste\SaasBundle\Entity\Campaign $campaign = null)
+    {
+        $this->campaign = $campaign;
+
+        return $this;
+    }
+
+    /**
+     * Get campaign
+     *
+     * @return \Vmeste\SaasBundle\Entity\Campaign 
+     */
+    public function getCampaign()
+    {
+        return $this->campaign;
+    }
+
+    /**
+     * Set donor
+     *
+     * @param \Vmeste\SaasBundle\Entity\Donor $donor
+     * @return Transaction
+     */
+    public function setDonor(\Vmeste\SaasBundle\Entity\Donor $donor = null)
+    {
+        $this->donor = $donor;
+
+        return $this;
+    }
+
+    /**
+     * Get donor
+     *
+     * @return \Vmeste\SaasBundle\Entity\Donor 
+     */
+    public function getDonor()
+    {
+        return $this->donor;
     }
 }

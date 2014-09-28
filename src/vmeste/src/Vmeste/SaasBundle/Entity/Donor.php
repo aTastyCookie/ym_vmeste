@@ -26,6 +26,11 @@ class Donor
     protected $id; // int(11) UNSIGNED NOT NULL  AUTO_INCREMENT,
 
     /**
+     * @ORM\Column(name="campaign_id", type="integer", options={"unsigned"=true})
+     */
+    private $campaign_id;
+    
+    /**
      * @ORM\Column(type="string")
      */
     protected $name; //name varchar(255) COLLATE utf8_unicode_ci NOT NULL,
@@ -36,12 +41,7 @@ class Donor
     protected $email; //email varchar(255) COLLATE utf8_unicode_ci NOT NULL,
 
     /**
-     * @ORM\Column(type="string")
-     */
-    protected $url = ""; //url varchar(255) COLLATE utf8_unicode_ci NULL DEFAULT '',
-
-    /**
-     * @ORM\Column(type="decimal", name="min_amount", scale=2, precision=8)
+     * @ORM\Column(type="decimal", name="amount", scale=2, precision=8)
      */
     protected $amount;
 
@@ -55,6 +55,8 @@ class Donor
      * @ORM\JoinColumn(name="status_id", referencedColumnName="id")
      **/
     protected $status;
+
+
 
     /**
      * @ORM\Column(type="text")
@@ -314,5 +316,51 @@ class Donor
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set transaction
+     *
+     * @param \Vmeste\SaasBundle\Entity\Transaction $transaction
+     * @return Donor
+     */
+    public function setTransaction(\Vmeste\SaasBundle\Entity\Transaction $transaction = null)
+    {
+        $this->transaction = $transaction;
+
+        return $this;
+    }
+
+    /**
+     * Get transaction
+     *
+     * @return \Vmeste\SaasBundle\Entity\Transaction 
+     */
+    public function getTransaction()
+    {
+        return $this->transaction;
+    }
+
+    /**
+     * Set campaign_id
+     *
+     * @param integer $campaignId
+     * @return Donor
+     */
+    public function setCampaignId($campaignId)
+    {
+        $this->campaign_id = $campaignId;
+    
+        return $this;
+    }
+
+    /**
+     * Get campaign_id
+     *
+     * @return integer 
+     */
+    public function getCampaignId()
+    {
+        return $this->campaign_id;
     }
 }

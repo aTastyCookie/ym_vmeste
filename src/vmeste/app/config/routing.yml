@@ -93,6 +93,30 @@ update_customer_password:
     path: /customer/update/password
     defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
 
+transaction_home:
+    path: /transaction/home
+    defaults: { _controller: VmesteSaasBundle:Transaction:home }
+
+transaction_unsubscribe:
+    path: /transaction/unsubscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
+
+transaction_report:
+    path: /customer/transaction/report
+    defaults:  { _controller: VmesteSaasBundle:Transaction:report }
+
+transaction_report_export:
+    path: /customer/transaction/report/export
+    defaults:  { _controller: VmesteSaasBundle:Transaction:reportExport }
+
+campaign_report:
+    path: /customer/campaign/report
+    defaults:  { _controller: VmesteSaasBundle:Campaign:report }
+
+campaign_report_export:
+    path: /customer/campaign/report/export
+    defaults:  { _controller: VmesteSaasBundle:Campaign:reportExport }
+
 # Outside
 
 payment_page:

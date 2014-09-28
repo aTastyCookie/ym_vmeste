@@ -35,7 +35,6 @@ class SettingsController extends Controller
             $passwordSettingsErrors = $this->getRequest()->query->get("password_setting_errors");
 
 
-
         $currentUser = $this->get('security.context')->getToken()->getUser();
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
@@ -50,6 +49,7 @@ class SettingsController extends Controller
             'notification_email' => $userSettings->getNotificationEmail(),
             'sender_name' => $userSettings->getSenderName(),
             'sender_email' => $userSettings->getSenderEmail(),
+            'csv_separator' => $userSettings->getCsvColumnSeparator(),
             'shopid' => $yandexKassa->getShopId(),
             'scid' => $yandexKassa->getScid(),
             'shoppw' => $yandexKassa->getShoppw(),
@@ -72,6 +72,7 @@ class SettingsController extends Controller
             $notificationEmail = $request->request->get('notification_email');
             $senderName = $request->request->get('sender_name');
             $senderEmail = $request->request->get('sender_email');
+            $csvSeparator = $request->request->get('csv_separator');
 
             $notificationEmailConstraint = new Email();
             $notificationEmailConstraint->message = "The email " . $notificationEmail . ' is not a valid email';
@@ -84,7 +85,11 @@ class SettingsController extends Controller
             $senderEmailConstraint->message = "The email " . $senderEmail . ' is not a valid email';
             $senderEmailErrorList = $this->get('validator')->validateValue($senderEmail, $senderEmailConstraint);
 
-            if (count($notificationEmailErrorList) == 0 && count($senderNameEmailErrorList) == 0 && count($senderEmailErrorList) == 0) {
+            $availableSeparators = array(';', ',', 'tab');
+
+            if (count($notificationEmailErrorList) == 0 && count($senderNameEmailErrorList) == 0
+                && count($senderEmailErrorList) == 0 && in_array($csvSeparator, $availableSeparators)
+            ) {
 
                 $em = $this->getDoctrine()->getManager();
 
@@ -98,6 +103,7 @@ class SettingsController extends Controller
                 $userSettings->setNotificationEmail($notificationEmail);
                 $userSettings->setSenderName($senderName);
                 $userSettings->setSenderEmail($senderEmail);
+                $userSettings->setCsvColumnSeparator($csvSeparator);
 
                 $em->persist($userSettings);
                 $em->flush();
@@ -109,6 +115,7 @@ class SettingsController extends Controller
                 $errorList .= count($notificationEmailErrorList) > 0 ? "<li>" . $notificationEmailErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($senderNameEmailErrorList) > 0 ? "<li>" . $senderNameEmailErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($senderEmailErrorList) > 0 ? "<li>" . $senderEmailErrorList[0]->getMessage() . "</li>" : "";
+                $errorList .= !in_array($csvSeparator, $availableSeparators) ? "<li>Separator, you have choosen is forbidden.</li>" : "";
                 $errorList .= "</ul>";
 
                 return $this->redirect($this->generateUrl('customer_settings', array("email_setting_errors" => $errorList)));
@@ -222,7 +229,7 @@ class SettingsController extends Controller
                     $em->persist($user);
                     $em->flush();
 
-                    $logger->info('[CHANGE_PASSWORD] For user with id: ' .$currentUser->getId());
+                    $logger->info('[CHANGE_PASSWORD] For user with id: ' . $currentUser->getId());
 
                     return $this->redirect($this->generateUrl("customer_settings"));
                 } else {

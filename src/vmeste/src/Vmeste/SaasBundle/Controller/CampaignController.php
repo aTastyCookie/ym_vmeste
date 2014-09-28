@@ -13,6 +13,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Util\PaginationUtils;
 
 class CampaignController extends Controller
 {
@@ -63,29 +65,30 @@ class CampaignController extends Controller
 
         $pageCount = (int)ceil($totalItems / $limit);
 
-        $pageNumberArray = array();
 
-        if ($page > $pageOnSidesLimit + 1) {
-            for ($i = $page - $pageOnSidesLimit; $i < $page; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        } else {
-            for ($i = 1; $i < $page; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        }
+//        if ($page > $pageOnSidesLimit + 1) {
+//            for ($i = $page - $pageOnSidesLimit; $i < $page; $i++) {
+//                array_push($pageNumberArray, $i);
+//            }
+//        } else {
+//            for ($i = 1; $i < $page; $i++) {
+//                array_push($pageNumberArray, $i);
+//            }
+//        }
+//
+//        array_push($pageNumberArray, $page);
+//
+//        if ($page + $pageOnSidesLimit < $pageCount) {
+//            for ($i = $page + 1; $i <= $page + $pageOnSidesLimit; $i++) {
+//                array_push($pageNumberArray, $i);
+//            }
+//        } else {
+//            for ($i = $page + 1; $i <= $pageCount; $i++) {
+//                array_push($pageNumberArray, $i);
+//            }
+//        }
 
-        array_push($pageNumberArray, $page);
-
-        if ($page + $pageOnSidesLimit < $pageCount) {
-            for ($i = $page + 1; $i <= $page + $pageOnSidesLimit; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        } else {
-            for ($i = $page + 1; $i <= $pageCount; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        }
+        $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
 
         return array(
             'campaigns' => $paginator,
@@ -106,15 +109,15 @@ class CampaignController extends Controller
         $form = $this->createFormBuilder()
             ->add('title', 'text', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => ''))
+            ), 'label' => 'Название кампании'))
             ->add('min_amount', 'text', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => ''))
+            ), 'label' => 'Минимальный взнос'))
             ->add('currency', 'choice', array(
                 'choices' => array(
                     'RUB' => 'RUB',
                 ),
-                'label' => 'Currency',
+                'label' => 'Валюта',
                 'constraints' => array(
                     new Choice(array(
                             'choices' => array('RUB'),
@@ -124,28 +127,28 @@ class CampaignController extends Controller
                 )))
             ->add('form_image', 'text', array('constraints' => array(
                 new Url()
-            ), 'label' => 'Url for image'))
+            ), 'label' => 'Url картинки'))
             // Please enter content of donation form box.
             ->add('form_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => 'Please enter content of donation form box'))
+            ), 'label' => 'Текст для платежной страницы'))
 
             // Your donors must be agree with Terms & Conditions before donating
             ->add('form_terms', 'textarea', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => 'Your donors must be agree with Terms & Conditions before donating'))
+            ), 'label' => 'Реквизиты для оферты'))
 
             // Please enter content of top donors box.
             ->add('top_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => 'Please enter content of top donors box.'))
+            ), 'label' => 'Ненужное поле 2 - Please enter content of top donors box.'))
 
             // Recent donors box content
             ->add('recent_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
-            ), 'label' => 'Recent donors box content'))
+            ), 'label' => 'Ненужное поле 3 - Recent donors box content'))
 
-            ->add('save', 'submit', array('label' => 'Create Campaign'))
+            ->add('save', 'submit', array('label' => 'Создать кампанию'))
             ->getForm();
 
         $form->handleRequest($request);
@@ -201,7 +204,7 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                    'label' => '',
+                    'label' => 'Название',
                     'data' => $campaign->getTitle()))
             ->add(
                 'min_amount',
@@ -209,18 +212,18 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                    'label' => '',
+                    'label' => 'Минимальный взнос',
                     'data' => $campaign->getMinAmount()))
             ->add(
                 'currency', 'choice', array(
                 'choices' => array(
                     'RUB' => 'RUB',
                 ),
-                'label' => 'Currency',
+                'label' => 'Валюта',
                 'constraints' => array(
                     new Choice(array(
                             'choices' => array('RUB'),
-                            'message' => 'Choose a valid currency.',
+                            'message' => 'Выберите корректную валюту',
                         )
                     )
                 ),
@@ -231,7 +234,7 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new Url()
                 ),
-                    'label' => 'Url for image',
+                    'label' => 'Url картинки',
                     'data' => $campaign->getImage()))
             // Please enter content of donation form box.
             ->add(
@@ -240,7 +243,7 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                    'label' => 'Please enter content of donation form box',
+                    'label' => 'Текст для платежной страницы',
                     'data' => $campaign->getFormIntro()))
             // Your donors must be agree with Terms & Conditions before donating
             ->add(
@@ -249,7 +252,7 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ),
-                    'label' => 'Your donors must be agree with Terms & Conditions before donating',
+                    'label' => 'Реквизиты для оферты',
                     'data' => $campaign->getFormTerms()))
 
             // Please enter content of top donors box.
@@ -271,7 +274,7 @@ class CampaignController extends Controller
                     'label' => 'Recent donors box content',
                     'data' => $campaign->getRecentIntro()))
 
-            ->add('save', 'submit', array('label' => 'Update Campaign'))
+            ->add('save', 'submit', array('label' => 'Обновить кампанию'))
             ->getForm();
 
         $form->handleRequest($request);
@@ -363,6 +366,138 @@ class CampaignController extends Controller
         return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
     }
 
+
+    /**
+     * @Template
+     */
+    public function reportAction()
+    {
+
+        $limit = 5;
+        $pageOnSidesLimit = 5;
+
+        $page = $this->getRequest()->query->get("page", 1);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+        $queryBuilder = $em->createQueryBuilder();
+
+        $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->where('c.user = ?1')
+            ->setParameter(1, $user);
+
+        $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
+
+        $paginator = new Paginator($queryBuilder, $fetchJoinCollection = false);
+
+        $totalItems = count($paginator);
+
+
+        $pageCount = (int)ceil($totalItems / $limit);
+
+        $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
+
+
+        return array(
+            'transactions' => $paginator,
+            'pages' => $pageNumberArray,
+            'page' => $page,
+        );
+    }
+
+    public function reportExportAction()
+    {
+
+        $recurrent = '';
+
+        $em = $this->getDoctrine()->getManager();
+
+        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+		if ($this->getRequest()->query->get("recurrent", 0) == 1) {
+			$recurrent = 'AND r.id is not null';
+		} else {
+			$recurrent = '';
+		}
+
+		/*$query = $em->createQuery("SELECT c.title, d.name, d.email, r.id as rid
+									FROM Vmeste\SaasBundle\Entity\Campaign c
+									INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (d.campaign_id = c.id)
+									INNER JOIN Vmeste\SaasBundle\Entity\Transaction t WITH (t.donor_id = d.id)
+									LEFT JOIN Vmeste\SaasBundle\Entity\Recurrent r WITH  
+									(r.donator_id = d.id and r.campaign_id = c.id)
+									WHERE c.user = :user $recurrent
+									ORDER BY c.title ASC")
+								->setParameter('user', $user);
+
+		$report = $query->getResult();
+		var_dump($report); exit;*/
+		
+        $queryBuilder = $em->createQueryBuilder();
+
+        $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d')
+        	->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donator_id = d.id and r.campaign_id = c.id');
+            
+        if ($this->getRequest()->query->get("recurrent", 0) == 1) {
+        	$queryBuilder
+        		->where('c.user = ?1')
+        		->andWhere('r.id is not null');
+			$recurrent = '-recurrent'; // FIXME Andrei
+		} else {
+			$queryBuilder->where('c.user = ?1');
+		}
+		$queryBuilder->setParameter(1, $user)->orderBy('c.title', 'ASC');
+
+        $report = $queryBuilder->getQuery()->getResult();
+//var_dump($report); exit;
+		if(!empty($recurrent)) $recurrent = '-recurrent';
+        $responseHeaders = array();
+
+        if (strstr($this->getRequest()->server->get('HTTP_USER_AGENT'), "MSIE")) {
+            $responseHeaders['pragma'] = 'public';
+            $responseHeaders['expires'] = '0';
+            $responseHeaders['cache-control'] = 'must-revalidate, post-check=0, pre-check=0';
+            $responseHeaders['content-type'] = 'application-download';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' 
+            											. $recurrent . '-' . date("Y-m-d") . '.csv"';
+            $responseHeaders['content-transfer-encoding'] = 'binary';
+        } else {
+            $responseHeaders['content-type'] = 'application-download';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' 
+            											. $recurrent . '-' . date("Y-m-d") . '.csv"';
+        }
+
+        $settings = $user->getSettings();
+        $userSettings = $settings[0];
+        $separator = $userSettings->getCsvColumnSeparator();
+
+        if ($separator == 'tab') $separator = "\t";
+
+        $output = '"Project"' . $separator . '"FIO"' . $separator . '"E-Mail"' . $separator . '"Recurrent"' . "\r\n";
+
+        foreach ($report as $transaction) {
+            $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
+                . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"';
+            if(!empty($transaction['rid'])) 
+            	$output .= '"1"';
+            else 
+            	$output .= '""' . "\r\n";
+        }
+
+        $response = new Response($output, 200, $responseHeaders);
+        $response->send();
+    }
+
     /**
      * @Template
      */
@@ -375,7 +510,10 @@ class CampaignController extends Controller
         $userSettings = $settingsCollection[0];
         $yandexKassa = $userSettings->getYandexKassa();
 
-        return array('campaign' => $campaign, 'yandexKassa' => $yandexKassa, 'customerNumber' => time(), 'noIDcustomerNumber' => time());
+        return array('campaign' => $campaign,
+            'yandexKassa' => $yandexKassa,
+            'customerNumber' => time(),
+            'noIDcustomerNumber' => time(), 'uniqueId' => time());
 
     }
 

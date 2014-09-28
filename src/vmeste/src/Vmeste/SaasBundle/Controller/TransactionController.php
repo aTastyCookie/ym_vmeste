@@ -9,195 +9,115 @@
 namespace Vmeste\SaasBundle\Controller;
 
 
-use Doctrine\Tests\Common\Annotations\Fixtures\Controller;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Vmeste\SaasBundle\Entity\Donor;
 use Vmeste\SaasBundle\Entity\Transaction;
+use Vmeste\SaasBundle\Util\PaginationUtils;
 
 class TransactionController extends Controller
 {
+
+    const PAYMENT_WRONG_HASH = "WRONG_HASH";
+    const PAYMENT_PENDING = "PENDING";
+    const PAYMENT_COMPLETED = "COMPLETED";
+    const PAYMENT_UNCOMPLETED = "UNCOMPLETED";
 
     public function yandexCheckAction(Request $request)
     {
 
         if (!$request->isMethod('POST')) return;
 
-
         $ykShopId = $request->request->get('shopId');
 
         $em = $this->getDoctrine()->getManager();
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
 
-        $ykShoppassword = $yandexKassa->getShoppw();
+        $ykShopPassword = $yandexKassa->getShoppw();
 
         $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
             . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
             . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
-            . $request->request->get('customerNumber') . ';' . $ykShoppassword);
+            . $request->request->get('customerNumber') . ';' . $ykShopPassword);
+
+        $paymentStatus = self::PAYMENT_PENDING;
 
         if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
-
-            //$shoppassword = $options['yandex_shoppw'];
-            //$hash = md5($_POST['action'] . ';' . $_POST['orderSumAmount'] . ';' . $_POST['orderSumCurrencyPaycash'] . ';' . $_POST['orderSumBankPaycash'] . ';' . $_POST['shopId'] . ';' . $_POST['invoiceId'] . ';' . $_POST['customerNumber'] . ';' . $shoppassword);
-            //if (strtolower($hash) != strtolower($_POST['md5'])) {
-
-            $code = 1;
-
-            print '<?xml version="1.0" encoding="UTF-8"?>';
-            print '<checkOrderResponse performedDatetime="' . $_POST['requestDatetime'] . '" code="' . $code . '"' . ' invoiceId="' . $_POST['invoiceId'] . '" shopId="' . $_POST['shopId'] . '"/>';
-
-            $postParamsArray = $this->get('request')->request->all();
-
-            $response = "";
-            foreach ($postParamsArray as $key => $value) {
-                $value = urlencode(stripslashes($value));
-                $response .= "&" . $key . "=" . $value;
-            }
-
-            $donor = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $request->request->get('noIDcustomerNumber')));
-
-            $paymentStatus = "Uncomplete";
-
-            $transaction = new Transaction();
-            $transaction->setDonor($donor); // $request->request->get('noIDcustomerNumber') == $item_number = intval($_POST['noIDcustomerNumber']);
-            $transaction->setPayerName($request->request->get('orderNumber')); //$payer_name = stripslashes($_POST['orderNumber']);
-            $transaction->setPayerEmail($request->request->get('orderNumber')); // $payer_email = stripslashes($_POST['orderNumber']);
-            $transaction->setGross($request->request->get('orderSumAmount')); // $gross_total = stripslashes($_POST['orderSumAmount']);
-            $transaction->setCurrency("RUB"); // $mc_currency = stripslashes("RUB");
-            $transaction->setPaymentStatus($paymentStatus); // $payment_status = "Uncomplete";
-            $transaction->setTransactionType("YMKassa: donate"); // $transaction_type = "donate";
-            $transaction->setTxnId($request->request->get('customerNumber')); // $txn_id = stripslashes($_POST['customerNumber']);
-            $transaction->setDetails($response);
-
-
-            $em->persist($transaction);
-
-            // TODO Find usage
-            // $seller_id = stripslashes($_POST['orderNumber']);
-            // $amount = stripslashes($_POST['orderSumAmount']);
-
-
-            if ($paymentStatus == "Completed") {
-
-                $statusActive = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_ACTIVE . "' WHERE id = '" . $item_number . "'");
-                $donor->setStatus($statusActive);
-                $em->persist($donor);
-                $em->flush();
-
-                // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-//                send_thanksgiving_email($tags, $vals, $payer_email);
-            } else {
-
-                $statusPending = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_PENDING . "' WHERE id = '" . $item_number . "'");
-                $donor->setStatus($statusPending);
-                $em->persist($donor);
-                $em->flush();
-
-                // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{payment_status}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, $payment_status, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-//                send_failed_email($tags, $vals, $payer_email);
-            }
-
-        } else {
             $code = 0;
-            print '<?xml version="1.0" encoding="UTF-8"?>';
-            print '<checkOrderResponse performedDatetime="' . $_POST['requestDatetime'] . '" code="' . $code . '"' . ' invoiceId="' . $_POST['invoiceId'] . '" shopId="' . $_POST['shopId'] . '"/>';
-
-
-            $postParamsArray = $this->get('request')->request->all();
-
-            $response = "";
-            foreach ($postParamsArray as $key => $value) {
-                $value = urlencode(stripslashes($value));
-                $response .= "&" . $key . "=" . $value;
-            }
-
-            $donor = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $request->request->get('noIDcustomerNumber')));
-
-            $paymentStatus = "Pending";
-
-            $transaction = new Transaction();
-            $transaction->setDonor($donor); // $request->request->get('noIDcustomerNumber') == $item_number = intval($_POST['noIDcustomerNumber']);
-            $transaction->setPayerName($donor->getName()); //$payer_name = stripslashes($_POST['orderNumber']);
-            $transaction->setPayerEmail($donor->getEmail()); // $payer_email = stripslashes($_POST['orderNumber']);
-            $transaction->setGross($request->request->get('orderSumAmount')); // $gross_total = stripslashes($_POST['orderSumAmount']);
-            $transaction->setCurrency("RUB"); // $mc_currency = stripslashes("RUB");
-            $transaction->setPaymentStatus($paymentStatus); // $payment_status = "Pending";
-            $transaction->setTransactionType("YMKassa: donate"); // $transaction_type = "donate";
-            $transaction->setTxnId($request->request->get('customerNumber')); // $txn_id = stripslashes($_POST['customerNumber']);
-            $transaction->setDetails($response);
-
-            $em->persist($transaction);
-
-            if ($paymentStatus == "Completed") {
-
-                $statusActive = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_ACTIVE . "' WHERE id = '" . $item_number . "'");
-                $donor->setStatus($statusActive);
-                $em->persist($donor);
-                $em->flush();
-
-                // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-//                send_thanksgiving_email($tags, $vals, $payer_email);
-
-
-            } else {
-
-
-                $statusPending = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_PENDING . "' WHERE id = '" . $item_number . "'");
-                $donor->setStatus($statusPending);
-                $em->persist($donor);
-                $em->flush();
-
-                // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{payment_status}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, $payment_status, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-            }
-
+        } else {
+            $paymentStatus = self::PAYMENT_WRONG_HASH;
+            $code = 1;
         }
 
-        /*$response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
-        $response->send();*/
+        $postParamsArray = $this->get('request')->request->all();
+
+        $requestDetails = $this->createRequestString($postParamsArray);
+
+        $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
+
+        $donor = new Donor();
+        $donor->setName($request->request->get('customerName', $request->request->get('orderNumber')));
+        $donor->setEmail($request->request->get('customerEmail', ""));
+        $donor->setDetails($request->request->get('customerComment', ""));
+        $donor->setCurrency("RUB");
+        $donor->setStatus($status);
+
+        $em->persist($donor);
+
+        $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+        $transaction = new Transaction();
+        $transaction->setCampaign($campaign);
+        $transaction->setDonor($donor);
+        $transaction->setInvoiceId($request->request->get('invoiceId'));
+        $transaction->setGross($request->request->get('orderSumAmount'));
+        $transaction->setCurrency("RUB");
+        $transaction->setPaymentStatus($paymentStatus);
+        $transaction->setTransactionType("YMKassa: donate");
+        $transaction->setTxnId($request->request->get('customerNumber'));
+        $transaction->setDetails($requestDetails);
+
+        $em->persist($transaction);
+
+        $em->flush();
+
+        $xml = new \DOMDocument('1.0', 'utf-8');
+        $checkOrderResponse = $xml->createElement('checkOrderResponse');
+        $checkOrderResponse->setAttribute('performedDatetime', $request->request->get('requestDatetime'));
+        $checkOrderResponse->setAttribute('code', $code);
+        $checkOrderResponse->setAttribute('invoiceId', $request->request->get('invoiceId'));
+        $checkOrderResponse->setAttribute('shopId', $request->request->get('shopId'));
+        $xml->appendChild($checkOrderResponse);
+        $output = $xml->saveXML();
+
+        $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
+        $response->send();
+
     }
 
     public function yandexPaymentAvisoAction(Request $request)
     {
 
-
         if (!$request->isMethod('POST')) return;
 
-        // XML-related routine
-        $xml = new \DOMDocument('1.0', 'utf-8');
-        $paymentAvisoResponse = $xml->createElement('paymentAvisoResponse');
-        $paymentAvisoResponse->setAttribute('performedDatetime', date('Y-m-d\TH:i:s.000P', time()));
-        $paymentAvisoResponse->setAttribute('shopId', $request->request->get('shopId'));
-        $paymentAvisoResponse->setAttribute('invoiceId', $request->request->get('invoiceId'));
+        $code = 0;
+        $message = "Ok";
+
+        $paymentStatus = self::PAYMENT_COMPLETED;
+        $em = $this->getDoctrine()->getManager();
 
         $ykShopId = $request->request->get('shopId');
-
-        $em = $this->getDoctrine()->getManager();
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
 
-        $ykShoppassword = $yandexKassa->getShoppw();
+        $ykShopPassword = $yandexKassa->getShoppw();
 
+        if ($ykShopPassword) {
 
-        $response = $item_number = $payer_name = $payer_email = $campaign_title = "";
-        $gross_total = $txn_id = $amount = 0;
-
-
-        $mc_currency = "RUB";
-        $transaction_type = "donate";
-
-        foreach ($_POST as $key => $value) {
-            $value = urlencode(stripslashes($value));
-            $response .= "&" . $key . "=" . $value;
-        }
-
-        if ($ykShoppassword) {
             $md5 = md5(
                 $request->request->get('action') . ';' .
                 $request->request->get('orderSumAmount') . ';' .
@@ -206,45 +126,59 @@ class TransactionController extends Controller
                 $request->request->get('shopId') . ';' .
                 $request->request->get('invoiceId') . ';' .
                 $request->request->get('customerNumber') . ';' .
-                $ykShoppassword . ';');
-
-            $item_number = intval($request->request->get('noIDcustomerNumber'));
-
-            $donor = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $request->request->get('noIDcustomerNumber')));
-
-            if ($donor != null) {
-                $payer_name = $donor->getName();
-                $payer_email = $donor->getEmail();
-            }
-
-            $seller_id = explode("-", $request->request->get('orderNumber'));
-            $seller_id = $seller_id[0];
-
-            $txn_id = stripslashes($request->request->get('customerNumber'));
-            $gross_total = stripslashes($request->request->get('orderSumAmount'));
-            $amount = stripslashes($request->request->get('orderSumAmount'));
-
+                $ykShopPassword . ';');
 
             if (strcmp(strtolower($md5), strtolower($request->request->get('md5'))) === 0) {
 
-                $paymentAvisoResponse->setAttribute('code', 0);
+                $invoiceId = $request->request->get('invoiceId');
+                $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
 
-                $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $seller_id));
+                if ($transaction != null) {
+                    $transaction->setPaymentStatus($paymentStatus);
 
-                if ($campaign != null) $campaign_title = $campaign->getTitle();
+                    $donor = $transaction->getDonor();
+                    $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
+                    $donor->setStatus($status);
 
-                if ($request->request->get('rebillingOn', false)) {
-                    // Add the first record about rebilling
+                    $em->persist($transaction);
+                    $em->persist($donor);
+                    $em->flush();
 
-                    if ($donor) {
-                        // FIXME Andrei
-                        //$rebilling = new Recurrent;
+                    /**
+                     *  Rebilling
+                     */
+                    if ($request->request->get('rebillingOn', false)) {
 
-                        if ($request->request->get('rebillingOn') == false) {
+                        $payer_name = $donor->getName();
+                        $payer_email = $donor->getEmail();
+
+                        $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+                        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+                        if ($campaign != null)
+                            $campaign_title = $campaign->getTitle();
+
+
+                        $txn_id = stripslashes($request->request->get('customerNumber'));
+                        $gross_total = stripslashes($request->request->get('orderSumAmount'));
+                        $amount = stripslashes($request->request->get('orderSumAmount'));
+
+                        $payer_name = $payer_email = $campaign_title = "";
+                        $gross_total = $txn_id = $amount = 0;
+
+
+                        $mc_currency = "RUB";
+                        $transaction_type = "donate";
+
+                        if ($donor) {
                             // FIXME Andrei
-                            //$rebilling->deleteRebilling($seller_id, $donor->getId());
-                        } else {
-                            // FIXME Andrei
+                            //$rebilling = new Recurrent;
+
+                            if ($request->request->get('rebillingOn') == false) {
+                                // FIXME Andrei
+                                //$rebilling->deleteRebilling($seller_id, $donor->getId());
+                            } else {
+                                // FIXME Andrei
 //                            $params = array(
 //                                'donor_id' => $donor->getId(),
 //                                'campaign_id' => $seller_id,
@@ -266,67 +200,194 @@ class TransactionController extends Controller
 //                            $rebilling->recurrent->email = $payer_email;
 //                            $rebilling->recurrent->title = $campaign_title;
 //                            $rebilling->notify_about_subscription();
+                            }
                         }
-                        $payment_status = "Completed";
+                    } else {
+                        $message = \Swift_Message::newInstance()
+                            ->setSubject('Password recover on Vmeste')
+                            ->setFrom($emailFrom = $this->container->getParameter('pass.recover.email.from'))
+                            ->setTo($donor->getEmail())
+                            ->setBody(
+                                $this->renderView(
+                                    'VmesteSaasBundle:Email:successfullPayment.html.twig',
+                                    array(
+                                        'name' => $donor->getName(),
+                                        'amount' => $transaction->getAmount(),
+                                        'yandexMoneyPage' =>
+                                            $this->getRequest()->getHost() . "/"
+                                            . $this->generateUrl('payment_page')
+                                            . "/" . $transaction->getCampaign()->getId())
+                                )
+                            );
+                        $this->get('mailer')->send($message);
                     }
+
+                } else {
+                    $logger = $this->get('logger');
+                    $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
+                    $code = 200;
+                    $message = "Unknown transaction";
                 }
             } else {
-                $paymentAvisoResponse->setAttribute('code', 1);
-                $paymentAvisoResponse->setAttribute('message', 'Bad md5');
-                $payment_status = "Uncompleted";
+                $code = 1;
+                $message = 'Bad md5';
             }
         } else {
-            $paymentAvisoResponse->setAttribute('code', 200);
-            $paymentAvisoResponse->setAttribute('message', 'Bad shopPassword');
-            $payment_status = "Uncompleted";
+            $code = 200;
+            $message = 'Bad shopPassword';
         }
 
-
-        $transaction = new Transaction();
-        $transaction->setDonor($donor); // $request->request->get('noIDcustomerNumber') == $item_number = intval($_POST['noIDcustomerNumber']);
-        $transaction->setPayerName($donor->getName()); //$payer_name = stripslashes($_POST['orderNumber']);
-        $transaction->setPayerEmail($donor->getEmail()); // $payer_email = stripslashes($_POST['orderNumber']);
-        $transaction->setGross($request->request->get('orderSumAmount')); // $gross_total = stripslashes($_POST['orderSumAmount']);
-        $transaction->setCurrency("RUB"); // $mc_currency = stripslashes("RUB");
-        $transaction->setPaymentStatus($payment_status); // $payment_status = "Pending";
-        $transaction->setTransactionType("YMKassa: donate"); // $transaction_type = "donate";
-        $transaction->setTxnId($request->request->get('customerNumber')); // $txn_id = stripslashes($_POST['customerNumber']);
-        $transaction->setDetails($response);
-
-        $em->persist($transaction);
-
-        if ($payment_status == "Completed") {
-
-            $statusActive = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_ACTIVE . "' WHERE id = '" . $item_number . "'");
-            $donor->setStatus($statusActive);
-            $em->persist($donor);
-            $em->flush();
-
-            // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-//                send_thanksgiving_email($tags, $vals, $payer_email);
-
-
-        } else {
-
-
-            $statusPending = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING')); // $icdb->query("UPDATE " . $icdb->prefix . "donors SET status = '" . STATUS_PENDING . "' WHERE id = '" . $item_number . "'");
-            $donor->setStatus($statusPending);
-            $em->persist($donor);
-            $em->flush();
-
-            // TODO Send email
-//                $tags = array("{payer_name}", "{payer_email}", "{gross}", "{currency}", "{campaign_title}", "{payment_status}", "{transaction_date}", "{gateway}");
-//                $vals = array($payer_name, $payer_email, $gross_total, $mc_currency, $campaign_title, $payment_status, date("Y-m-d H:i:s") . " (server time)", "YMKassa");
-//                send_failed_email($tags, $vals, $payer_email);
-        }
-
+        $xml = new \DOMDocument('1.0', 'utf-8');
+        $paymentAvisoResponse = $xml->createElement('paymentAvisoResponse');
+        $paymentAvisoResponse->setAttribute('performedDatetime', date('Y-m-d\TH:i:s.000P', time()));
+        $paymentAvisoResponse->setAttribute('shopId', $request->request->get('shopId'));
+        $paymentAvisoResponse->setAttribute('invoiceId', $request->request->get('invoiceId'));
+        $paymentAvisoResponse->setAttribute('code', $code);
+        $paymentAvisoResponse->setAttribute('message', $message);
         $xml->appendChild($paymentAvisoResponse);
         $output = $xml->saveXML();
 
-
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
         $response->send();
+    }
+
+	/**
+	  *@Template
+	*/
+    public function homeAction()
+    {
+        return array('data' => true);
+    }
+    
+    /**
+	  *@Template
+	*/
+    public function unsubscribeAction()
+    {
+		return array('data' => true);
+	}
+
+    /**
+     * @Template
+     */
+    public function reportAction()
+    {
+
+        $limit = 2;
+        $pageOnSidesLimit = 2;
+
+        $page = $this->getRequest()->query->get("page", 1);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+        $queryBuilder = $em->createQueryBuilder();
+
+        $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->where('c.user = ?1')
+            ->setParameter(1, $user);
+
+        $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
+
+        $paginator = new Paginator($queryBuilder, $fetchJoinCollection = false);
+
+        $totalItems = count($paginator);
+
+
+        $pageCount = (int)ceil($totalItems / $limit);
+
+        $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
+
+
+        return array(
+            'transactions' => $paginator,
+            'pages' => $pageNumberArray,
+            'page' => $page,
+        );
+    }
+
+    public function reportExportAction()
+    {
+
+        $recurrent = '';
+
+        if ($this->getRequest()->query->get("reccurent", 0) == 1)
+            $reccurent = 'your-value'; // FIXME Andrei
+
+        $em = $this->getDoctrine()->getManager();
+
+        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+        $queryBuilder = $em->createQueryBuilder();
+
+        $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->where('c.user = ?1')
+            ->setParameter(1, $user);
+
+        $report = $queryBuilder->getQuery()->getResult();
+
+        $responseHeaders = array();
+
+        if (strstr($this->getRequest()->server->get('HTTP_USER_AGENT'), "MSIE")) {
+            $responseHeaders['pragma'] = 'public';
+            $responseHeaders['expires'] = '0';
+            $responseHeaders['cache-control'] = 'must-revalidate, post-check=0, pre-check=0';
+            $responseHeaders['content-type'] = 'application-download';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' . $recurrent . '.csv"';
+            $responseHeaders['content-transfer-encoding'] = 'binary';
+        } else {
+            $responseHeaders['content-type'] = 'application-download';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' . $recurrent . '.csv"';
+        }
+
+        $settings = $user->getSettings();
+        $userSettings = $settings[0];
+        $separator = $userSettings->getCsvColumnSeparator();
+
+        if ($separator == 'tab') $separator = "\t";
+
+        $output = '"Project"' . $separator . '"FIO"' . $separator . '"E-Mail"' . $separator . '"Recurrent"' . "\r\n";
+
+        foreach ($report as $transaction) {
+            $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
+                . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . "\r\n";
+            //. str_replace('"', "", $row["recurrent"]) . '"' . "\r\n"; // FIXME Andrei
+        }
+
+        $response = new Response($output, 200, $responseHeaders);
+        $response->send();
+    }
+
+    /**
+     * @param $postParamsArray
+     * @return string
+     */
+    private function createRequestString($postParamsArray)
+    {
+        $response = "";
+        foreach ($postParamsArray as $key => $value) {
+            $value = urlencode(stripslashes($value));
+            $response .= "&" . $key . "=" . $value;
+        }
+        return $response;
+    }
+
+    /**
+     * @param $orderNumber
+     * @return mixed
+     */
+    private function getCampaignId($orderNumber)
+    {
+        $orderNumberExploded = explode("-", $orderNumber);
+        $campaignId = $orderNumberExploded[0];
+        return $campaignId;
     }
 } 

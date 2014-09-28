@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h2>Отчеты</h2>
+
+    <div class="row">
+        <div class="span12">
+            
+        </div>
+    </div>
+    <table class="table table-striped">
+        <tr>
+            <th>Кампания</th>
+            <th>Имя и фамилия жертвователя</th>
+            <th style="width: 100px; text-align: right;">Email</th>
+            <th style="width: 100px; text-align: right;">Пожертвовано</th>
+            <th style="width: 120px;">Дата создания</th>
+            <th style="width: 80px;">Действия</th>
+        </tr>
+
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.campaign.title }}</td>
+                <td>{{ transaction.donor.name }}</td>
+                <td>{{ transaction.donor.email }}</td>
+                <td>{{ transaction.gross }} {{ transaction.currency }}</td>
+                <td>{{ transaction.changed }}</td>
+                <td></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for pageId in pages %}
+        <a href="{{ path('customer_campaign', { 'page': pageId }) }}">{{ pageId }}</a>
+    {% endfor %}
+
+    <p>
+        Отчет по донорам: <a href="{{ path('campaign_report_export') }}" target="_blank">Все</a> или <a href="{{ path('campaign_report_export') }}?recurrent=1">Подписчики на ежемесячные пожертвования</a>
+    </p>
+
+
+{% endblock %}

@@ -61,13 +61,9 @@ class Campaign {
     protected $recentIntro;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Donor")
-     * @ORM\JoinTable(name="campaigns_donors",
-     *      joinColumns={@ORM\JoinColumn(name="donor_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="campaign_id", referencedColumnName="id", unique=true)}
-     *      )
+     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="campaign")
      **/
-    protected $donors;
+    protected $transactions;
 
     /**
      * @ORM\Column(type="decimal", name="min_amount", scale=2, precision=8)
@@ -97,9 +93,8 @@ class Campaign {
 
     public function __construct()
     {
-        $this->donors = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->transactions = new \Doctrine\Common\Collections\ArrayCollection();
     }
-
 
     /**
      * @return mixed
@@ -368,6 +363,39 @@ class Campaign {
     }
 
     /**
+     * Add transactions
+     *
+     * @param \Vmeste\SaasBundle\Entity\Transaction $transactions
+     * @return Campaign
+     */
+    public function addTransaction(\Vmeste\SaasBundle\Entity\Transaction $transactions)
+    {
+        $this->transactions[] = $transactions;
+
+        return $this;
+    }
+
+    /**
+     * Remove transactions
+     *
+     * @param \Vmeste\SaasBundle\Entity\Transaction $transactions
+     */
+    public function removeTransaction(\Vmeste\SaasBundle\Entity\Transaction $transactions)
+    {
+        $this->transactions->removeElement($transactions);
+    }
+
+    /**
+     * Get transactions
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getTransactions()
+    {
+        return $this->transactions;
+    }
+
+    /**
      * Set status
      *
      * @param \Vmeste\SaasBundle\Entity\Status $status
@@ -388,38 +416,5 @@ class Campaign {
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * Add donors
-     *
-     * @param \Vmeste\SaasBundle\Entity\Donor $donors
-     * @return Campaign
-     */
-    public function addDonor(\Vmeste\SaasBundle\Entity\Donor $donors)
-    {
-        $this->donors[] = $donors;
-
-        return $this;
-    }
-
-    /**
-     * Remove donors
-     *
-     * @param \Vmeste\SaasBundle\Entity\Donor $donors
-     */
-    public function removeDonor(\Vmeste\SaasBundle\Entity\Donor $donors)
-    {
-        $this->donors->removeElement($donors);
-    }
-
-    /**
-     * Get donors
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getDonors()
-    {
-        return $this->donors;
     }
 }

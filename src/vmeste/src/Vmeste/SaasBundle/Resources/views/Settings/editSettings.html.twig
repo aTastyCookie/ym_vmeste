@@ -2,81 +2,112 @@
 
 {% block body %}
 
-    <h2>Settings</h2>
+    <h2>Настройки</h2>
 
-    <h3>Email settings</h3>
+    <h3>Основные настройки</h3>
     <div>
         <form action="{{ path('update_email_settings') }}" method="post">
             {{ email_setting_errors | raw }}
-            <ul>
-                <li><input type="email" name="notification_email" placeholder="no-reply@your.domain"
-                           value="{{ notification_email }}"></li>
-                <li><input type="text" name="sender_name" placeholder="John Doe" value="{{ sender_name }}"></li>
-                <li><input type="email" name="sender_email" placeholder="your.email@your.domain"
-                           value="{{ sender_email }}"></li>
-                <li>
-                    <button type="submit" id="form_save" name="save">Save email settings</button>
-                </li>
-            </ul>
+            <p>
+                <input type="email" name="notification_email" placeholder="no-reply@your.domain"
+                       value="{{ notification_email }}"> <br/>
+                Ваш e-mail для получения уведомлений о поступивших пожертвованиях </p>
+
+            <p>
+                <input type="text" name="sender_name" placeholder="John Doe" value="{{ sender_name }}"><br/>
+                Ваше имя, которое жертвователь увидит в письме-уведомлении об успешно сделанном пожертвовании.
+            </p>
+
+            <p>
+                <input type="email" name="sender_email" placeholder="your.email@your.domain"
+                       value="{{ sender_email }}"><br/>
+                Ваш e-mail, адрес которого жертвователь увидит в письме-уведомлении об успешно сделанном пожертвовании.
+                <br/>
+                Мы отправляем это письмо с благодарностью от вашего имени.
+            </p>
+
+            <p>
+                <select id="csv_separator" name="csv_separator">
+                    <option value=";" {{ csv_separator == ';' ? 'selected' : '' }}>Semicolon - ";"</option>
+                    <option value=","  {{ csv_separator == ',' ? 'selected' : '' }}>Comma - ","</option>
+                    <option value="tab"  {{ csv_separator == 'tab' ? 'selected' : '' }}>Tab</option>
+                </select>
+            </p>
+            <p>
+                <button type="submit" id="form_save" name="save">Сохранить основные настройки</button>
+            </p>
         </form>
     </div>
 
-    <h3>Yandex.Kassa Settings</h3>
+    <h3>Настройки Кассы от Яндекс.Деньги</h3>
     <div>
+        <p>Укажите, пожалуйста, shopId, scid и shoppassword, выданные вам при заключении договора с Яндекс.Деньги.
+            Если у вас еще нет договора с Яндекс.Деньги, подайте заявку на заключение договора здесь _ссылка_.
+        </p>
+
         <form action="{{ path('update_yk_settings') }}" method="post">
-            <ul>
-                <li><label>shopId:
-                        <input type="text" name="yandex_shopid" value="{{ shopid }}">
-                    </label></li>
-                <li><label>scid:
-                        <input type="text" name="yandex_scid" value="{{ scid }}">
-                    </label></li>
-                <li><label>shoppw:
-                        <input type="text" name="yandex_shoppw" value="{{ shoppw }}">
-                    </label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_pt_pc" {{ pc ? 'checked' : '' }}>
-                        PC</label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_pt_ac" {{ ac ? 'checked' : '' }}>
-                        AC</label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_pt_wm" {{ wm ? 'checked' : '' }}>
-                        WM</label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_pt_mc" {{ mc ? 'checked' : '' }}>
-                        MC</label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_pt_gp" {{ gp ? 'checked' : '' }}>
-                        GP</label></li>
-                <li><label>
-                        <input type="checkbox" name="yandex_sandbox" {{ sandbox ? 'checked' : '' }}>
-                        Sandbox mode</label></li>
-                <li>
-                    <button type="submit" id="form_save" name="save">Save email settings</button>
-                </li>
-            </ul>
+            <p><label>shopId:
+                    <input type="text" name="yandex_shopid" value="{{ shopid }}">
+                </label></p>
+
+            <p><label>scid:
+                    <input type="text" name="yandex_scid" value="{{ scid }}">
+                </label></p>
+
+            <p><label>shoppw:
+                    <input type="text" name="yandex_shoppw" value="{{ shoppw }}">
+                </label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_pt_pc" {{ pc ? 'checked' : '' }}>
+                    PC</label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_pt_ac" {{ ac ? 'checked' : '' }}>
+                    AC</label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_pt_wm" {{ wm ? 'checked' : '' }}>
+                    WM</label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_pt_mc" {{ mc ? 'checked' : '' }}>
+                    MC</label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_pt_gp" {{ gp ? 'checked' : '' }}>
+                    GP</label></p>
+
+            <p><label>
+                    <input type="checkbox" name="yandex_sandbox" {{ sandbox ? 'checked' : '' }}>
+                    Sandbox режим</label></p>
+
+            <p>
+                <button type="submit" id="form_save" name="save">Сохранить настройки Кассы</button>
+            </p>
         </form>
     </div>
 
-    <h3>User settings</h3>
+    <h3>Настройки доступа</h3>
     <div>
         <form action="{{ path('update_customer_password') }}" method="post">
             {{ password_setting_errors | raw }}
-            <ul>
-                <li><label>Old password:
-                        <input type="password" name="old_password">
-                    </label></li>
-                <li><label>New password:
-                        <input type="password" name="new_password">
-                    </label></li>
-                <li><label>Repeat new password:
-                        <input type="password" name="new_password_repeat">
-                    </label></li>
-                <li>
-                    <button type="submit" id="form_save" name="save">Save email settings</button>
-                </li>
-            </ul>
+
+            <p><label>Старый пароль:
+                    <input type="password" name="old_password">
+                </label></p>
+
+            <p><label>Новый пароль:
+                    <input type="password" name="new_password">
+                </label></p>
+
+            <p><label>Повторите новый пароль:
+                    <input type="password" name="new_password_repeat">
+                </label></p>
+
+            <p>
+                <button type="submit" id="form_save" name="save">Сохранить настройки доступа</button>
+            </p>
         </form>
     </div>
 

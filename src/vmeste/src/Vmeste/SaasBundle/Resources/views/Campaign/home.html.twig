@@ -20,13 +20,13 @@
     {% endif %}
     <table class="table table-striped">
         <tr>
-            <th>Title</th>
-            <th>Shortcode</th>
+            <th>Название</th>
+            <th>Ссылка и код</th>
             <th style="width: 100px; text-align: right;">Отчеты</th>
-            <th style="width: 100px; text-align: right;">Donated</th>
-            <th style="width: 120px;">Registered</th>
-            <th>Status</th>
-            <th style="width: 80px;">Actions</th>
+            <th style="width: 100px; text-align: right;">Пожертвовано</th>
+            <th style="width: 120px;">Дата создания</th>
+            <th>Статус</th>
+            <th style="width: 80px;">Действия</th>
         </tr>
 
         {% for campaign in campaigns %}
@@ -45,21 +45,21 @@
                 <td>{{ campaign.status.name }}</td>
                 <td>
                         <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">
-                        	<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Edit record" border="0">
+                        	<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Редактировать" border="0">
                         </a>
                      
 
                         {% if campaign.status.status != 'ON_MODERATION' %}
                             {% if campaign.status.status == 'BLOCKED' %}
-                            <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Activate</a>   
+                            <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Активировать</a>   
                             {% else %}
                             <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
-                            	<img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Block record" border="0">
+                            	<img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
                             </a>
                             {% endif %}
                         {% endif %}
                             <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
-                            	<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Delete record" border="0">
+                            	<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Удалить" border="0">
                             </a>
                         
                 </td>
