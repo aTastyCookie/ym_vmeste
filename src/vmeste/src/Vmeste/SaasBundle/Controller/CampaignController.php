@@ -157,13 +157,13 @@ class CampaignController extends Controller
             ), 'label' => 'Минимальный взнос'))
             ->add('currency', 'choice', array(
                 'choices' => array(
-                    'RUR' => 'RUR',
+                    'RUB' => 'RUB',
                 ),
                 'label' => 'Валюта',
                 'constraints' => array(
                     new Choice(array(
                             'choices' => array('RUB'),
-                            'message' => 'Choose a valid currency.',
+                            'message' => 'Выберите корректную валюту',
                         )
                     )
                 )))
@@ -260,7 +260,7 @@ class CampaignController extends Controller
             ->add(
                 'currency', 'choice', array(
                 'choices' => array(
-                    'RUR' => 'RUR',
+                    'RUB' => 'RUB',
                 ),
                 'label' => 'Валюта',
                 'constraints' => array(
