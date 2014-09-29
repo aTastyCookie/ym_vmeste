@@ -54,26 +54,34 @@ customer_home:
     defaults: { _controller: VmesteSaasBundle:Customer:home }
 
 customer_campaign:
-    path: /campaign/home
+    path: /customer/campaign/home
     defaults: { _controller: VmesteSaasBundle:Campaign:home }
 
-customer_campaign_create:
+admin_campaign_show_all:
+    path: /campaign/showall
+    defaults: { _controller: VmesteSaasBundle:Campaign:showAll }
+
+admin_campaign_create:
     path: /campaign/create
     defaults: { _controller: VmesteSaasBundle:Campaign:create }
 
-customer_campaign_edit:
+admin_campaign_edit:
     path: /campaign/edit
     defaults: { _controller: VmesteSaasBundle:Campaign:edit }
 
-customer_campaign_activate:
+admin_campaign_activate:
     path: /campaign/activate
     defaults: { _controller: VmesteSaasBundle:Campaign:activate }
 
-customer_campaign_block:
+admin_campaign_block:
     path: /campaign/block
     defaults: { _controller: VmesteSaasBundle:Campaign:block }
 
 customer_campaign_delete:
+    path: /campaign/delete
+    defaults: { _controller: VmesteSaasBundle:Campaign:delete }
+
+admin_campaign_delete:
     path: /campaign/delete
     defaults: { _controller: VmesteSaasBundle:Campaign:delete }
 
@@ -102,11 +110,11 @@ transaction_unsubscribe:
     defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
 
 transaction_report:
-    path: /customer/transaction/report
+    path: /transaction/report
     defaults:  { _controller: VmesteSaasBundle:Transaction:report }
 
 transaction_report_export:
-    path: /customer/transaction/report/export
+    path: /transaction/report/export
     defaults:  { _controller: VmesteSaasBundle:Transaction:reportExport }
 
 campaign_report:

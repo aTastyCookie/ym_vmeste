@@ -42,7 +42,7 @@ class User implements UserInterface, \Serializable
     private $username;
 
     /**
-     * @ORM\Column(type="string", length=64)
+     * @ORM\Column(type="string")
      */
     protected $password;
 
@@ -176,7 +176,7 @@ class User implements UserInterface, \Serializable
      */
     public function getSalt()
     {
-        // TODO: Implement getSalt() method.
+        return '';
     }
 
     /**

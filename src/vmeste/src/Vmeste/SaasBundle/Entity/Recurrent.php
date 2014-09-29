@@ -23,11 +23,12 @@ class Recurrent
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
+    
     /**
-     * @ORM\Column(name="donator_id", type="integer")
-     */
-    private $donator_id;
+     * @ORM\OneToOne(targetEntity="Donor", inversedBy="recurrent")
+     * @ORM\JoinColumn(name="donor_id", referencedColumnName="id")
+     **/
+    private $donor;
     
     /**
      * @ORM\Column(name="campaign_id", type="integer")
@@ -397,5 +398,51 @@ class Recurrent
     public function getSuccessDate()
     {
         return $this->success_date;
+    }
+
+    /**
+     * Set donor_id
+     *
+     * @param integer $donorId
+     * @return Recurrent
+     */
+    public function setDonorId($donorId)
+    {
+        $this->donor_id = $donorId;
+    
+        return $this;
+    }
+
+    /**
+     * Get donor_id
+     *
+     * @return integer 
+     */
+    public function getDonorId()
+    {
+        return $this->donor_id;
+    }
+
+    /**
+     * Set donor
+     *
+     * @param \Vmeste\SaasBundle\Entity\Donor $donor
+     * @return Recurrent
+     */
+    public function setDonor(\Vmeste\SaasBundle\Entity\Donor $donor = null)
+    {
+        $this->donor = $donor;
+    
+        return $this;
+    }
+
+    /**
+     * Get donor
+     *
+     * @return \Vmeste\SaasBundle\Entity\Donor 
+     */
+    public function getDonor()
+    {
+        return $this->donor;
     }
 }

@@ -25,14 +25,14 @@
                 <br/>
                 Мы отправляем это письмо с благодарностью от вашего имени.
             </p>
-
-            <p>
+<input type="hidden" name="csv_separator" value=";"/>
+            <!--<p>
                 <select id="csv_separator" name="csv_separator">
                     <option value=";" {{ csv_separator == ';' ? 'selected' : '' }}>Semicolon - ";"</option>
                     <option value=","  {{ csv_separator == ',' ? 'selected' : '' }}>Comma - ","</option>
                     <option value="tab"  {{ csv_separator == 'tab' ? 'selected' : '' }}>Tab</option>
                 </select>
-            </p>
+            </p>-->
             <p>
                 <button type="submit" id="form_save" name="save">Сохранить основные настройки</button>
             </p>

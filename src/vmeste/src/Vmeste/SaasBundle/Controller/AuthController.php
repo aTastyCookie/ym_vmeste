@@ -289,7 +289,11 @@ class AuthController extends Controller
 
                     if ($user != null) {
 
-                        $user->setPassword(Hash::generatePasswordHash($password));
+                        $factory = $this->get('security.encoder_factory');
+                        $encoder = $factory->getEncoder($user);
+                        $password = $encoder->encodePassword($password, $user->getSalt());
+
+                        $user->setPassword($password);
                         $recoverToken->setActive(0);
 
                         $em->persist($user);

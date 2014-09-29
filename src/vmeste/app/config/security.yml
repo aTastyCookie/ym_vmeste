@@ -1,6 +1,9 @@
 security:
     encoders:
-        Vmeste\SaasBundle\Entity\User: plaintext
+       Vmeste\SaasBundle\Entity\User:
+          algorithm: sha512
+          encode_as_base64: false
+          iterations: 1
 
     role_hierarchy:
         ROLE_ADMIN:
@@ -30,6 +33,7 @@ security:
                 path:   logout
                 #target: /
                 success_handler: logout_handler
+                invalidate_session: true
 
             anonymous: true
             #http_basic:
@@ -44,6 +48,7 @@ security:
          - { path: ^/payment, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/logout, roles: { ROLE_USER, ROLE_ADMIN } }
          - { path: ^/customer, role: ROLE_USER }
-         - { path: ^/campaign, role: ROLE_USER }
+         - { path: ^/campaign, role: ROLE_ADMIN }
          - { path: ^/admin, role: ROLE_ADMIN }
+         - { path: ^/transaction, role: ROLE_ADMIN }
         #- { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }

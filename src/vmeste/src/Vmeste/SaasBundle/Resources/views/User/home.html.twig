@@ -2,56 +2,60 @@
 
 {% block body %}
 
-    <a href="{{ path('admin_user_create') }}">New User</a>
+    <h2>Пользователи</h2>
 
-    <h2>Users list</h2>
+	<div class="row">
+		<div class="span12">
+			<div class="btn-group pull-right">
+	    		<a class="btn btn-primary" href="{{ path('admin_user_create') }}">Новый пользователь</a>
+			</div>
+		</div>
+	</div>
 
     {% if user_created %}
         <div>{{ user_created }}</div>
     {% endif %}
-    <table>
+    <table width="100%">
         <tr>
-            <th>Username</th>
+            <!--<th>Username</th>-->
             <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Changed</th>
-            <th>Actions</th>
+            <th>Роль</th>
+            <th>Статус</th>
+            <th>Создан</th>
+            <th>Изменен</th>
+            <th>Действия</th>
         </tr>
 
         {% for user in users %}
             <tr>
-                <td>{{ user.username }}</td>
+                <!--<td>{{ user.username }}</td>-->
                 <td>{{ user.email }}</td>
-                <td>
-                    <ul>
+                <td align="center">
                         {% for role in user.roles %}
-                            <li>{{ role.name }}</li>
+                            <p>{{ role.name }}</p>
                         {% endfor %}
-                    </ul>
                 </td>
-                <td>
-                    <ul>
+                <td align="center">
                         {% for status in user.statuses %}
-                            <li>{{ status.name }}</li>
+                            <p>{{ status.name }}</p>
                         {% endfor %}
-                    </ul>
                 </td>
-                <td>{{ user.created|date("d/m/Y") }}</td>
-                <td>{{ user.changed|date("d/m/Y") }}</td>
-                <td>
-                    <ul>
-                        <li><a href="{{ path('admin_user_edit', { 'id':user.id, 'page': page }) }}">Edit</a></li>
-                        {% for status in user.statuses %}
-                            {% if status.status == 'BLOCKED' %}
-                                <li><a href="{{ path('admin_user_activate', { 'id':user.id, 'page': page  }) }}">Activate</a></li>
-                            {% else %}
-                                <li><a href="{{ path('admin_user_block', { 'id':user.id, 'page': page  }) }}">Block</a></li>
-                            {% endif %}
-                        {% endfor %}
-                        {#<li><a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">Delete</a></li>#}
-                    </ul>
+                <td align="center">{{ user.created|date("d/m/Y") }}</td>
+                <td align="center">{{ user.changed|date("d/m/Y") }}</td>
+                <td align="center">
+                    <a href="{{ path('admin_user_edit', { 'id':user.id, 'page': page }) }}">
+						<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" title="Редактировать" alt="Редактировать" border="0">
+					</a>
+					{% for status in user.statuses %}
+						{% if status.status == 'BLOCKED' %}
+							<a href="{{ path('admin_user_activate', { 'id':user.id, 'page': page  }) }}">Активировать</a>
+						{% else %}
+							<a href="{{ path('admin_user_block', { 'id':user.id, 'page': page  }) }}"><img src="{{ asset('bundles/saasbundle/img/block.png') }}" title="Заблокировать" alt="Заблокировать" border="0"></a>
+						{% endif %}
+					{% endfor %}
+					{#<a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
+						<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" title="Удалить" alt="Удалить" border="0">
+					</a>#}
                 </td>
             </tr>
         {% endfor %}

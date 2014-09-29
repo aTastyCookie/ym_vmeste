@@ -4,19 +4,6 @@
 
     <h2>Transactions</h2>
 
-    <div class="row">
-        <div class="span12">
-            <div class="btn-group pull-right">
-                <a class="btn btn-primary" href="{{ path('customer_campaign_create') }}">Add New Campaign</a>
-                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="{{ path('customer_campaign_create') }}">Add New Campaign</a></li>
-                    <li><a href="" onclick="return submitOperation();">Delete All Campaigns</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
     <table class="table table-striped">
         <tr>
             <th>Название компании</th>
@@ -44,8 +31,14 @@
     {% endfor %}
 
     <p>
-        Отчет по донорам: <a href="{{ path('campaign_report_export') }}" target="_blank">Все</a> или <a href="{{ path('campaign_report_export') }}?reccurent=1">Подписчики на ежемесячные пожертвования</a>
+        Отчет по поступившим пожертвованиям: <a href="{{ path('transaction_report_export') }}" target="_blank">По всем транзакциям</a>
     </p>
+
+    <form action="{{ path('transaction_report_export') }}" enctype="application/x-www-form-urlencoded" method="GET" class="report-form">
+        или в <button type="submit">период</button>
+        <input type="date" name="start" value="2014-09-29" required="">
+        <input type="date" name="end" value="2014-09-29" required="">
+    </form>
 
 
 {% endblock %}

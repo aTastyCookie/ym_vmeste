@@ -65,28 +65,46 @@ class CampaignController extends Controller
 
         $pageCount = (int)ceil($totalItems / $limit);
 
+        $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
 
-//        if ($page > $pageOnSidesLimit + 1) {
-//            for ($i = $page - $pageOnSidesLimit; $i < $page; $i++) {
-//                array_push($pageNumberArray, $i);
-//            }
-//        } else {
-//            for ($i = 1; $i < $page; $i++) {
-//                array_push($pageNumberArray, $i);
-//            }
-//        }
-//
-//        array_push($pageNumberArray, $page);
-//
-//        if ($page + $pageOnSidesLimit < $pageCount) {
-//            for ($i = $page + 1; $i <= $page + $pageOnSidesLimit; $i++) {
-//                array_push($pageNumberArray, $i);
-//            }
-//        } else {
-//            for ($i = $page + 1; $i <= $pageCount; $i++) {
-//                array_push($pageNumberArray, $i);
-//            }
-//        }
+        return array(
+            'campaigns' => $paginator,
+            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/payment/",
+            'pages' => $pageNumberArray,
+            'page' => $page,
+            'campaign_created' => $campaignSuccessfullyCreatedMessage);
+    }
+
+    /**
+     * @Template
+     */
+    public function showAllAction()
+    {
+
+        $campaignSuccessfullyCreatedMessage = null;
+        if ($this->getRequest()->query->get("campaign_creation") == 'success')
+            $campaignSuccessfullyCreatedMessage = "New campaign has been created successfully!";
+
+
+        $limit = 2;
+        $pageOnSidesLimit = 2;
+
+        $page = $this->getRequest()->query->get("page", 1);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $queryBuilder = $em->createQueryBuilder();
+
+        $queryBuilder->select('c')->from('Vmeste\SaasBundle\Entity\Campaign', 'c')
+            ->leftJoin('Vmeste\SaasBundle\Entity\Status', 's', 'WITH', 'c.status = s.id');
+
+        $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
+
+        $paginator = new Paginator($queryBuilder, $fetchJoinCollection = false);
+
+        $totalItems = count($paginator);
+
+        $pageCount = (int)ceil($totalItems / $limit);
 
         $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
 
@@ -104,9 +122,33 @@ class CampaignController extends Controller
     public function createAction(Request $request)
     {
 
-        $currentUser = $this->get('security.context')->getToken()->getUser();
+//        $currentUser = $this->get('security.context')->getToken()->getUser();
+
+
+        $connection = $this->getDoctrine()->getConnection();
+        $queryBuilder = $connection->createQueryBuilder();
+
+        $queryBuilder
+            ->select('u.id, u.username')
+            ->from('user','u')
+            ->where('r.role = \'ROLE_USER\'')
+            ->join('u','user_role', 'ur', 'u.id = ur.user_id')
+            ->join('ur', 'role', 'r', 'r.id = ur.role_id');
+
+        $statement = $queryBuilder->execute();
+        $result = $statement->fetchAll();
+
+        $userChoices = array();
+
+        foreach($result as $user) {
+            $userChoices[$user['id']] = $user['username'];
+        }
 
         $form = $this->createFormBuilder()
+            ->add('user', 'choice', array(
+                'choices' => $userChoices,
+                'label' => 'Пользователи'
+            ))
             ->add('title', 'text', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Название кампании'))
@@ -115,7 +157,7 @@ class CampaignController extends Controller
             ), 'label' => 'Минимальный взнос'))
             ->add('currency', 'choice', array(
                 'choices' => array(
-                    'RUB' => 'RUB',
+                    'RUR' => 'RUR',
                 ),
                 'label' => 'Валюта',
                 'constraints' => array(
@@ -168,15 +210,16 @@ class CampaignController extends Controller
             $campaign->setFormTerms($data['form_terms']);
             $campaign->setTopIntro($data['top_intro']);
             $campaign->setRecentIntro($data['recent_intro']);
-            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ON_MODERATION'));
+            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
 
-            $campaign->setUser($currentUser);
+            $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $data['user']));
+            $campaign->setUser($user);
 
             $em->persist($campaign);
             $em->flush();
 
-            return $this->redirect($this->generateUrl('customer_campaign', array('campaign_creation' => 'success')));
+            return $this->redirect($this->generateUrl('admin_campaign_show_all', array('campaign_creation' => 'success')));
         }
 
 
@@ -217,7 +260,7 @@ class CampaignController extends Controller
             ->add(
                 'currency', 'choice', array(
                 'choices' => array(
-                    'RUB' => 'RUB',
+                    'RUR' => 'RUR',
                 ),
                 'label' => 'Валюта',
                 'constraints' => array(
@@ -324,7 +367,7 @@ class CampaignController extends Controller
         $em->persist($campaign);
         $em->flush();
 
-        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+        return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
     }
 
     public function activateAction()
@@ -343,7 +386,7 @@ class CampaignController extends Controller
         $em->persist($campaign);
         $em->flush();
 
-        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+        return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
     }
 
     /**
@@ -444,11 +487,11 @@ class CampaignController extends Controller
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d')
-        	->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donator_id = d.id and r.campaign_id = c.id');
+            ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d');
             
         if ($this->getRequest()->query->get("recurrent", 0) == 1) {
         	$queryBuilder
+        		->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign_id = c.id')
         		->where('c.user = ?1')
         		->andWhere('r.id is not null');
 			$recurrent = '-recurrent'; // FIXME Andrei
@@ -488,14 +531,16 @@ class CampaignController extends Controller
             $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"';
-            if(!empty($transaction['rid'])) 
-            	$output .= '"1"';
-            else 
-            	$output .= '""' . "\r\n";
+            if($transaction->getDonor()->getRecurrent() != null)
+            	$output .= '1';
+            else
+            	$output .= '0';
+            $output .= '"' ."\r\n";
         }
-
+//var_dump($output); exit;
         $response = new Response($output, 200, $responseHeaders);
-        $response->send();
+        return $response;
+        
     }
 
     /**

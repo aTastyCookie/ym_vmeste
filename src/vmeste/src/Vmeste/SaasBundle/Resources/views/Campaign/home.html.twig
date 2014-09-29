@@ -2,11 +2,11 @@
 
 {% block body %}
 
-    <h2>Campaigns</h2>
-<div class="row">
+    <h2>Кампании</h2>
+{#<div class="row">
 	<div class="span12">
 		<div class="btn-group pull-right">
-    		<a class="btn btn-primary" href="{{ path('customer_campaign_create') }}">Add New Campaign</a>
+    		<a class="btn btn-primary" href="{{ path('admin_campaign_create') }}">Add New Campaign</a>
     		<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
 			<ul class="dropdown-menu">
 				<li><a href="{{ path('customer_campaign_create') }}">Add New Campaign</a></li>
@@ -14,7 +14,7 @@
 			</ul>
 		</div>
 	</div>
-</div>
+</div>#}
     {% if campaign_created %}
         <div>{{ campaign_created }}</div>
     {% endif %}
@@ -44,23 +44,21 @@
                 <td>{{ campaign.changed|date("d/m/Y") }}</td>
                 <td>{{ campaign.status.name }}</td>
                 <td>
-                        <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">
-                        	<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Редактировать" border="0">
-                        </a>
-                     
-
-                        {% if campaign.status.status != 'ON_MODERATION' %}
-                            {% if campaign.status.status == 'BLOCKED' %}
-                            <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Активировать</a>   
-                            {% else %}
-                            <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
-                            	<img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
-                            </a>
-                            {% endif %}
-                        {% endif %}
-                            <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
-                            	<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Удалить" border="0">
-                            </a>
+                    {# <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">
+                         <img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Редактировать" border="0">
+                     </a>
+                     {% if campaign.status.status != 'ON_MODERATION' %}
+                         {% if campaign.status.status == 'BLOCKED' %}
+                         <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Активировать</a>
+                         {% else %}
+                         <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
+                             <img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
+                         </a>
+                         {% endif %}
+                     {% endif %}#}
+                     <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
+                        <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Удалить" border="0">
+                     </a>
                         
                 </td>
             </tr>

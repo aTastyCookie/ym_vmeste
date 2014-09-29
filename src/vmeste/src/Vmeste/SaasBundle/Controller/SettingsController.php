@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
+use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Util\Hash;
 
 class SettingsController extends Controller
@@ -218,13 +219,21 @@ class SettingsController extends Controller
 
                 $currentUser = $this->get('security.context')->getToken()->getUser();
 
+                $factory = $this->get('security.encoder_factory');
+                $user = new User();
+                $encoder = $factory->getEncoder($user);
+                $password = $encoder->encodePassword('ryanpass', $user->getSalt());
+
                 $user = $this->getDoctrine()
                     ->getRepository('Vmeste\SaasBundle\Entity\User')
-                    ->findOneBy(array('id' => $currentUser->getId(), 'password' => Hash::generatePasswordHash($oldPassword)));
+                    ->findOneBy(array('id' => $currentUser->getId(), 'password' => $password));
 
                 if ($user != null) {
 
-                    $user->setPassword(Hash::generatePasswordHash($password));
+                    $factory = $this->get('security.encoder_factory');
+                    $encoder = $factory->getEncoder($user);
+                    $password = $encoder->encodePassword('ryanpass', $user->getSalt());
+                    $user->setPassword($password);
 
                     $em->persist($user);
                     $em->flush();

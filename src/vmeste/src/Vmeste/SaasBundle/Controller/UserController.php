@@ -20,6 +20,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\YandexKassa;
+use Vmeste\SaasBundle\Util\Hash;
 
 class UserController extends Controller
 {
@@ -32,11 +33,11 @@ class UserController extends Controller
 
         $userSuccessfullyCreatedMessage = null;
         if($this->getRequest()->query->get("user_creation") == 'success')
-            $userSuccessfullyCreatedMessage = "New user has been created successfully!";
+            $userSuccessfullyCreatedMessage = "Пользователь успешно создан!";
 
 
-        $limit = 2;
-        $pageOnSidesLimit = 2;
+        $limit = 10;
+        $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
 
@@ -100,29 +101,29 @@ class UserController extends Controller
             )))
             ->add('password', 'repeated', array(
                 'type' => 'password',
-                'invalid_message' => 'The password fields must match.',
+                'invalid_message' => 'Пароли должны совпадать.',
                 'options' => array('attr' => array('class' => 'password-field')),
                 'required' => true,
-                'first_options' => array('label' => 'Password'),
-                'second_options' => array('label' => 'Repeat Password'),
+                'first_options' => array('label' => 'Пароль'),
+                'second_options' => array('label' => 'Повторите пароль'),
                 'constraints' => array(
                     new NotBlank(),
                     new Length(array('min' => 6, 'max' => 64)),
                 )))
             ->add('role', 'choice', array(
                 'choices' => array(
-                    'ROLE_USER' => 'User',
-                    'ROLE_ADMIN' => 'Administrator',
+                    'ROLE_USER' => 'Пользователь',
+                    'ROLE_ADMIN' => 'Администратор',
                 ),
                 'label' => 'Role',
                 'constraints' => array(
                     new Choice(array(
                             'choices' => array('ROLE_USER', 'ROLE_ADMIN'),
-                            'message' => 'Choose a valid role.',
+                            'message' => 'Выберите корректную роль.',
                         )
                 )
             )))
-            ->add('save', 'submit', array('label' => 'Create User'))
+            ->add('save', 'submit', array('label' => 'Создать пользователя'))
             ->getForm();
 
         $form->handleRequest($request);
@@ -136,7 +137,12 @@ class UserController extends Controller
             $user = new User();
             $user->setUsername($data['username']);
             $user->setEmail($data['email']);
-            $user->setPassword($data['password']);
+
+            $factory = $this->get('security.encoder_factory');
+            $encoder = $factory->getEncoder($user);
+            $password = $encoder->encodePassword($data['password'], $user->getSalt());
+            $user->setPassword($password);
+
             $role = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
             $user->addRole($role);
 
@@ -193,29 +199,29 @@ class UserController extends Controller
             ),  'data' => $user->getUsername()))
             ->add('password', 'repeated', array(
                 'type' => 'password',
-                'invalid_message' => 'The password fields must match.',
+                'invalid_message' => 'Пароли должны совпадать.',
                 'options' => array('attr' => array('class' => 'password-field')),
                 'required' => false,
-                'first_options' => array('label' => 'Password'),
-                'second_options' => array('label' => 'Repeat Password'),
+                'first_options' => array('label' => 'Пароль'),
+                'second_options' => array('label' => 'Повторите пароль'),
                 'constraints' => array(
                     new Length(array('min' => 6, 'max' => 64)),
                 )))
             ->add('role', 'choice', array(
                 'choices' => array(
-                    'ROLE_USER' => 'User',
-                    'ROLE_ADMIN' => 'Administrator',
+                    'ROLE_USER' => 'Пользователь',
+                    'ROLE_ADMIN' => 'Администратор',
                 ),
                 'data' => $user->getRole(),
-                'label' => 'Role',
+                'label' => 'Роль',
                 'constraints' => array(
                     new Choice(array(
                             'choices' => array('ROLE_USER', 'ROLE_ADMIN'),
-                            'message' => 'Choose a valid role.',
+                            'message' => 'Выберите корректную роль.',
                         )
                     )
                 )))
-            ->add('save', 'submit', array('label' => 'Update User'))
+            ->add('save', 'submit', array('label' => 'Обновить пользователя'))
             ->getForm();
 
         $form->handleRequest($request);
@@ -226,7 +232,10 @@ class UserController extends Controller
             $user->setUsername($data['username']);
             $user->setEmail($data['email']);
             if($data['password'] != NULL) {
-                $user->setPassword($data['password']);
+                $factory = $this->get('security.encoder_factory');
+                $encoder = $factory->getEncoder($user);
+                $password = $encoder->encodePassword($data['password'], $user->getSalt());
+                $user->setPassword($password);
             }
 
             if($data['role'] != $user->getRole()) {

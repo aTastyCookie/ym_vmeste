@@ -32,7 +32,7 @@
     </table>
 
     {% for pageId in pages %}
-        <a href="{{ path('customer_campaign', { 'page': pageId }) }}">{{ pageId }}</a>
+        <a href="{{ path('campaign_report', { 'page': pageId }) }}">{{ pageId }}</a>
     {% endfor %}
 
     <p>

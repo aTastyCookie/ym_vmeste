@@ -251,20 +251,72 @@ class TransactionController extends Controller
         $response->send();
     }
 
-	/**
-	  *@Template
-	*/
+    /**
+     * @Template
+     */
     public function homeAction()
     {
         return array('data' => true);
     }
-    
+
     /**
-	  *@Template
-	*/
+     * @Template
+     */
     public function unsubscribeAction()
     {
-		return array('data' => true);
+    	$recurrent_id = $this->getRequest()->query->get("recurrent");
+	    $invoice_id = $this->getRequest()->query->get("invoice");
+	    $response = array('error' => false, 
+						'recurrent'=>$recurrent_id,
+						'invoice'=>$invoice_id,
+						'title'=>'',
+						'intro'=>'',
+						'img'=>'');
+	    
+	    if($recurrent_id == null || $invoice_id  == null) {
+	    	$response['error'] = 'Неверные параметры';
+			return $response;
+		}
+    		
+    		
+    	$em = $this->getDoctrine()->getManager();
+    	$recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
+    	$donor = $recurrent->getDonor();
+    	if($donor == null) {
+    		$response['error'] = 'Такой подписки не существует';
+			return $response;
+    	}
+    	
+    	$campaignId = $donor->getCampaignId();
+    	$campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->find($campaignId);
+    	if($campaign == null) {
+    		$response['error'] = 'Такой подписки не существует';
+			return $response;
+    	}
+    	
+    	$response['title'] = $campaign->getTitle();
+    	$response['img'] = $campaign->getImage();
+    	$response['intro'] = $campaign->getFormIntro();
+    	
+	    if($recurrent != null) {
+			if($recurrent->getInvoiceId() != $invoice_id)  {
+	    		$response['error'] = 'Такой подписки не существует';
+				return $response;
+	    	}
+		} else {
+    		$response['error'] = 'Такой подписки не существует';
+			return $response;
+    	}
+			
+    	if($this->getRequest()->query->get("yes")) {
+// IT DOESN'T WORK
+			$em->remove($recurrent);
+			return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
+		}
+			
+		return $response;
+    	
+		
 	}
 
     /**
@@ -313,23 +365,29 @@ class TransactionController extends Controller
     public function reportExportAction()
     {
 
-        $recurrent = '';
+        $startTimestamp = $endTimestamp = 0;
 
-        if ($this->getRequest()->query->get("reccurent", 0) == 1)
-            $reccurent = 'your-value'; // FIXME Andrei
+        if ($this->getRequest()->query->get("start", null) != null
+            && $this->getRequest()->query->get("end", null) != null
+        ) {
+            $start = $this->getRequest()->query->get("start");
+            $end = $this->getRequest()->query->get("end");
+            $startTimestamp = $this->parseDateToTimestamp($start);
+            $endTimestamp = $this->parseDateToTimestamp($end);
+        }
 
         $em = $this->getDoctrine()->getManager();
-
-        $currentUser = $this->get('security.context')->getToken()->getUser();
-
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
-
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-            ->where('c.user = ?1')
-            ->setParameter(1, $user);
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c');
+
+        if ($startTimestamp != 0 && $endTimestamp != 0) {
+            $queryBuilder->andWhere('t.created >= ?1');
+            $queryBuilder->andWhere('t.created <= ?2');
+            $queryBuilder->setParameter(1, $startTimestamp);
+            $queryBuilder->setParameter(2, $endTimestamp);
+        }
 
         $report = $queryBuilder->getQuery()->getResult();
 
@@ -340,26 +398,36 @@ class TransactionController extends Controller
             $responseHeaders['expires'] = '0';
             $responseHeaders['cache-control'] = 'must-revalidate, post-check=0, pre-check=0';
             $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' . $recurrent . '.csv"';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions.csv"';
             $responseHeaders['content-transfer-encoding'] = 'binary';
         } else {
             $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' . $recurrent . '.csv"';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions.csv"';
         }
 
-        $settings = $user->getSettings();
-        $userSettings = $settings[0];
-        $separator = $userSettings->getCsvColumnSeparator();
+        $separator = ';';
 
         if ($separator == 'tab') $separator = "\t";
 
-        $output = '"Project"' . $separator . '"FIO"' . $separator . '"E-Mail"' . $separator . '"Recurrent"' . "\r\n";
+        $output = '"Проект"' . $separator
+            . '"Дата платежа"' . $separator
+            . '"ФИО"' . $separator
+            . '"Email"' . $separator
+            . '"Способ оплаты"' . $separator
+            . '"Сумма"' . $separator
+            . '"Призаки подписчика"' . $separator
+            . '"Комментарии"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
-            $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
+            $output .= '"'
+                . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
+                . str_replace('"', '', date("Y-m-d H:i:s", $transaction->getCreated())) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
-                . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . "\r\n";
-            //. str_replace('"', "", $row["recurrent"]) . '"' . "\r\n"; // FIXME Andrei
+                . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getTransactionType()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getAmount()) . '"' . $separator . '"';
+                $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '""';
+                $output .=  '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 
         $response = new Response($output, 200, $responseHeaders);
@@ -389,5 +457,16 @@ class TransactionController extends Controller
         $orderNumberExploded = explode("-", $orderNumber);
         $campaignId = $orderNumberExploded[0];
         return $campaignId;
+    }
+
+    /**
+     * @param $dateStr
+     * @return int
+     */
+    private function parseDateToTimestamp($dateStr)
+    {
+        $a = strptime($dateStr, '%Y-%m-%d');
+        $timestamp = mktime(0, 0, 0, $a['tm_mon'] + 1, $a['tm_mday'], $a['tm_year'] + 1900);
+        return $timestamp;
     }
 } 

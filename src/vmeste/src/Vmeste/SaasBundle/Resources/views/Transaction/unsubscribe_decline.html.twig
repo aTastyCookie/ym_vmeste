@@ -17,23 +17,8 @@
 </header>
 <div class="line"></div>
 <div class="content">
-	<div class="text-box">
-	{% if error %}
-		{{ error }}
-	{% else %}
-	Вы уверены, что хотите отказаться от ежемесячных пожертвований?
-	<br>
-	<div>
-		<form method="GET" enctype="application/x-www-form-urlencoded">
-			<input type="hidden" name="recurrent" value="{{ recurrent }}"/>
-			<input type="hidden" name="invoice" value="{{ invoice }}"/>
-	  		<button type="submit" class="btn yellow" name="yes" value="1">Да, отказаться</button>
-	  		<button type="button" class="btn">Нет, продолжать</button>
-  		</form>
-	</div>
-	
-	{% endif %}
-  </div>
+	<div class="text-box">Вы будете продолжать ежемесячные пожервования 
+	в фонд &laquo;{{ title }}&raquo; по сбору денег на &laquo;{{ intro }}&raquo;.</div>
 </div>
 
 

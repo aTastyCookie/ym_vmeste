@@ -357,4 +357,27 @@ class Transaction
     {
         return $this->donor;
     }
+
+    /**
+     * Set donor_id
+     *
+     * @param integer $donorId
+     * @return Transaction
+     */
+    public function setDonorId($donorId)
+    {
+        $this->donor_id = $donorId;
+    
+        return $this;
+    }
+
+    /**
+     * Get donor_id
+     *
+     * @return integer 
+     */
+    public function getDonorId()
+    {
+        return $this->donor_id;
+    }
 }

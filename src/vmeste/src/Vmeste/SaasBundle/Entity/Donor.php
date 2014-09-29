@@ -30,6 +30,12 @@ class Donor
      */
     private $campaign_id;
     
+    
+    /**
+     * @ORM\OneToOne(targetEntity="Recurrent", mappedBy="donor")
+     **/
+    private $recurrent;
+    
     /**
      * @ORM\Column(type="string")
      */
@@ -362,5 +368,28 @@ class Donor
     public function getCampaignId()
     {
         return $this->campaign_id;
+    }
+
+    /**
+     * Set recurrent
+     *
+     * @param \Vmeste\SaasBundle\Entity\Recurrent $recurrent
+     * @return Donor
+     */
+    public function setRecurrent(\Vmeste\SaasBundle\Entity\Recurrent $recurrent = null)
+    {
+        $this->recurrent = $recurrent;
+    
+        return $this;
+    }
+
+    /**
+     * Get recurrent
+     *
+     * @return \Vmeste\SaasBundle\Entity\Recurrent 
+     */
+    public function getRecurrent()
+    {
+        return $this->recurrent;
     }
 }

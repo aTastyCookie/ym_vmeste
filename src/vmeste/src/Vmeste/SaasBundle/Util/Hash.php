@@ -18,10 +18,4 @@ class Hash
     {
         return sha1(time() . rand() . md5(time()));
     }
-
-    // FIXME Add hash algorythm
-    public static function generatePasswordHash($password)
-    {
-        return $password;
-    }
 } 
