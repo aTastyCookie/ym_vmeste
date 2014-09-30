@@ -25,7 +25,7 @@
                 <td>{{ transaction.donor.name }}</td>
                 <td>{{ transaction.donor.email }}</td>
                 <td>{{ transaction.gross }} {{ transaction.currency }}</td>
-                <td>{{ transaction.changed }}</td>
+                <td>{{ transaction.donor.created | date("d/m/Y") }}</td>
                 <td></td>
             </tr>
         {% endfor %}

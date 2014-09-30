@@ -51,16 +51,6 @@ class Campaign {
     protected $formTerms;
 
     /**
-     * @ORM\Column(type="text", name="top_intro",)
-     */
-    protected $topIntro;
-
-    /**
-     * @ORM\Column(type="text", name="recent_intro",)
-     */
-    protected $recentIntro;
-
-    /**
      * @ORM\OneToMany(targetEntity="Transaction", mappedBy="campaign")
      **/
     protected $transactions;
@@ -245,52 +235,6 @@ class Campaign {
     public function getFormTerms()
     {
         return $this->formTerms;
-    }
-
-    /**
-     * Set topIntro
-     *
-     * @param string $topIntro
-     * @return Campaign
-     */
-    public function setTopIntro($topIntro)
-    {
-        $this->topIntro = $topIntro;
-
-        return $this;
-    }
-
-    /**
-     * Get topIntro
-     *
-     * @return string 
-     */
-    public function getTopIntro()
-    {
-        return $this->topIntro;
-    }
-
-    /**
-     * Set recentIntro
-     *
-     * @param string $recentIntro
-     * @return Campaign
-     */
-    public function setRecentIntro($recentIntro)
-    {
-        $this->recentIntro = $recentIntro;
-
-        return $this;
-    }
-
-    /**
-     * Get recentIntro
-     *
-     * @return string 
-     */
-    public function getRecentIntro()
-    {
-        return $this->recentIntro;
     }
 
     /**

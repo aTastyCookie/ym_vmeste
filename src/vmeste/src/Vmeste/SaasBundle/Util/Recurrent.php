@@ -50,8 +50,8 @@ class Recurrent {
 								. 'Content-type: text/html; charset=utf-8' . "\r\n"
 								. 'From: Автоплатежи <birthday@example.com>' . "\r\n";
 // CHANGE IT -> move into params when initialization
-		$this->url_unsubcribe = 'http://test.test.ru';
-		$this->url_subcribe = 'http://test.test.ru2';
+		$this->url_unsubcribe = 'http://vmeste/outside/transaction/unsubscribe?recurrent=3&invoice=23432';
+		$this->url_subcribe = 'http://vmeste/outside/transaction/subscribe?recurrent=3&invoice=23432';
 		
 		$this->recurrent = new stdClass;
 	}

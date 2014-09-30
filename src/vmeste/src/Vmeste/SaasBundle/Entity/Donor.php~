@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass="Vmeste\SaasBundle\Entity\DonorRepository")
  * @ORM\HasLifecycleCallbacks
- * @ORM\Table(name="donor")
+ * @ORM\Table(name="donor", indexes={ @ORM\Index( name="search_index", columns={ "name", "email"})})
  */
 class Donor
 {
@@ -29,13 +29,13 @@ class Donor
      * @ORM\Column(name="campaign_id", type="integer", options={"unsigned"=true})
      */
     private $campaign_id;
-    
-    
+
+
     /**
      * @ORM\OneToOne(targetEntity="Recurrent", mappedBy="donor")
      **/
     private $recurrent;
-    
+
     /**
      * @ORM\Column(type="string")
      */
@@ -63,7 +63,6 @@ class Donor
     protected $status;
 
 
-
     /**
      * @ORM\Column(type="text")
      */
@@ -78,7 +77,6 @@ class Donor
      * @ORM\Column(type="integer", options={"unsigned"=true})
      */
     protected $updated;
-
 
 
     /**
@@ -133,7 +131,7 @@ class Donor
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -156,7 +154,7 @@ class Donor
     /**
      * Get name
      *
-     * @return string 
+     * @return string
      */
     public function getName()
     {
@@ -179,7 +177,7 @@ class Donor
     /**
      * Get email
      *
-     * @return string 
+     * @return string
      */
     public function getEmail()
     {
@@ -202,7 +200,7 @@ class Donor
     /**
      * Get url
      *
-     * @return string 
+     * @return string
      */
     public function getUrl()
     {
@@ -225,7 +223,7 @@ class Donor
     /**
      * Get amount
      *
-     * @return string 
+     * @return string
      */
     public function getAmount()
     {
@@ -248,7 +246,7 @@ class Donor
     /**
      * Get currency
      *
-     * @return string 
+     * @return string
      */
     public function getCurrency()
     {
@@ -271,7 +269,7 @@ class Donor
     /**
      * Get details
      *
-     * @return string 
+     * @return string
      */
     public function getDetails()
     {
@@ -294,7 +292,7 @@ class Donor
     /**
      * Get updated
      *
-     * @return integer 
+     * @return integer
      */
     public function getUpdated()
     {
@@ -317,7 +315,7 @@ class Donor
     /**
      * Get status
      *
-     * @return \Vmeste\SaasBundle\Entity\Status 
+     * @return \Vmeste\SaasBundle\Entity\Status
      */
     public function getStatus()
     {
@@ -340,7 +338,7 @@ class Donor
     /**
      * Get transaction
      *
-     * @return \Vmeste\SaasBundle\Entity\Transaction 
+     * @return \Vmeste\SaasBundle\Entity\Transaction
      */
     public function getTransaction()
     {
@@ -356,14 +354,14 @@ class Donor
     public function setCampaignId($campaignId)
     {
         $this->campaign_id = $campaignId;
-    
+
         return $this;
     }
 
     /**
      * Get campaign_id
      *
-     * @return integer 
+     * @return integer
      */
     public function getCampaignId()
     {
@@ -379,14 +377,14 @@ class Donor
     public function setRecurrent(\Vmeste\SaasBundle\Entity\Recurrent $recurrent = null)
     {
         $this->recurrent = $recurrent;
-    
+
         return $this;
     }
 
     /**
      * Get recurrent
      *
-     * @return \Vmeste\SaasBundle\Entity\Recurrent 
+     * @return \Vmeste\SaasBundle\Entity\Recurrent
      */
     public function getRecurrent()
     {

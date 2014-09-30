@@ -91,6 +91,12 @@ class Recurrent
      */
     private $success_date;
 
+	/**
+     * @ORM\ManyToOne(targetEntity="Status")
+     * @ORM\JoinColumn(name="status_id", referencedColumnName="id")
+     **/
+    protected $status;
+
     /**
      * Get id
      *
@@ -444,5 +450,28 @@ class Recurrent
     public function getDonor()
     {
         return $this->donor;
+    }
+
+    /**
+     * Set status
+     *
+     * @param \Vmeste\SaasBundle\Entity\Status $status
+     * @return Recurrent
+     */
+    public function setStatus(\Vmeste\SaasBundle\Entity\Status $status = null)
+    {
+        $this->status = $status;
+    
+        return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return \Vmeste\SaasBundle\Entity\Status 
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 }

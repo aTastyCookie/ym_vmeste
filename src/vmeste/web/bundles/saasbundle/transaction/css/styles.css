@@ -50,6 +50,7 @@ span.rur span:before { content: '\2013'; }
 
 header { padding: 33px 0; }
 header .logo { background: #e8e8e7; float: right; height: 70px; width: 100px; }
+header .logo img { height: 70px; width: 100px; }
 header h1 { display: inline-block; margin: 38px 0 0; }
 
 .fields .item { position: relative; }

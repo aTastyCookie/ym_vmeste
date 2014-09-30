@@ -32,10 +32,10 @@
     </table>
 
     {% for pageId in pages %}
-        <a href="{{ path('transaction_report', { 'page': pageId }) }}">{{ pageId }}</a>
+        <a href="{{ path('transaction_report', { 'page': pageId , 'searchRequest': searchRequest }) }}">{{ pageId }}</a>
     {% endfor %}
 
-    <p>
+    {#<p>
         Отчет по поступившим пожертвованиям: <a href="{{ path('transaction_report_export') }}" target="_blank">По всем транзакциям</a>
     </p>
 
@@ -43,7 +43,7 @@
         или в <button type="submit">период</button>
         <input type="date" name="start" value="2014-09-29" required="">
         <input type="date" name="end" value="2014-09-29" required="">
-    </form>
+    </form>#}
 
 
 {% endblock %}

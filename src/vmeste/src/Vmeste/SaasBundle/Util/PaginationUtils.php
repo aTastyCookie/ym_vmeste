@@ -9,7 +9,8 @@
 namespace Vmeste\SaasBundle\Util;
 
 
-class PaginationUtils {
+class PaginationUtils
+{
 
     /**
      * @param $page
@@ -38,13 +39,13 @@ class PaginationUtils {
             for ($i = $page + 1; $i <= $page + $pageOnSidesLimit; $i++) {
                 array_push($pageNumberArray, $i);
             }
-            return array($pageNumberArray, $page);
         } else {
             for ($i = $page + 1; $i <= $pageCount; $i++) {
                 array_push($pageNumberArray, $i);
             }
-            return $pageNumberArray;
         }
+
+        return $pageNumberArray;
     }
 
 } 

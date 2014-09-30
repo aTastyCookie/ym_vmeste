@@ -264,60 +264,121 @@ class TransactionController extends Controller
      */
     public function unsubscribeAction()
     {
-    	$recurrent_id = $this->getRequest()->query->get("recurrent");
-	    $invoice_id = $this->getRequest()->query->get("invoice");
-	    $response = array('error' => false, 
-						'recurrent'=>$recurrent_id,
-						'invoice'=>$invoice_id,
-						'title'=>'',
-						'intro'=>'',
-						'img'=>'');
-	    
-	    if($recurrent_id == null || $invoice_id  == null) {
-	    	$response['error'] = 'Неверные параметры';
-			return $response;
+        $recurrent_id = $this->getRequest()->query->get("recurrent");
+        $invoice_id = $this->getRequest()->query->get("invoice");
+        $response = array('error' => false,
+            'recurrent' => $recurrent_id,
+            'invoice' => $invoice_id,
+            'title' => '',
+            'intro' => '',
+            'img' => '');
+
+        if ($recurrent_id == null || $invoice_id == null) {
+            $response['error'] = 'Неверные параметры';
+            return $response;
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
+        if ($recurrent == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+        
+        $donor = $recurrent->getDonor();
+        if ($donor == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        $campaignId = $donor->getCampaignId();
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->find($campaignId);
+        if ($campaign == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        $response['title'] = $campaign->getTitle();
+        $response['img'] = $campaign->getImage();
+        $response['intro'] = $campaign->getFormIntro();
+
+
+        if ($recurrent->getInvoiceId() != $invoice_id) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        if ((int)$this->getRequest()->query->get("yes") == 1) {
+        	$status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'DELETED'));
+        	$recurrent->setStatus($status);
+        	$em->persist($recurrent);
+            $em->flush();
+            return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
+        } elseif ((int)$this->getRequest()->query->get("yes") == 2) {
+			return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
 		}
-    		
-    		
-    	$em = $this->getDoctrine()->getManager();
-    	$recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
-    	$donor = $recurrent->getDonor();
-    	if($donor == null) {
-    		$response['error'] = 'Такой подписки не существует';
-			return $response;
-    	}
-    	
-    	$campaignId = $donor->getCampaignId();
-    	$campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->find($campaignId);
-    	if($campaign == null) {
-    		$response['error'] = 'Такой подписки не существует';
-			return $response;
-    	}
-    	
-    	$response['title'] = $campaign->getTitle();
-    	$response['img'] = $campaign->getImage();
-    	$response['intro'] = $campaign->getFormIntro();
-    	
-	    if($recurrent != null) {
-			if($recurrent->getInvoiceId() != $invoice_id)  {
-	    		$response['error'] = 'Такой подписки не существует';
-				return $response;
-	    	}
-		} else {
-    		$response['error'] = 'Такой подписки не существует';
-			return $response;
-    	}
-			
-    	if($this->getRequest()->query->get("yes")) {
-// IT DOESN'T WORK
-			$em->remove($recurrent);
-			return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
-		}
-			
-		return $response;
-    	
-		
-	}
+
+        return $response;
+
+
+    }
+    
+    /**
+     * @Template
+     */
+    public function subscribeAction()
+    {
+        $recurrent_id = $this->getRequest()->query->get("recurrent");
+        $invoice_id = $this->getRequest()->query->get("invoice");
+        $response = array('error' => false,
+            'recurrent' => $recurrent_id,
+            'invoice' => $invoice_id,
+            'title' => '',
+            'intro' => '',
+            'img' => '');
+
+		if ($recurrent_id == null || $invoice_id == null) {
+            $response['error'] = 'Неверные параметры';
+            return $response;
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
+        if ($recurrent == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+        
+        $donor = $recurrent->getDonor();
+        if ($donor == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        $campaignId = $donor->getCampaignId();
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->find($campaignId);
+        if ($campaign == null) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        $response['title'] = $campaign->getTitle();
+        $response['img'] = $campaign->getImage();
+        $response['intro'] = $campaign->getFormIntro();
+
+
+        if ($recurrent->getInvoiceId() != $invoice_id) {
+            $response['error'] = 'Такой подписки не существует';
+            return $response;
+        }
+
+        $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
+    	$recurrent->setStatus($status);
+    	$em->persist($recurrent);
+        $em->flush();
+
+        return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
+    }
 
     /**
      * @Template
@@ -325,8 +386,8 @@ class TransactionController extends Controller
     public function reportAction()
     {
 
-        $limit = 2;
-        $pageOnSidesLimit = 2;
+        $limit = $this->container->getParameter('paginator.page.items');
+        $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
 
@@ -339,9 +400,7 @@ class TransactionController extends Controller
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-            ->where('c.user = ?1')
-            ->setParameter(1, $user);
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c');
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
@@ -360,6 +419,81 @@ class TransactionController extends Controller
             'pages' => $pageNumberArray,
             'page' => $page,
         );
+    }
+
+    /**
+     * @Template
+     */
+    public function searchAction()
+    {
+
+        if ($this->getRequest()->query->get("searchRequest", null) != null) {
+
+            $searchRequest = $this->getRequest()->query->get("searchRequest", null);
+
+
+
+
+            /*  $data = $request->get->all();
+              $repo = $this->getDoctrine()
+                  ->getRepository('PfBlogBundle:Article');
+              $query = $repo->createQueryBuilder('a')
+                  ->where('a.title LIKE :title')
+                  ->setParameter('title', '%'.$data['search'].'%')
+                  ->getQuery();
+              $paginator  = $this->get('knp_paginator');
+              $pagination = $paginator->paginate(
+                  $query->getResults(),//get the results here
+                  $this->requrest->get('page',1),
+                  4
+              );
+
+              payername payeremail*/
+
+
+            $limit = $this->container->getParameter('paginator.page.items');
+            $pageOnSidesLimit = 2;
+
+            $page = $this->getRequest()->query->get("page", 1);
+
+            $em = $this->getDoctrine()->getManager();
+
+            $currentUser = $this->get('security.context')->getToken()->getUser();
+
+            $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+            $queryBuilder = $em->createQueryBuilder();
+
+            $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
+                ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d')
+                ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+                ->where('d.name LIKE :name OR d.email LIKE :email')
+                ->setParameter('name', '%' . $searchRequest . '%')
+                ->setParameter('email', '%' . $searchRequest . '%');
+
+
+            $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
+
+            $paginator = new Paginator($queryBuilder, $fetchJoinCollection = false);
+
+            $totalItems = count($paginator);
+
+            $pageCount = (int)ceil($totalItems / $limit);
+
+            $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
+
+
+            return array(
+                'transactions' => $paginator,
+                'pages' => $pageNumberArray,
+                'page' => $page,
+                'searchRequest' => $searchRequest
+            );
+        } else {
+            return $this->redirect($this->generateUrl('transaction_report'));
+        }
+
+
     }
 
     public function reportExportAction()
@@ -397,25 +531,25 @@ class TransactionController extends Controller
             $responseHeaders['pragma'] = 'public';
             $responseHeaders['expires'] = '0';
             $responseHeaders['cache-control'] = 'must-revalidate, post-check=0, pre-check=0';
-            $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions.csv"';
+            $responseHeaders['content-type'] = 'text/csv; charset=utf-8';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions' . date("Y-m-d") . '.csv"';
             $responseHeaders['content-transfer-encoding'] = 'binary';
         } else {
-            $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions.csv"';
+            $responseHeaders['content-type'] = 'text/csv; charset=utf-8';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-transactions' . date("Y-m-d") . '.csv"';
         }
 
         $separator = ';';
 
         if ($separator == 'tab') $separator = "\t";
 
-        $output = '"Проект"' . $separator
+        $output = chr(0xEF).chr(0xBB).chr(0xBF).'"Проект"' . $separator
             . '"Дата платежа"' . $separator
             . '"ФИО"' . $separator
             . '"Email"' . $separator
             . '"Способ оплаты"' . $separator
             . '"Сумма"' . $separator
-            . '"Призаки подписчика"' . $separator
+            . '"Признак подписчика"' . $separator
             . '"Комментарии"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
@@ -425,13 +559,13 @@ class TransactionController extends Controller
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getTransactionType()) . '"' . $separator . '"'
-                . str_replace('"', "", $transaction->getAmount()) . '"' . $separator . '"';
-                $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '""';
-                $output .=  '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
+                . str_replace('"', "", $transaction->getGross()) . '"' . $separator . '"';
+            $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
+            $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 
         $response = new Response($output, 200, $responseHeaders);
-        $response->send();
+        return $response;
     }
 
     /**
@@ -465,8 +599,8 @@ class TransactionController extends Controller
      */
     private function parseDateToTimestamp($dateStr)
     {
-        $a = strptime($dateStr, '%Y-%m-%d');
-        $timestamp = mktime(0, 0, 0, $a['tm_mon'] + 1, $a['tm_mday'], $a['tm_year'] + 1900);
+        $a = date_parse_from_format('Y-m-d', $dateStr);
+        $timestamp = mktime(0, 0, 0, $a['month'], $a['day'], $a['year']);
         return $timestamp;
     }
 } 

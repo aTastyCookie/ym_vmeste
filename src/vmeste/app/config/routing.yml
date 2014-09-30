@@ -106,12 +106,20 @@ transaction_home:
     defaults: { _controller: VmesteSaasBundle:Transaction:home }
 
 transaction_unsubscribe:
-    path: /transaction/unsubscribe
+    path: /outside/transaction/unsubscribe
     defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
 
+transaction_subscribe:
+    path: /outside/transaction/subscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:subscribe }
+    
 transaction_report:
     path: /transaction/report
     defaults:  { _controller: VmesteSaasBundle:Transaction:report }
+
+transaction_report_search:
+    path: /transaction/search
+    defaults:  { _controller: VmesteSaasBundle:Transaction:search }
 
 transaction_report_export:
     path: /transaction/report/export

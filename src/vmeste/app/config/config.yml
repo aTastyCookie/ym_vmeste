@@ -81,3 +81,5 @@ parameters:
 
     pass.recover.url: recover_pass
     pass.recover.email.from: no-reply@vmeste.ru
+
+    paginator.page.items: 5

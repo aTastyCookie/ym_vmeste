@@ -21,6 +21,7 @@ use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\YandexKassa;
 use Vmeste\SaasBundle\Util\Hash;
+use Vmeste\SaasBundle\Util\PaginationUtils;
 
 class UserController extends Controller
 {
@@ -36,7 +37,7 @@ class UserController extends Controller
             $userSuccessfullyCreatedMessage = "Пользователь успешно создан!";
 
 
-        $limit = 10;
+        $limit = $this->container->getParameter('paginator.page.items');
         $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
@@ -54,29 +55,7 @@ class UserController extends Controller
 
         $pageCount = (int) ceil($totalItems / $limit);
 
-        $pageNumberArray = array();
-
-        if ($page > $pageOnSidesLimit + 1) {
-            for ($i = $page - $pageOnSidesLimit; $i < $page; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        } else {
-            for ($i = 1; $i < $page; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        }
-
-        array_push($pageNumberArray, $page);
-
-        if ($page + $pageOnSidesLimit < $pageCount) {
-            for ($i = $page + 1; $i <= $page + $pageOnSidesLimit; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        } else {
-            for ($i = $page + 1; $i <= $pageCount; $i++) {
-                array_push($pageNumberArray, $i);
-            }
-        }
+        $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
 
         return array('users' => $paginator, 'pages' => $pageNumberArray, 'page' => $page, 'user_created' => $userSuccessfullyCreatedMessage);
     }

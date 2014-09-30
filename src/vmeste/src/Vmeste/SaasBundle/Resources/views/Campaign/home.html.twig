@@ -34,14 +34,10 @@
                 <td>{{ campaign.title }}</td>
                 <td><a href="{{ campaign_url }}{{ campaign.id }}">{{ campaign_url }}{{ campaign.id }}</a></td>
                 <td style="text-align: right;">
-                    {#<ul>
-                        {% for role in user.roles %}
-                            <li>{{ role.name }}</li>
-                        {% endfor %}
-                    </ul>#}
+                    <a href="{{ path('campaign_report', { 'campaignId' : campaign.id }) }}">Отчет</a>
                 </td>
                 <td style="text-align: right;">0.00 {{ campaign.currency }}</td>
-                <td>{{ campaign.changed|date("d/m/Y") }}</td>
+                <td>{{ campaign.changed | date("d/m/Y") }}</td>
                 <td>{{ campaign.status.name }}</td>
                 <td>
                     {# <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">

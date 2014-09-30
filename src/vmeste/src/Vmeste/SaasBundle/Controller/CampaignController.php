@@ -37,8 +37,8 @@ class CampaignController extends Controller
             $campaignSuccessfullyCreatedMessage = "New campaign has been created successfully!";
 
 
-        $limit = 2;
-        $pageOnSidesLimit = 2;
+        $limit = $this->container->getParameter('paginator.page.items');
+        $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
 
@@ -86,8 +86,8 @@ class CampaignController extends Controller
             $campaignSuccessfullyCreatedMessage = "New campaign has been created successfully!";
 
 
-        $limit = 2;
-        $pageOnSidesLimit = 2;
+        $limit = $this->container->getParameter('paginator.page.items');
+        $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
 
@@ -130,9 +130,9 @@ class CampaignController extends Controller
 
         $queryBuilder
             ->select('u.id, u.username')
-            ->from('user','u')
+            ->from('user', 'u')
             ->where('r.role = \'ROLE_USER\'')
-            ->join('u','user_role', 'ur', 'u.id = ur.user_id')
+            ->join('u', 'user_role', 'ur', 'u.id = ur.user_id')
             ->join('ur', 'role', 'r', 'r.id = ur.role_id');
 
         $statement = $queryBuilder->execute();
@@ -140,7 +140,7 @@ class CampaignController extends Controller
 
         $userChoices = array();
 
-        foreach($result as $user) {
+        foreach ($result as $user) {
             $userChoices[$user['id']] = $user['username'];
         }
 
@@ -179,17 +179,6 @@ class CampaignController extends Controller
             ->add('form_terms', 'textarea', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Реквизиты для оферты'))
-
-            // Please enter content of top donors box.
-            ->add('top_intro', 'textarea', array('constraints' => array(
-                new NotBlank()
-            ), 'label' => 'Ненужное поле 2 - Please enter content of top donors box.'))
-
-            // Recent donors box content
-            ->add('recent_intro', 'textarea', array('constraints' => array(
-                new NotBlank()
-            ), 'label' => 'Ненужное поле 3 - Recent donors box content'))
-
             ->add('save', 'submit', array('label' => 'Создать кампанию'))
             ->getForm();
 
@@ -208,8 +197,6 @@ class CampaignController extends Controller
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
             $campaign->setFormTerms($data['form_terms']);
-            $campaign->setTopIntro($data['top_intro']);
-            $campaign->setRecentIntro($data['recent_intro']);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
 
@@ -297,26 +284,6 @@ class CampaignController extends Controller
                 ),
                     'label' => 'Реквизиты для оферты',
                     'data' => $campaign->getFormTerms()))
-
-            // Please enter content of top donors box.
-            ->add(
-                'top_intro',
-                'textarea',
-                array('constraints' => array(
-                    new NotBlank()
-                ),
-                    'label' => 'Please enter content of top donors box.',
-                    'data' => $campaign->getTopIntro()))
-            // Recent donors box content
-            ->add(
-                'recent_intro',
-                'textarea',
-                array('constraints' => array(
-                    new NotBlank()
-                ),
-                    'label' => 'Recent donors box content',
-                    'data' => $campaign->getRecentIntro()))
-
             ->add('save', 'submit', array('label' => 'Обновить кампанию'))
             ->getForm();
 
@@ -336,9 +303,7 @@ class CampaignController extends Controller
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
             $campaign->setFormTerms($data['form_terms']);
-            $campaign->setTopIntro($data['top_intro']);
-            $campaign->setRecentIntro($data['recent_intro']);
-            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ON_MODERATION'));
+            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
 
             $em->persist($campaign);
@@ -416,10 +381,13 @@ class CampaignController extends Controller
     public function reportAction()
     {
 
-        $limit = 5;
-        $pageOnSidesLimit = 5;
+        $limit = $this->container->getParameter('paginator.page.items');
+        $pageOnSidesLimit = 10;
 
         $page = $this->getRequest()->query->get("page", 1);
+
+        $campaignId = $this->getRequest()->query->get("campaignId", null);
+
 
         $em = $this->getDoctrine()->getManager();
 
@@ -431,8 +399,14 @@ class CampaignController extends Controller
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-            ->where('c.user = ?1')
-            ->setParameter(1, $user);
+            ->where('c.user = ?1');
+
+        if (!is_null($campaignId)) {
+            $queryBuilder->andWhere('c.id = ?2')
+                ->setParameter(2, $campaignId);
+        }
+
+        $queryBuilder->setParameter(1, $user);
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
@@ -464,59 +438,59 @@ class CampaignController extends Controller
 
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
 
-		if ($this->getRequest()->query->get("recurrent", 0) == 1) {
-			$recurrent = 'AND r.id is not null';
-		} else {
-			$recurrent = '';
-		}
+        if ($this->getRequest()->query->get("recurrent", 0) == 1) {
+            $recurrent = 'AND r.id is not null';
+        } else {
+            $recurrent = '';
+        }
 
-		/*$query = $em->createQuery("SELECT c.title, d.name, d.email, r.id as rid
-									FROM Vmeste\SaasBundle\Entity\Campaign c
-									INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (d.campaign_id = c.id)
-									INNER JOIN Vmeste\SaasBundle\Entity\Transaction t WITH (t.donor_id = d.id)
-									LEFT JOIN Vmeste\SaasBundle\Entity\Recurrent r WITH  
-									(r.donator_id = d.id and r.campaign_id = c.id)
-									WHERE c.user = :user $recurrent
-									ORDER BY c.title ASC")
-								->setParameter('user', $user);
+        /*$query = $em->createQuery("SELECT c.title, d.name, d.email, r.id as rid
+                                    FROM Vmeste\SaasBundle\Entity\Campaign c
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (d.campaign_id = c.id)
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Transaction t WITH (t.donor_id = d.id)
+                                    LEFT JOIN Vmeste\SaasBundle\Entity\Recurrent r WITH
+                                    (r.donator_id = d.id and r.campaign_id = c.id)
+                                    WHERE c.user = :user $recurrent
+                                    ORDER BY c.title ASC")
+                                ->setParameter('user', $user);
 
-		$report = $query->getResult();
-		var_dump($report); exit;*/
-		
+        $report = $query->getResult();
+        var_dump($report); exit;*/
+
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d');
-            
+
         if ($this->getRequest()->query->get("recurrent", 0) == 1) {
-        	$queryBuilder
-        		->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign_id = c.id')
-        		->where('c.user = ?1')
-        		->andWhere('r.id is not null');
-			$recurrent = '-recurrent'; // FIXME Andrei
-		} else {
-			$queryBuilder->where('c.user = ?1');
-		}
-		$queryBuilder->setParameter(1, $user)->orderBy('c.title', 'ASC');
+            $queryBuilder
+                ->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign_id = c.id')
+                ->where('c.user = ?1')
+                ->andWhere('r.id is not null');
+            $recurrent = '-recurrent'; // FIXME Andrei
+        } else {
+            $queryBuilder->where('c.user = ?1');
+        }
+        $queryBuilder->setParameter(1, $user)->orderBy('c.title', 'ASC');
 
         $report = $queryBuilder->getQuery()->getResult();
-//var_dump($report); exit;
-		if(!empty($recurrent)) $recurrent = '-recurrent';
+
+        if (!empty($recurrent)) $recurrent = '-recurrent';
         $responseHeaders = array();
 
         if (strstr($this->getRequest()->server->get('HTTP_USER_AGENT'), "MSIE")) {
             $responseHeaders['pragma'] = 'public';
             $responseHeaders['expires'] = '0';
             $responseHeaders['cache-control'] = 'must-revalidate, post-check=0, pre-check=0';
-            $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' 
-            											. $recurrent . '-' . date("Y-m-d") . '.csv"';
+            $responseHeaders['content-type'] = 'text/csv; charset=utf-8';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors'
+                . $recurrent . '-' . date("Y-m-d") . '.csv"';
             $responseHeaders['content-transfer-encoding'] = 'binary';
         } else {
-            $responseHeaders['content-type'] = 'application-download';
-            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors' 
-            											. $recurrent . '-' . date("Y-m-d") . '.csv"';
+            $responseHeaders['content-type'] = 'text/csv; charset=utf-8';
+            $responseHeaders['content-disposition'] = 'attachment; filename="export-donors'
+                . $recurrent . '-' . date("Y-m-d") . '.csv"';
         }
 
         $settings = $user->getSettings();
@@ -525,22 +499,25 @@ class CampaignController extends Controller
 
         if ($separator == 'tab') $separator = "\t";
 
-        $output = '"Project"' . $separator . '"FIO"' . $separator . '"E-Mail"' . $separator . '"Recurrent"' . "\r\n";
+        $output = chr(0xEF).chr(0xBB).chr(0xBF).
+            '"Project"' . $separator
+            . '"FIO"' . $separator
+            . '"E-Mail"' . $separator
+            . '"Recurrent"' . "\r\n";
 
         foreach ($report as $transaction) {
             $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"';
-            if($transaction->getDonor()->getRecurrent() != null)
-            	$output .= '1';
+            if ($transaction->getDonor()->getRecurrent() != null)
+                $output .= '1' . '"'."\r\n";
             else
-            	$output .= '0';
-            $output .= '"' ."\r\n";
+                $output .= '0' . '"'."\r\n";
         }
-//var_dump($output); exit;
+
         $response = new Response($output, 200, $responseHeaders);
         return $response;
-        
+
     }
 
     /**

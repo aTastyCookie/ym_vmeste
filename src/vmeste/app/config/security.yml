@@ -51,4 +51,6 @@ security:
          - { path: ^/campaign, role: ROLE_ADMIN }
          - { path: ^/admin, role: ROLE_ADMIN }
          - { path: ^/transaction, role: ROLE_ADMIN }
+         - { path: ^/outside/transaction/unsubscribe, role: IS_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/outside/transaction/subscribe, role: IS_AUTHENTICATED_ANONYMOUSLY }
         #- { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }

@@ -31,7 +31,7 @@
         <div class="line"></div>
         <h2>Ваша помощь проекту</h2>
     </div>
-    <form method="POST" enctype="text/plain" id="payment_form" autocomplete="off" action="https://demomoney.yandex.ru/eshop.xml">
+    <form method="POST" enctype="application/x-www-form-urlencoded" id="payment_form" autocomplete="off" action="https://demomoney.yandex.ru/eshop.xml">
 
         <input name="shopId" value="{{ yandexKassa.shopid }}" type="hidden"/>
         <input name="scid" value="{{ yandexKassa.scid }}" type="hidden"/>
@@ -96,7 +96,7 @@
                 <h2>Способ перевода</h2>
 
                 <div class="payment_options" id="payment_options">
-                    <input type="radio" id="yd_option" name="payment_type" value="PC">
+                    <input type="radio" id="yd_option" name="paymentType" value="PC">
 
                     <div class="item">
                         <label for="yd_option">
@@ -107,7 +107,7 @@
 
                         <div class="over"></div>
                     </div>
-                    <input type="radio" id="nalik_option" name="payment_type" value="GP">
+                    <input type="radio" id="nalik_option" name="paymentType" value="GP">
 
                     <div class="item">
                         <label for="nalik_option">
@@ -118,7 +118,7 @@
 
                         <div class="over"></div>
                     </div>
-                    <input type="radio" id="bc_option" name="payment_type" value="AC">
+                    <input type="radio" id="bc_option" name="paymentType" value="AC">
 
                     <div class="item" data-over="monthly">
                         <label for="bc_option">
@@ -129,7 +129,7 @@
 
                         <div class="over"></div>
                     </div>
-                    <input type="radio" id="wm_option" name="payment_type" value="WM">
+                    <input type="radio" id="wm_option" name="paymentType" value="WM">
 
                     <div class="item">
                         <label for="wm_option">
@@ -140,7 +140,7 @@
 
                         <div class="over"></div>
                     </div>
-                    <input type="radio" id="mobile_option" name="payment_type" value="MC">
+                    <input type="radio" id="mobile_option" name="paymentType" value="MC">
 
                     <div class="item">
                         <label for="mobile_option">
