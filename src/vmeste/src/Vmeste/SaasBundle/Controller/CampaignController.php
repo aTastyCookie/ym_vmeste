@@ -319,6 +319,8 @@ class CampaignController extends Controller
     public function blockAction()
     {
 
+
+
         $id = $this->getRequest()->query->get("id");
         $page = $this->getRequest()->query->get("page");
 
@@ -332,7 +334,15 @@ class CampaignController extends Controller
         $em->persist($campaign);
         $em->flush();
 
-        return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
+        if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
+               return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
+            } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
+                return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+            }
+        }
+
+        return $this->redirect($this->generateUrl('login'));
     }
 
     public function activateAction()

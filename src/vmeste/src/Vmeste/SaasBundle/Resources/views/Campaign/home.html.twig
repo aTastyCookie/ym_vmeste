@@ -2,7 +2,7 @@
 
 {% block body %}
 
-    <h2>Кампании</h2>
+    <h2>Компании</h2>
 {#<div class="row">
 	<div class="span12">
 		<div class="btn-group pull-right">
@@ -52,9 +52,12 @@
                          </a>
                          {% endif %}
                      {% endif %}#}
-                     <a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
+                     {#<a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
                         <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Удалить" border="0">
-                     </a>
+                     </a>#}
+                    <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
+                        <img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
+                    </a>
                         
                 </td>
             </tr>

@@ -27,10 +27,8 @@ class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
 
     public function onLogoutSuccess(Request $request)
     {
-        // redirect the user to where they were before the login process begun.
         $referer_url = $request->headers->get('referer');
         $response = new RedirectResponse($referer_url);
-
         return $response;
     }
 

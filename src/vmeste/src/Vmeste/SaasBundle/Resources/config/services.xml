@@ -40,4 +40,10 @@
         </service>
     </services>
     -->
+
+    <services>
+        <service id="cache.listener" class="Vmeste\SaasBundle\Handler\CacheHandler">
+            <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
+        </service>
+    </services>
 </container>

@@ -77,9 +77,9 @@ admin_campaign_block:
     path: /campaign/block
     defaults: { _controller: VmesteSaasBundle:Campaign:block }
 
-customer_campaign_delete:
-    path: /campaign/delete
-    defaults: { _controller: VmesteSaasBundle:Campaign:delete }
+customer_campaign_block:
+    path: /customer/campaign/block
+    defaults: { _controller: VmesteSaasBundle:Campaign:block }
 
 admin_campaign_delete:
     path: /campaign/delete

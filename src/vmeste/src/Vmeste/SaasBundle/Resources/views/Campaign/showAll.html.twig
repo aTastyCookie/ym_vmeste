@@ -6,14 +6,18 @@
     <div class="row">
         <div class="span12">
             <div class="btn-group pull-right">
-                <a class="btn btn-primary" href="{{ path('admin_campaign_create') }}">Add New Campaign</a>
+                <a class="btn btn-primary" href="{{ path('admin_campaign_create') }}">Новая компания</a>
+            </div>
+
+           {# <div class="btn-group pull-right">
+                <a class="btn btn-primary" href="{{ path('admin_campaign_create') }}">Новая компания</a>
                 <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a href="{{ path('admin_campaign_create') }}">Add New Campaign</a></li>
-                    <li><a href="" onclick="return submitOperation();">Delete All Campaigns</a></li>
+                    <li><a href="{{ path('admin_campaign_create') }}">Новая компания</a></li>
+                    &#123;&#35;<li><a href="" onclick="return submitOperation();">Удалить все компании</a></li>&#35;&#125;
                 </ul>
-            </div>
+            </div>#}
         </div>
     </div>
     {% if campaign_created %}
