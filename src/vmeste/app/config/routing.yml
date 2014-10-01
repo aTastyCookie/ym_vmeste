@@ -139,6 +139,14 @@ payment_page:
     path: /payment/{campaignId}
     defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignId: null }
 
+yandex_check:
+    path: /yandex/check
+    defaults: { _controller: VmesteSaasBundle:Transaction:yandexCheck}
+
+yandex_payment_aviso:
+    path: /yandex/payment-aviso
+    defaults: { _controller: VmesteSaasBundle:Transaction:yandexPaymentAviso}
+
 #vmeste_administrator_login:
 #     path:     /contact
 #     defaults: { _controller: AcmeDemoBundle:Main:contact }

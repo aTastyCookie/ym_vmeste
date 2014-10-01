@@ -48,6 +48,10 @@ class CampaignController extends Controller
 
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
 
+        $settingsCollection = $user->getSettings();
+        $userSettings = $settingsCollection[0];
+        $yandexKassa = $userSettings->getYandexKassa();
+
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('c')->from('Vmeste\SaasBundle\Entity\Campaign', 'c')
@@ -72,7 +76,8 @@ class CampaignController extends Controller
             'campaign_url' => "http://" . $this->getRequest()->getHost() . "/payment/",
             'pages' => $pageNumberArray,
             'page' => $page,
-            'campaign_created' => $campaignSuccessfullyCreatedMessage);
+            'campaign_created' => $campaignSuccessfullyCreatedMessage,
+            'yk' => $yandexKassa);
     }
 
     /**

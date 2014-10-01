@@ -43,7 +43,8 @@
             <div class="content">
                 <div class="fields">
                     <div class="item">
-                        <input type="text" class="value" placeholder="сумма" name="sum" value="{{ campaign.minAmount }}" />
+                        <input type="text" class="value" placeholder="сумма" name="sum" 
+                        value="{% if campaign.minAmount>0 %}{{ campaign.minAmount }}{% endif %}" />
                         <p class="rouble_sign">
                             <span class="rur">a</span>
                         </p>

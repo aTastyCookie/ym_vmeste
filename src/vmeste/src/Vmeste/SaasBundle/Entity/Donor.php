@@ -37,7 +37,7 @@ class Donor
     private $recurrent;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
     protected $name; //name varchar(255) COLLATE utf8_unicode_ci NOT NULL,
 

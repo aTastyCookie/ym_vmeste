@@ -108,29 +108,6 @@ class Recurrent
     }
 
     /**
-     * Set donator_id
-     *
-     * @param integer $donatorId
-     * @return Recurrent
-     */
-    public function setDonatorId($donatorId)
-    {
-        $this->donator_id = $donatorId;
-    
-        return $this;
-    }
-
-    /**
-     * Get donator_id
-     *
-     * @return integer 
-     */
-    public function getDonatorId()
-    {
-        return $this->donator_id;
-    }
-
-    /**
      * Set campaign_id
      *
      * @param integer $campaignId
