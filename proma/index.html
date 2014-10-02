@@ -1,35 +1,3 @@
-<?php 
-$sent = $error = false;
-if(isset($_POST['email']) && isset($_POST['phone'])) {
-	require_once('config/config.php');
-	$pdo = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASSWORD, array( PDO::ATTR_PERSISTENT => true));
-	$ip = $_SERVER['REMOTE_ADDR'];
-	$sth = $pdo->prepare("SELECT time FROM `".DB_NAME."`.`".DB_TABLE_NAME."` WHERE ip = '".$ip."' ORDER BY time DESC LIMIT 1;");
-	$sth->execute();
-	$row = $sth->fetch();
-	if(($row && ($row['time'] + TIME_LIMIT) < time()) || !$row) {
-		$body = "Сайт: ".$_POST['site'] . "\r\n" . 
-		"Контактное лицо: ".$_POST['contact'] . "\r\n" . 
-		"Страна: ".$_POST['country'] . "\r\n" . 
-		"Телефон: ".$_POST['phone'] . "\r\n" . 
-		"Email: ".$_POST['email'] . "\r\n" . 
-		"Терминал: ".$_POST['terminal'] . "\r\n" . 
-		"Дата/Время: ". date("H:i:s d M Y") . "\r\n";
-		
-		$headers  = 'MIME-Version: 1.0' . "\r\n";
-		$headers .= 'Content-type: text/plain; charset=utf-8' . "\r\n";
-		@mail("vmeste@yamoney.ru", "Новая заявка Касса для благотворительности", $body, $headers);
-		
-		$sth = $pdo->prepare("INSERT INTO `".DB_NAME."`.`".DB_TABLE_NAME."` (`ip` , `time`)
-							VALUES ('$ip', ".time().");");
-		$sth->execute();
-	} else {
-		$error = true;
-	}
-	$sent = true;
-	
-}
-?>
 <!doctype html>
 <html>
 <head>
@@ -136,9 +104,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
     <div class="content">
       <a class="logo" href="https://money.yandex.ru/"><img src="img/logo.png"></a>
       <h1>Касса для благотворительности</h1>
-      <p>Касса помогает тем, кто дарит надежду.<br>
-      Получите готовые инструменты, чтобы собирать<br> 
-      деньги на хорошие дела.</p>
+      <p>Касса помогает тем, кто дарит надежду.<br>Получите готовые инструменты, чтобы собирать<br> деньги на хорошие дела.</p>
 
       <div class="get_kassa">
         <a href="#kassa_section">Отправить заявку</a>
@@ -246,30 +212,30 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
       <h2>Расскажите о себе</h2>
 
       <div class="kassa_form">
-        <form autocomplete="off" id="form" method="POST" onsubmit="yaCounter152220.reachGoal('CHARITY_FORM_SUBMIT'); return true;"  enctype="application/x-www-form-urlencoded" action="<?php echo $_SERVER['PHP_SELF']; ?>#kassa_section">
+        <form id="form" method="get">
           <div class="row">
             <div class="item">
               <label>Адрес сайта</label>
-              <input type="text" placeholder="http://site.ru" name="site">
+              <input type="text" placeholder="http://site.ru">
             </div>
             <div class="clearfix"></div>
           </div>
           <div class="row">
             <div class="item">
               <label>Контактное лицо</label>
-              <input type="text" placeholder="Иванов Иван" name="contact">
+              <input type="text" placeholder="Иванов Иван">
             </div>
             <div class="clearfix"></div>
           </div>
           <div class="row">
             <div class="item">
               <label>Страна</label>
-              <select name="country">
-                <option value="Россия">Россия</option>
-                <option value="Белоруссия">Белоруссия</option>
-                <option value="Казахстан">Казахстан</option>
-                <option value="Украина">Украина</option>
-                <option value="Другая">Другая</option>
+              <select>
+                <option>Россия</option>
+                <option>Белоруссия</option>
+                <option>Казахстан</option>
+                <option>Украина</option>
+                <option>Другая</option>
               </select>
             </div>
             <div class="clearfix"></div>
@@ -277,7 +243,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
           <div class="row">
             <div class="item">
               <label>Номер телефона</label>
-              <input type="text" placeholder="+79601234567" id="phone" name="phone">
+              <input type="text" placeholder="+79601234567" id="phone">
 
               <div class="error" id="phone_error"><span>Здесь что-то не так. Проверьте номер и попробуйте еще раз.</span></div>
             </div>
@@ -286,7 +252,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
           <div class="row">
             <div class="item">
               <label>Почта</label>
-              <input type="text" placeholder="address@domain.ru" id="email" name="email">
+              <input type="text" placeholder="address@domain.ru" id="email">
 
               <div class="error" id="email_error"><span>Здесь что-то не так. Проверьте адрес и попробуйте еще раз.</span></div>
             </div>
@@ -294,10 +260,11 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
           </div>
           <div class="row">
             <div class="item boolean">
-                <label for="terminal">
-                  <input type="checkbox" id="terminal" <?php if(!$sent) echo "checked"; ?> value="Да" name="terminal">
-                  Хочу мобильный терминал
-                </label>
+              <label for="terminal">
+                <input type="checkbox" id="terminal" checked>
+                Хочу мобильный терминал
+              </label>
+
               <div class="info_tip">
                 <i class="info_icon"></i>
 
@@ -305,9 +272,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
                   <div class="tip_text">
                     <a class="close" href="#"></a>
 
-                    Небольшое устройство, которое пригодится вам на 
-                    благотворительных мероприятиях. Подключите его<br/> 
-                    к смартфону и принимайте пожертвования с
+                    Небольшое устройство, которое пригодится вам на благотворительных мероприятиях. Подключите его<br/> к смартфону и принимайте пожертвования с
                   банковских карт.
                   </div>
                 </div>
@@ -317,20 +282,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
           </div>
           <div class="row">
             <div class="item">
-              <a name="form_submit"></a>
-              <?php if($sent) { ?>
-                <div class="submit_box done">
-              <?php } else {?>
-                <div class="submit_box">
-              <?php } ?>
-              <?php if(!$error) { ?>
-              	<p class="success_submit">Приятно познакомиться! Мы перезвоним вам<br> 
-                  в течение двух дней, чтобы вы успели подготовить текст и картинки для вашей страницы.</p>
-              <? } else {?>
-              	<p class="error_submit">С Вашего IP-адреса недавно уже была отправлена заявка. Попробуйте снова немного позже.</p>
-              <?php } ?>
-                  <button type="submit" class="submit" id="form_submit" name="send">Отправить заявку</button>
-              </div>
+              <button type="submit" class="submit" id="form_submit">Отправить заявку</button>
             </div>
             <div class="clearfix"></div>
           </div>

@@ -197,8 +197,11 @@ header .get_kassa a:hover { text-decoration: none; }
 .kassa .holder .kassa_form .row .item .span6 input { width: 162px; }
 .kassa .submit { background: #fdde51; border-bottom: 1px solid #bf8d32; display: inline-block; height: 40px; width: 190px; border-radius: 4px; font-size: 16px; margin: 0; }
 .kassa .submit_box { height: 156px; padding: 16px 0 0; }
-.kassa .submit_box .success_submit { background: url("../img/140910153607_32.checkmark.green.svg") no-repeat scroll top right rgba(0, 0, 0, 0); color: #000; font-size: 15px; line-height: 20px; padding: 0 46px 0 0; display: none; margin: 8px 0 0; }
-.kassa .submit_box.done .success_submit { display: block; }
+.kassa .submit_box .success_submit, .kassa .submit_box.done .error_submit { background: url("../img/140910153607_32.checkmark.green.svg") no-repeat scroll top right rgba(0, 0, 0, 0); color: #000; font-size: 15px; line-height: 20px; padding: 0 46px 0 0; display: none; margin: 8px 0 0; }
+.kassa .submit_box.done .error_submit {
+	background: none;
+}
+.kassa .submit_box.done .success_submit, .kassa .submit_box.done .error_submit  { display: block; }
 .kassa .submit_box.done .submit { display: none; }
 
 footer { background: #f6f3f0; border-top: 1px solid #cfc9c4; height: 87px; font-size: 15px; }
