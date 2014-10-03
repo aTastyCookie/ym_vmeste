@@ -12,10 +12,12 @@ namespace Vmeste\SaasBundle\Controller;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
@@ -157,6 +159,37 @@ class CampaignController extends Controller
             ->add('title', 'text', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Название кампании'))
+            ->add('subtitle', 'text',
+                array('constraints' => array(
+                    new NotBlank()
+                ), 'label' => 'Подзаголовок')
+            )
+            ->add(
+                'smallPic', 'file', array(
+                'label' => 'Логотип (100x70)',
+                'constraints' => array(
+                    new Image(
+                        array(
+                            'minWidth' => 100,
+                            'maxWidth' => 100,
+                            'minHeight' => 70,
+                            'maxHeight' => 70,
+                            'maxSize' => '500k',
+                        )
+                    )
+                )
+            ))
+            ->add(
+                'bigPic', 'file', array(
+                    'label' => 'Большое изображение',
+                    'constraints' => array(
+                        new Image(array(
+                                'maxSize' => '5M',
+                            )
+                        )
+                    )
+                )
+            )
             ->add('min_amount', 'text', array('constraints' => array(
                 new NotBlank()
             ), 'label' => 'Минимальный взнос'))
@@ -172,9 +205,9 @@ class CampaignController extends Controller
                         )
                     )
                 )))
-            ->add('form_image', 'text', array('constraints' => array(
-                new Url()
-            ), 'label' => 'Url картинки'))
+            /* ->add('form_image', 'text', array('constraints' => array(
+                 new Url()
+             ), 'label' => 'Url картинки'))*/
             // Please enter content of donation form box.
             ->add('form_intro', 'textarea', array('constraints' => array(
                 new NotBlank()
@@ -196,14 +229,18 @@ class CampaignController extends Controller
             $em = $this->getDoctrine()->getManager();
 
             $campaign = new Campaign();
+            $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
             $campaign->setTitle($data['title']);
-            $campaign->setImage($data['form_image']);
+            $campaign->setSubTitle($data['subtitle']);
             $campaign->setCurrency($data['currency']);
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
             $campaign->setFormTerms($data['form_terms']);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
+            $campaign->setSmallPic($data['smallPic']);
+            $campaign->setBigPic($data['bigPic']);
+            $campaign->upload();
 
             $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $data['user']));
             $campaign->setUser($user);
@@ -241,6 +278,38 @@ class CampaignController extends Controller
                 ),
                     'label' => 'Название',
                     'data' => $campaign->getTitle()))
+            ->add('subtitle', 'text',
+                array('constraints' => array(
+                    new NotBlank()
+                ), 'label' => 'Подзаголовок')
+            )
+            ->add('smallPic', 'file', array(
+                    'label' => 'Логотип (100x70)',
+                    'constraints' => array(
+                        new Image(
+                            array(
+                                'minWidth' => 100,
+                                'maxWidth' => 100,
+                                'minHeight' => 70,
+                                'maxHeight' => 70,
+                                'maxSize' => '500k',
+                            )
+                        )
+                    ),
+                    'required' => false
+                )
+            )
+            ->add('bigPic', 'file', array(
+                    'label' => 'Большое изображение',
+                    'constraints' => array(
+                        new Image(array(
+                                'maxSize' => '5M',
+                            )
+                        )
+                    ),
+                    'required' => false
+                )
+            )
             ->add(
                 'min_amount',
                 'text',
@@ -263,14 +332,6 @@ class CampaignController extends Controller
                     )
                 ),
                 'data' => $campaign->getCurrency()))
-            ->add(
-                'form_image',
-                'text',
-                array('constraints' => array(
-                    new Url()
-                ),
-                    'label' => 'Url картинки',
-                    'data' => $campaign->getImage()))
             // Please enter content of donation form box.
             ->add(
                 'form_intro',
@@ -296,18 +357,26 @@ class CampaignController extends Controller
 
         if ($form->isValid()) {
 
-            $data = $form->getData();
-
             $em = $this->getDoctrine()->getManager();
-
             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
+            $data = $form->getData();
+
+            $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
             $campaign->setTitle($data['title']);
-            $campaign->setImage($data['form_image']);
             $campaign->setCurrency($data['currency']);
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
             $campaign->setFormTerms($data['form_terms']);
+
+            if ($data['smallPic'] != null)
+                $campaign->setSmallPic($data['smallPic']);
+
+            if ($data['bigPic'] != null)
+                $campaign->setBigPic($data['bigPic']);
+
+            $campaign->upload();
+
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
 
@@ -318,12 +387,13 @@ class CampaignController extends Controller
 
         return array(
             'form' => $form->createView(),
+            'logo' => ($campaign->getSmallPicPath() != null) ? $this->container->getParameter('image.upload.dir') . $campaign->getSmallPicPath() : null,
+            'bigImage' => ($campaign->getBigPicPath() != null) ? $this->container->getParameter('image.upload.dir') . $campaign->getBigPicPath() : null,
         );
     }
 
     public function blockAction()
     {
-
 
 
         $id = $this->getRequest()->query->get("id");
@@ -341,7 +411,7 @@ class CampaignController extends Controller
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
-               return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
+                return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
             } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
                 return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
             }
@@ -514,7 +584,7 @@ class CampaignController extends Controller
 
         if ($separator == 'tab') $separator = "\t";
 
-        $output = chr(0xEF).chr(0xBB).chr(0xBF).
+        $output = chr(0xEF) . chr(0xBB) . chr(0xBF) .
             '"Project"' . $separator
             . '"FIO"' . $separator
             . '"E-Mail"' . $separator
@@ -525,9 +595,9 @@ class CampaignController extends Controller
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"';
             if ($transaction->getDonor()->getRecurrent() != null)
-                $output .= '1' . '"'."\r\n";
+                $output .= '1' . '"' . "\r\n";
             else
-                $output .= '0' . '"'."\r\n";
+                $output .= '0' . '"' . "\r\n";
         }
 
         $response = new Response($output, 200, $responseHeaders);
@@ -547,10 +617,17 @@ class CampaignController extends Controller
         $userSettings = $settingsCollection[0];
         $yandexKassa = $userSettings->getYandexKassa();
 
+        $paymentPage = "http://" . $this->getRequest()->getHost() . $this->generateUrl('payment_page') . "/" . $campaign->getId();
+        $imageStoragePath = $this->container->getParameter('image.upload.dir');
+
         return array('campaign' => $campaign,
             'yandexKassa' => $yandexKassa,
             'customerNumber' => time(),
-            'noIDcustomerNumber' => time(), 'uniqueId' => time());
+            'noIDcustomerNumber' => time(),
+            'uniqueId' => time(),
+            'paymentPage' => $paymentPage,
+            'imageStoragePath' => $imageStoragePath
+        );
 
     }
 

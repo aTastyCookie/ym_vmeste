@@ -74,6 +74,11 @@ class Recurrent
      * @ORM\Column(name="last_techMessage", type="string", length=255)
      */
     private $last_techmessage;
+
+    /**
+     * @ORM\Column(name="last_error", type="integer")
+     */
+    private $last_error;
    
     
     /**
@@ -421,11 +426,14 @@ class Recurrent
 
     /**
      * Get donor
-     *
+     * @param boolean $checkBlocked
      * @return \Vmeste\SaasBundle\Entity\Donor 
      */
-    public function getDonor()
+    public function getDonor($checkBlocked = false)
     {
+        if($checkBlocked && $this->donor->getStatus()->getStatus() === 'BLOCKED') {
+            return null;
+        }
         return $this->donor;
     }
 
@@ -450,5 +458,28 @@ class Recurrent
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set last_error
+     *
+     * @param integer $lastError
+     * @return Recurrent
+     */
+    public function setLastError($lastError)
+    {
+        $this->last_error = $lastError;
+    
+        return $this;
+    }
+
+    /**
+     * Get last_error
+     *
+     * @return integer 
+     */
+    public function getLastError()
+    {
+        return $this->last_error;
     }
 }

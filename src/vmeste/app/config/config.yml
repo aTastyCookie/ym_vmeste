@@ -83,3 +83,5 @@ parameters:
     pass.recover.email.from: no-reply@vmeste.ru
 
     paginator.page.items: 5
+
+    image.upload.dir: /uploads/documents/

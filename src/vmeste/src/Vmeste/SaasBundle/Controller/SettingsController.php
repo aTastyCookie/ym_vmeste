@@ -26,6 +26,8 @@ class SettingsController extends Controller
      */
     public function editSettingsAction()
     {
+        $userId = $this->getRequest()->get('userId', null);
+
 
         $emailSettingsErrors = null;
         if ($this->getRequest()->query->get("email_setting_errors") != null)
@@ -35,15 +37,35 @@ class SettingsController extends Controller
         if ($this->getRequest()->query->get("password_setting_errors") != null)
             $passwordSettingsErrors = $this->getRequest()->query->get("password_setting_errors");
 
+        if ($userId == null) {
+            $authorizedUser = $this->get('security.context')->getToken()->getUser();
+            $userId = $authorizedUser->getId();
+        }
 
-        $currentUser = $this->get('security.context')->getToken()->getUser();
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => intval($userId)));
 
-        $settingsCollection = $user->getSettings();
-        $userSettings = $settingsCollection[0];
-        $yandexKassa = $userSettings->getYandexKassa();
+        if ($user == null) {
+            return $this->redirect($this->generateUrl("vmeste_saas"));
+        } else {
+            $settingsCollection = $user->getSettings();
+            $userSettings = $settingsCollection[0];
+            $yandexKassa = $userSettings->getYandexKassa();
+        }
 
+
+        $updateEmailSettingsRoute = $this->generateUrl('update_email_settings');
+        $updateYKSettingsRoute = $this->generateUrl('update_yk_settings');
+        $updatePasswordRoute = $this->generateUrl('update_customer_password');
+
+        $userIdForEdit = null;
+
+        if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+            $updateEmailSettingsRoute = $this->generateUrl('admin_update_email_settings');
+            $updateYKSettingsRoute = $this->generateUrl('admin_update_yk_settings');
+            $updatePasswordRoute = $this->generateUrl('admin_update_customer_password');
+            $userIdForEdit = $userId;
+        }
 
         return array(
             'email_setting_errors' => $emailSettingsErrors,
@@ -61,12 +83,18 @@ class SettingsController extends Controller
             'gp' => $yandexKassa->getGp(),
             'sandbox' => $yandexKassa->getSandbox(),
             'password_setting_errors' => $passwordSettingsErrors,
+            'updateEmailSettingsRoute' => $updateEmailSettingsRoute,
+            'updateYKSettingsRoute' => $updateYKSettingsRoute,
+            'updatePasswordRoute' => $updatePasswordRoute,
+            'userIdForEdit' => $userIdForEdit,
         );
     }
 
     public function updateEmailSettingsAction()
     {
         $request = $this->getRequest();
+
+        $redirectUri = $this->generateUrl('vmeste_saas');
 
         if ($request->isMethod('POST')) {
 
@@ -88,15 +116,20 @@ class SettingsController extends Controller
 
             $availableSeparators = array(';', ',', 'tab');
 
+            $userId = $this->getRequest()->get('userId', null);
+
             if (count($notificationEmailErrorList) == 0 && count($senderNameEmailErrorList) == 0
                 && count($senderEmailErrorList) == 0 && in_array($csvSeparator, $availableSeparators)
             ) {
 
                 $em = $this->getDoctrine()->getManager();
 
-                $currentUser = $this->get('security.context')->getToken()->getUser();
+                if (!($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $currentUser = $this->get('security.context')->getToken()->getUser();
+                    $userId = $currentUser->getId();
+                }
 
-                $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+                $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
 
                 $settingsCollection = $user->getSettings();
                 $userSettings = $settingsCollection[0];
@@ -109,7 +142,12 @@ class SettingsController extends Controller
                 $em->persist($userSettings);
                 $em->flush();
 
-                return $this->redirect($this->generateUrl('customer_settings'));
+                $redirectUri = $this->redirect($this->generateUrl('customer_settings'));
+
+                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
+                }
+
             } else {
 
                 $errorList = "<ul>";
@@ -119,15 +157,24 @@ class SettingsController extends Controller
                 $errorList .= !in_array($csvSeparator, $availableSeparators) ? "<li>Separator, you have choosen is forbidden.</li>" : "";
                 $errorList .= "</ul>";
 
-                return $this->redirect($this->generateUrl('customer_settings', array("email_setting_errors" => $errorList)));
+
+                $redirectUri = $this->generateUrl('customer_settings', array("email_setting_errors" => $errorList));
+
+                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId, "email_setting_errors" => $errorList));
+                }
             }
         }
+
+        return $this->redirect($redirectUri);
     }
 
     public function updateYkSettingsAction()
     {
 
         $request = $this->getRequest();
+
+        $redirectUri = $this->generateUrl('vmeste_saas');
 
         if ($request->isMethod('POST')) {
 
@@ -145,8 +192,12 @@ class SettingsController extends Controller
             $em = $this->getDoctrine()->getManager();
 
             $currentUser = $this->get('security.context')->getToken()->getUser();
+            $userId = $currentUser->getId();
+            if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                $userId = $this->getRequest()->get('userId', null);
+            }
 
-            $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+            $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
 
             $settingsCollection = $user->getSettings();
             $userSettings = $settingsCollection[0];
@@ -167,13 +218,15 @@ class SettingsController extends Controller
             $em->persist($yandexKassa);
             $em->flush();
 
-            return $this->redirect($this->generateUrl('customer_settings'));
-        } else {
+            $redirectUri = $this->redirect($this->generateUrl('customer_settings'));
 
-            $errorList = null;
+            if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
+            }
 
-            return $this->redirect($this->generateUrl('customer_settings', array("yk_setting_errors" => $errorList)));
         }
+
+        return $this->redirect($redirectUri);
     }
 
     private function convertCheckboxDataToInt($data)
@@ -190,73 +243,99 @@ class SettingsController extends Controller
 
         $request = $this->get('request');
 
+        $redirectUri = $this->generateUrl('vmeste_saas');
+
         if ($request->isMethod('POST')) {
 
-
-            $oldPassword = $request->request->get('old_password');
-            $password = $request->request->get('new_password');
-            $passwordRepeat = $request->request->get('new_password_repeat');
 
             $notBlank = new NotBlank();
             $length = new Length(array('min' => 6, 'max' => 128));
 
             $validator = $this->get('validator');
 
-            $notBlank->message = "Old password is empty!";
-            $tokenErrorList = $validator->validateValue($oldPassword, array($notBlank, $length));
+            if (!($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                $oldPassword = $request->request->get('old_password');
+                $notBlank->message = "Old password is empty!";
+                $oldPasswordErrorList = $validator->validateValue($oldPassword, array($notBlank, $length));
+            } else {
+                $oldPasswordErrorList = array();
+            }
+
+            $password = $request->request->get('new_password');
             $notBlank->message = "Password is empty!";
             $passwordErrorList = $validator->validateValue($password, array($notBlank, $length));
-            $notBlank->message = "You hadn't repeated your password!";
+
+            $passwordRepeat = $request->request->get('new_password_repeat');
+            $notBlank->message = "You haven't repeated your password!";
             $passwordRepeatErrorList = $validator->validateValue($passwordRepeat, array($notBlank, $length));
+
             $passwordsEqual = ($password === $passwordRepeat);
 
-            if (count($tokenErrorList) == 0 && count($passwordErrorList) == 0
+            $userId = $this->getRequest()->get('userId', null);
+            $searchParamsArray = array('id' => $userId);
+
+            if (count($oldPasswordErrorList) == 0 && count($passwordErrorList) == 0
                 && count($passwordRepeatErrorList) == 0 && $passwordsEqual
             ) {
 
                 $doctrine = $this->getDoctrine();
                 $em = $doctrine->getManager();
 
-                $currentUser = $this->get('security.context')->getToken()->getUser();
+                if (!($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
 
-                $factory = $this->get('security.encoder_factory');
-                $user = new User();
-                $encoder = $factory->getEncoder($user);
-                $password = $encoder->encodePassword('ryanpass', $user->getSalt());
+                    $factory = $this->get('security.encoder_factory');
+                    $user = new User();
+                    $encoder = $factory->getEncoder($user);
+                    $oldPassword = $encoder->encodePassword($oldPassword, $user->getSalt());
+
+                    $currentUser = $this->get('security.context')->getToken()->getUser();
+                    $userId = $currentUser->getId();
+                    $searchParamsArray = array('id' => $userId, 'password' => $oldPassword);
+                }
 
                 $user = $this->getDoctrine()
                     ->getRepository('Vmeste\SaasBundle\Entity\User')
-                    ->findOneBy(array('id' => $currentUser->getId(), 'password' => $password));
+                    ->findOneBy($searchParamsArray);
 
                 if ($user != null) {
 
                     $factory = $this->get('security.encoder_factory');
                     $encoder = $factory->getEncoder($user);
-                    $password = $encoder->encodePassword('ryanpass', $user->getSalt());
+                    $password = $encoder->encodePassword($password, $user->getSalt());
                     $user->setPassword($password);
 
                     $em->persist($user);
                     $em->flush();
 
-                    $logger->info('[CHANGE_PASSWORD] For user with id: ' . $currentUser->getId());
+                    $logger->info('[CHANGE_PASSWORD] For user with id: ' . $userId);
 
-                    return $this->redirect($this->generateUrl("customer_settings"));
+                    $redirectUri = $this->redirect($this->generateUrl('customer_settings'));
+
+                    if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                        $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
+                    }
                 } else {
                     $userNotFoundErrorMessage = "User not found!";
                     $errorList .= "<li>" . $userNotFoundErrorMessage . "</li>";
+                    $redirectUri = $this->generateUrl('customer_settings', array("password_setting_errors" => $errorList));
                 }
 
-
             } else {
-                $errorList .= count($tokenErrorList) > 0 ? "<li>" . $tokenErrorList[0]->getMessage() . "</li>" : "";
+                $errorList .= count($oldPasswordErrorList) > 0 ? "<li>" . $oldPasswordErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($passwordErrorList) > 0 ? "<li>" . $passwordErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($passwordRepeatErrorList) > 0 ? "<li>" . $passwordRepeatErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= !$passwordsEqual ? "<li>" . "Passwords are not equal!" . "</li>" : "";
-            }
 
-            $errorList = "<ul>" . $errorList . "</ul>";
-            return $this->redirect($this->generateUrl('customer_settings', array("password_setting_errors" => $errorList)));
+                $errorList = "<ul>" . $errorList . "</ul>";
+                $redirectUri = $this->generateUrl('customer_settings', array("password_setting_errors" => $errorList));
+
+                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId, "password_setting_errors" => $errorList));
+                }
+            }
         }
+
+        return $this->redirect($redirectUri);
 
     }
 }

@@ -9,13 +9,17 @@
 namespace Vmeste\SaasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="Vmeste\SaasBundle\Entity\CampaignRepository")
  * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="campaign")
  */
-class Campaign {
+class Campaign
+{
 
     /**
      * @ORM\Column(type="integer", name="id", options={"unsigned"=true})
@@ -36,9 +40,41 @@ class Campaign {
     protected $title;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", name="sub_title")
      */
-    protected $image;
+    protected $subTitle;
+
+    /**
+     * @Assert\File(maxSize="500000")
+     */
+
+    /**
+     * @Assert\File(
+     *     maxSize = "500k",
+     *     mimeTypes = {"image/jpeg", "image/png"},
+     *     mimeTypesMessage = "Пожалуйста загрузите изображение корректного формата"
+     * )
+     */
+    protected $smallPic;
+
+    /**
+     * @Assert\File(
+     *     maxSize = "5M",
+     *     mimeTypes = {"image/jpeg", "image/png"},
+     *     mimeTypesMessage = "Пожалуйста загрузите изображение корректного формата"
+     * )
+     */
+    protected $bigPic;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    public $smallPicPath;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    public $bigPicPath;
 
     /**
      * @ORM\Column(type="text", name="form_intro",)
@@ -81,10 +117,56 @@ class Campaign {
      */
     protected $changed;
 
+    protected $uploadDir;
+
     public function __construct()
     {
         $this->transactions = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
+
+    public function getAbsolutePath()
+    {
+        return null === $this->path ? null : $this->getUploadRootDir() . '/' . $this->path;
+    }
+
+    public function getWebPath()
+    {
+        return null === $this->path ? null : $this->getUploadDir() . '/' . $this->path;
+    }
+
+    protected function getUploadRootDir()
+    {
+        return __DIR__ . '/../../../../web/' . $this->getUploadDir();
+    }
+
+    public function getUploadDir()
+    {
+        return $this->uploadDir;
+    }
+
+    public function setUploadDir($dir)
+    {
+        $this->uploadDir = $dir;
+    }
+
+    public function upload()
+    {
+        if (null !== $this->getSmallPic()) {
+            $smallPicName = sha1(uniqid(mt_rand(), true)) . "." . $this->getSmallPic()->guessClientExtension();
+            $this->getSmallPic()->move($this->getUploadRootDir(), $smallPicName);
+            $this->smallPicPath = $smallPicName;
+            $this->smallPic = null;
+        }
+
+        if (null !== $this->getBigPic()) {
+            $bigPicName = sha1(uniqid(mt_rand(), true)) . "." . $this->getBigPic()->guessClientExtension();
+            $this->getBigPic()->move($this->getUploadRootDir(), $bigPicName);
+            $this->bigPicPath = $bigPicName;
+            $this->bigPic = null;
+        }
+    }
+
 
     /**
      * @return mixed
@@ -138,7 +220,7 @@ class Campaign {
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -161,34 +243,11 @@ class Campaign {
     /**
      * Get title
      *
-     * @return string 
+     * @return string
      */
     public function getTitle()
     {
         return $this->title;
-    }
-
-    /**
-     * Set image
-     *
-     * @param string $image
-     * @return Campaign
-     */
-    public function setImage($image)
-    {
-        $this->image = $image;
-
-        return $this;
-    }
-
-    /**
-     * Get image
-     *
-     * @return string 
-     */
-    public function getImage()
-    {
-        return $this->image;
     }
 
     /**
@@ -207,7 +266,7 @@ class Campaign {
     /**
      * Get formIntro
      *
-     * @return string 
+     * @return string
      */
     public function getFormIntro()
     {
@@ -230,7 +289,7 @@ class Campaign {
     /**
      * Get formTerms
      *
-     * @return string 
+     * @return string
      */
     public function getFormTerms()
     {
@@ -253,7 +312,7 @@ class Campaign {
     /**
      * Get minAmount
      *
-     * @return string 
+     * @return string
      */
     public function getMinAmount()
     {
@@ -276,7 +335,7 @@ class Campaign {
     /**
      * Get currency
      *
-     * @return string 
+     * @return string
      */
     public function getCurrency()
     {
@@ -299,7 +358,7 @@ class Campaign {
     /**
      * Get user
      *
-     * @return \Vmeste\SaasBundle\Entity\User 
+     * @return \Vmeste\SaasBundle\Entity\User
      */
     public function getUser()
     {
@@ -332,7 +391,7 @@ class Campaign {
     /**
      * Get transactions
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getTransactions()
     {
@@ -355,10 +414,111 @@ class Campaign {
     /**
      * Get status
      *
-     * @return \Vmeste\SaasBundle\Entity\Status 
+     * @return \Vmeste\SaasBundle\Entity\Status
      */
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set subTitle
+     *
+     * @param string $subTitle
+     * @return Campaign
+     */
+    public function setSubTitle($subTitle)
+    {
+        $this->subTitle = $subTitle;
+
+        return $this;
+    }
+
+    /**
+     * Get subTitle
+     *
+     * @return string
+     */
+    public function getSubTitle()
+    {
+        return $this->subTitle;
+    }
+
+    /**
+     * Set smallPicPath
+     *
+     * @param string $smallPicPath
+     * @return Campaign
+     */
+    public function setSmallPicPath($smallPicPath)
+    {
+        $this->smallPicPath = $smallPicPath;
+
+        return $this;
+    }
+
+    /**
+     * Get smallPicPath
+     *
+     * @return string
+     */
+    public function getSmallPicPath()
+    {
+        return $this->smallPicPath;
+    }
+
+    /**
+     * Set bigPicPath
+     *
+     * @param string $bigPicPath
+     * @return Campaign
+     */
+    public function setBigPicPath($bigPicPath)
+    {
+        $this->bigPicPath = $bigPicPath;
+
+        return $this;
+    }
+
+    /**
+     * Get bigPicPath
+     *
+     * @return string
+     */
+    public function getBigPicPath()
+    {
+        return $this->bigPicPath;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSmallPic()
+    {
+        return $this->smallPic;
+    }
+
+    /**
+     * @param mixed $smallPic
+     */
+    public function setSmallPic(UploadedFile $smallPic)
+    {
+        $this->smallPic = $smallPic;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBigPic()
+    {
+        return $this->bigPic;
+    }
+
+    /**
+     * @param mixed $bigPic
+     */
+    public function setBigPic(UploadedFile $bigPic)
+    {
+        $this->bigPic = $bigPic;
     }
 }

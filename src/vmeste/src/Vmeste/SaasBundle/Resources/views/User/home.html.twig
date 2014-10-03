@@ -4,13 +4,13 @@
 
     <h2>Пользователи</h2>
 
-	<div class="row">
-		<div class="span12">
-			<div class="btn-group pull-right">
-	    		<a class="btn btn-primary" href="{{ path('admin_user_create') }}">Новый пользователь</a>
-			</div>
-		</div>
-	</div>
+    <div class="row">
+        <div class="span12">
+            <div class="btn-group pull-right">
+                <a class="btn btn-primary" href="{{ path('admin_user_create') }}">Новый пользователь</a>
+            </div>
+        </div>
+    </div>
 
     {% if user_created %}
         <div>{{ user_created }}</div>
@@ -29,33 +29,40 @@
         {% for user in users %}
             <tr>
                 <!--<td>{{ user.username }}</td>-->
-                <td>{{ user.email }}</td>
-                <td align="center">
-                        {% for role in user.roles %}
-                            <p>{{ role.name }}</p>
-                        {% endfor %}
+                <td>{{ user.email }}
+                    {% if user.role == 'ROLE_USER' %}
+                        &nbsp;<a href="{{ path('admin_customer_settings', { 'userId' : user.id }) }}">Настройки</a>
+                    {% endif %}
                 </td>
                 <td align="center">
-                        {% for status in user.statuses %}
-                            <p>{{ status.name }}</p>
-                        {% endfor %}
+                    {% for role in user.roles %}
+                        <p>{{ role.name }}</p>
+                    {% endfor %}
+                </td>
+                <td align="center">
+                    {% for status in user.statuses %}
+                        <p>{{ status.name }}</p>
+                    {% endfor %}
                 </td>
                 <td align="center">{{ user.created|date("d/m/Y") }}</td>
                 <td align="center">{{ user.changed|date("d/m/Y") }}</td>
                 <td align="center">
                     <a href="{{ path('admin_user_edit', { 'id':user.id, 'page': page }) }}">
-						<img src="{{ asset('bundles/saasbundle/img/edit.png') }}" title="Редактировать" alt="Редактировать" border="0">
-					</a>
-					{% for status in user.statuses %}
-						{% if status.status == 'BLOCKED' %}
-							<a href="{{ path('admin_user_activate', { 'id':user.id, 'page': page  }) }}">Активировать</a>
-						{% else %}
-							<a href="{{ path('admin_user_block', { 'id':user.id, 'page': page  }) }}"><img src="{{ asset('bundles/saasbundle/img/block.png') }}" title="Заблокировать" alt="Заблокировать" border="0"></a>
-						{% endif %}
-					{% endfor %}
-					{#<a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
-						<img src="{{ asset('bundles/saasbundle/img/delete.png') }}" title="Удалить" alt="Удалить" border="0">
-					</a>#}
+                        <img src="{{ asset('bundles/saasbundle/img/edit.png') }}" title="Редактировать"
+                             alt="Редактировать" border="0">
+                    </a>
+                    {% for status in user.statuses %}
+                        {% if status.status == 'BLOCKED' %}
+                            <a href="{{ path('admin_user_activate', { 'id':user.id, 'page': page  }) }}">Активировать</a>
+                        {% else %}
+                            <a href="{{ path('admin_user_block', { 'id':user.id, 'page': page  }) }}"><img
+                                        src="{{ asset('bundles/saasbundle/img/block.png') }}" title="Заблокировать"
+                                        alt="Заблокировать" border="0"></a>
+                        {% endif %}
+                    {% endfor %}
+                    {#<a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
+                        <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" title="Удалить" alt="Удалить" border="0">
+                    </a>#}
                 </td>
             </tr>
         {% endfor %}

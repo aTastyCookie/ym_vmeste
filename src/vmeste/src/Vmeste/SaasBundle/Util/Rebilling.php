@@ -33,12 +33,12 @@ class Rebilling {
 	private $cert_pass;
 	private $icpdo;
 	private $email_headers;
-	private $email_subject_0;
 	private $url_unsubcribe;
 	private $url_subcribe;
 	public 	$recurrent;
 	public 	$data;
 	private $stmt;
+    private $status_blocked;
 	
 	public function __construct($params = array()) {
 		if(!empty($params)) 
@@ -49,11 +49,11 @@ class Rebilling {
 		$this->email_headers = 'MIME-Version: 1.0' . "\r\n"
 								. 'Content-type: text/html; charset=utf-8' . "\r\n"
 								. 'From: Автоплатежи <birthday@example.com>' . "\r\n";
-
-		$this->url_unsubcribe = 'http://vmeste/outside/transaction/unsubscribe';
-		$this->url_subcribe = 'http://vmeste/outside/transaction/subscribe';
 		
-		$this->recurrent = new stdClass;
+		$this->recurrent = new \stdClass;
+        $this->status_blocked = $this->icpdo
+                                    ->getRepository('Vmeste\SaasBundle\Entity\Status')
+                                    ->findOneBy(array('status' => 'BLOCKED'));
 	}
 	
 	public function notify()
@@ -96,16 +96,35 @@ class Rebilling {
 		return true;
 	}
 	
-	private function send_money($recur)
+	private function send_money(Recurrent $recur)
 	{
 		$attempt = 0;
-		$orderId = (int)($recur['clientOrderId'] + 1);
-        $output_array = array('clientOrderId'=>$orderId, 
-        						'invoiceId'=>$recur['invoiceId'],
-        						'amount'=>$recur['amount'],
-        						'orderNumber'=>$recur['campaign_id'] . '-' .$orderId);
-        if($recur['cvv']) $output_array['cvv'] = $recur['cvv'];	
-        					
+        $orderId = time();
+        $orderNumber = $recur->getCampaignId() . '-' . $orderId . rand(1, 1000);
+        $output_array = array('clientOrderId'=>$orderId,
+        						'invoiceId'=>$recur->getInvoiceId(),
+        						'amount'=>$recur->getAmount(),
+        						'orderNumber'=>$orderNumber);
+        if($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
+
+        $donor = $recur->getDonor(true);
+        if(!$donor) {
+            $recur->setStatus($this->status_blocked);
+            $this->icpdo->persist($recur);
+            $this->icpdo->flush();
+            return false;
+        }
+
+        $campaign = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                                ->findOneBy(array('id' => $recur->getCampaignId()));
+
+        if($campaign == null || $campaign->getStatus()->getStatus() === 'BLOCKED') {
+            $recur->setStatus($this->status_blocked);
+            $this->icpdo->persist($recur);
+            $this->icpdo->flush();
+            return false;
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('application/x-www-form-urlencoded'));
@@ -122,7 +141,7 @@ class Rebilling {
         $result = curl_exec($ch);
         curl_close($ch);
         //echo $result, PHP_EOL;
-        $xml = new DOMDocument();
+        $xml = new \DOMDocument();
 		$xml->loadXML($result);
 		$result = array();
 		$responses = $xml->getElementsByTagName('repeatCardPaymentResponse');
@@ -132,59 +151,47 @@ class Rebilling {
 			$result['techMessage'] = $response->getAttribute('techMessage');
 		}
 		
-		$donor = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $recur['donor_id']));
-		
-    	if(!$donor) {
-			return false;
-		}
-		
 		if($result['error'] == 0) {
 			// Insert transaction
-// !!!!!			
-			$mc_currency = "RUB";
-			$payment_status = "Completed";
-			$transaction_type = "donate";
-			
 			$transaction = new Transaction();
 			$transaction->setDates();
-			$transaction->setCurrency($mc_currency);
+			$transaction->setCurrency("RUB");
 			$transaction->setDetails(mysql_real_escape_string(json_encode($result)));
-			$transaction->setDonor($recur['donor_id']);
+			$transaction->setDonor($donor);
 			$transaction->setGross(floatval($recur['amount']));
-			$transaction->setPaymentStatus($payment_status);
-			$transaction->setTransactionType($transaction_type);
-			//$transaction->setUser()
+			$transaction->setPaymentStatus("Completed");
+            $transaction->setTransactionType("YMKassa: donate");
+            $transaction->setCampaign($campaign);
+            $transaction->setInvoiceId($recur['invoiceId']);
+            $this->icpdo->persist($transaction);
+            $this->icpdo->flush();
 
 			$attempt = 0;
 			$success_date = time();
 		} else {
-			if($recur['attempt'] == 3) {
+			if($recur->getAttempt() == 3) {
 				$this->notify_about_auto_deleting($donor->getEmail());
-// CHANGE IT
-				$this->icpdo->query("DELETE FROM ".$this->icpdo->prefix."recurrents WHERE id = ".$recur['id'].";");
-				$this->icpdo->query("UPDATE ".$this->icpdo->prefix."donors 
-									SET deleted = 1
-									WHERE id = ".$recur['donor_id'].";");
+                $recur->setStatus($this->status_blocked);
+                $this->icpdo->persist($recur);
+                $this->icpdo->flush();
 				$attempt = 4;
 			} else {
-				$attempt = $recur['attempt'] + 1;
-				$success_date = $recur['success_date'];
+				$attempt = $recur->getAttempt() + 1;
+				$success_date = $recur->getSuccessDate();
 			}
-			
 		}
 		
 		if($attempt<4) {
-// CHANGE IT
-			$this->icpdo->query("UPDATE ".$this->icpdo->prefix."recurrents 
-					SET clientOrderId = '$orderId',
-						orderNumber = '".$recur['campaign_id'] . '-' .$orderId."',
-						last_operation_time = '".time()."',
-						last_status = '".$result['status']."',
-						last_error = '".$result['error']."',
-						last_techMessage = '".$result['techMessage']."',
-						attempt = '".$attempt."',
-						success_date = '".$success_date."'
-					WHERE id = ".$recur['id']);
+            $recur->setClientOrderId($orderId);
+            $recur->setOrderNumber($orderNumber);
+            $recur->setAttempt($attempt);
+            $recur->setSuccessDate($success_date);
+            $recur->setLastOperationTime(time());
+            $recur->setLastStatus($result['status']);
+            $recur->setLastTechmessage($result['techMessage']);
+            $recur->setLastError($result['error']);
+            $this->icpdo->persist($recur);
+            $this->icpdo->flush();
 		}
 	}
 	
@@ -234,14 +241,15 @@ class Rebilling {
 		$this->notify_about_payment();
 	}
 	
-	public function notify_about_subscription()
+	public function notify_about_subscription( $context )
 	{
-		$message = \Swift_Message::newInstance()
+
+        $message = \Swift_Message::newInstance()
         	->setSubject('Спасибо за помощь!')
-	        ->setFrom($emailFrom = $this->container->getParameter('pass.recover.email.from'))
+	        ->setFrom($context->container->getParameter('pass.recover.email.from'))
 	        ->setTo($this->recurrent->email)
 	        ->setBody(
-	            $this->renderView(
+                $context->renderView(
 	                'VmesteSaasBundle:Email:successfullSubscription.html.twig',
 	                array(
 	                    'sum' => $this->recurrent->sum,
@@ -251,7 +259,8 @@ class Rebilling {
 	                    'fond' => $this->recurrent->fond)
 	            )
 	        );
-    	$this->get('mailer')->send($message);
+
+        $context->get('mailer')->send($message);
 	}
 	
 	private function notify_about_auto_deleting($email)

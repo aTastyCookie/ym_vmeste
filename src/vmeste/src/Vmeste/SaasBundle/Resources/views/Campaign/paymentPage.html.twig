@@ -15,18 +15,18 @@
         <div class="content">
             <h1>{{ campaign.title }}</h1>
 
-            <div class="logo"></div>
+            <div class="logo"><img src="{{ imageStoragePath }}{{ campaign.smallPicPath }}" alt="{{ campaign.smallPicPath }}"></div>
         </div>
     </header>
     <div class="line"></div>
     <div class="content">
-        <h2>Мы собираем деньги ...</h2>
+        <h2>{{ campaign.subtitle }}</h2>
         <p>{{ campaign.formIntro }}
             <!--<a href="#">Подробнее</a>-->
         </p>
 
         <div class="large_img">
-            <img src="{{ campaign.image }}{#{{ asset('bundles/saasbundle/campaign/payment/img/smaple_img.png') }}#}">
+            <img src="{{ imageStoragePath }}{{ campaign.bigPicPath }}">
         </div>
         <div class="line"></div>
         <h2>Ваша помощь проекту</h2>
@@ -38,6 +38,9 @@
         <input name="customerNumber" value="{{ customerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
         <input name="noIDcustomerNumber" value="{{ noIDcustomerNumber }}" type="hidden"/> {# value <?php echo time();?>#}
         <input name="orderNumber" value="{{ campaign.id }}-{{ uniqueId }}" type="hidden"/>
+
+        <input name="shopSuccessURL" value="{{ paymentPage }}" type="hidden"/>
+        <input name="shopFailURL" value="{{ paymentPage }}" type="hidden"/>
 
         <div class="amount">
             <div class="content">

@@ -16,6 +16,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Vmeste\SaasBundle\Entity\Donor;
+use Vmeste\SaasBundle\Entity\Recurrent;
 use Vmeste\SaasBundle\Entity\Transaction;
 use Vmeste\SaasBundle\Util\PaginationUtils;
 use Vmeste\SaasBundle\Util\Rebilling;
@@ -37,76 +38,84 @@ class TransactionController extends Controller
 
         if (!$request->isMethod('POST')) return;
 
+        $code = 0;
+        $message = "Ok";
+
         $ykShopId = $request->request->get('shopId');
 
         $em = $this->getDoctrine()->getManager();
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
-		if(!$yandexKassa) {
-			$code = 100;
-			$message = "Incorrect shopId";
-			$paymentStatus = self::PAYMENT_WRONG_SHOPID;
-		} else {
-	        $ykShopPassword = $yandexKassa->getShoppw();
+        if (!$yandexKassa) {
+            $code = 100;
+            $message = "Incorrect shopId";
+        } else {
+            $ykShopPassword = $yandexKassa->getShoppw();
 
-	        $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
-	            . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
-	            . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
-	            . $request->request->get('customerNumber') . ';' . $ykShopPassword);
+            $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
+                . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
+                . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
+                . $request->request->get('customerNumber') . ';' . $ykShopPassword);
 
-	        $paymentStatus = self::PAYMENT_PENDING;
+            $paymentStatus = self::PAYMENT_PENDING;
 
-	        if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
-	            $code = 0;
-	        } else {
-	            $paymentStatus = self::PAYMENT_WRONG_HASH;
-	            $code = 1;
-	        }
-		}
-        $postParamsArray = $this->get('request')->request->all();
+            if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
+                $paymentStatus = self::PAYMENT_WRONG_HASH;
+                $code = 1;
+                $message = 'Bad md5';
+            }
 
-        $requestDetails = $this->createRequestString($postParamsArray);
+            $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
 
-        $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
+            $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
 
-        $donor = new Donor();
-        $donor->setName($request->request->get('customerName', $request->request->get('orderNumber')));
-        $donor->setEmail($request->request->get('customerEmail', ""));
-        $donor->setDetails($request->request->get('customerComment', ""));
-        $donor->setCurrency("RUB");
-        $donor->setStatus($status);
+            if ($campaign != null) {
+                $postParamsArray = $this->get('request')->request->all();
 
-        $em->persist($donor);
+                $requestDetails = $this->createRequestString($postParamsArray);
 
-        $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+                $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
 
-        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+                $donor = new Donor();
+                $donor->setName($request->request->get('customerName', $request->request->get('orderNumber')));
+                $donor->setEmail($request->request->get('customerEmail', ""));
+                $donor->setDetails($request->request->get('customerComment', ""));
+                $donor->setCurrency("RUB");
+                $donor->setStatus($status);
 
-        $transaction = new Transaction();
-        $transaction->setCampaign($campaign);
-        $transaction->setDonor($donor);
-        $transaction->setInvoiceId($request->request->get('invoiceId'));
-        $transaction->setGross($request->request->get('orderSumAmount'));
-        $transaction->setCurrency("RUB");
-        $transaction->setPaymentStatus($paymentStatus);
-        $transaction->setTransactionType("YMKassa: donate");
-        $transaction->setTxnId($request->request->get('customerNumber'));
-        $transaction->setDetails($requestDetails);
+                $em->persist($donor);
 
-        $em->persist($transaction);
+                $transaction = new Transaction();
+                $transaction->setCampaign($campaign);
+                $transaction->setDonor($donor);
+                $transaction->setInvoiceId($request->request->get('invoiceId'));
+                $transaction->setGross($request->request->get('orderSumAmount'));
+                $transaction->setCurrency("RUB");
+                $transaction->setPaymentStatus($paymentStatus);
+                $transaction->setTransactionType("YMKassa: donate");
+                $transaction->setDetails($requestDetails);
 
-        $em->flush();
-		
+                $em->persist($transaction);
+
+                $em->flush();
+            } else {
+                $code = 200;
+                $message = "Incorrect campaing";
+            }
+
+        }
+
         $xml = new \DOMDocument('1.0', 'utf-8');
         $checkOrderResponse = $xml->createElement('checkOrderResponse');
         $checkOrderResponse->setAttribute('performedDatetime', $request->request->get('requestDatetime'));
         $checkOrderResponse->setAttribute('code', $code);
         $checkOrderResponse->setAttribute('invoiceId', $request->request->get('invoiceId'));
         $checkOrderResponse->setAttribute('shopId', $request->request->get('shopId'));
+        $checkOrderResponse->setAttribute('message', $message);
         $xml->appendChild($checkOrderResponse);
         $output = $xml->saveXML();
 
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
-        $response->send();
+        return $response;
 
     }
 
@@ -124,100 +133,104 @@ class TransactionController extends Controller
         $ykShopId = $request->request->get('shopId');
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
 
-		if(!$yandexKassa) {
-			$code = 200;
-			$message = "Incorrect shopId";
-		} else {
-			$ykShopPassword = $yandexKassa->getShoppw();
+        if (!$yandexKassa) {
+            $code = 200;
+            $message = "Incorrect shopId";
+        } else {
+            $ykShopPassword = $yandexKassa->getShoppw();
 
-	        if ($ykShopPassword) {
+            if ($ykShopPassword) {
 
-	            $md5 = md5(
-	                $request->request->get('action') . ';' .
-	                $request->request->get('orderSumAmount') . ';' .
-	                $request->request->get('orderSumCurrencyPaycash') . ';' .
-	                $request->request->get('orderSumBankPaycash') . ';' .
-	                $request->request->get('shopId') . ';' .
-	                $request->request->get('invoiceId') . ';' .
-	                $request->request->get('customerNumber') . ';' .
-	                $ykShopPassword . ';');
+                $md5 = md5(
+                    $request->request->get('action') . ';' .
+                    $request->request->get('orderSumAmount') . ';' .
+                    $request->request->get('orderSumCurrencyPaycash') . ';' .
+                    $request->request->get('orderSumBankPaycash') . ';' .
+                    $request->request->get('shopId') . ';' .
+                    $request->request->get('invoiceId') . ';' .
+                    $request->request->get('customerNumber') . ';' .
+                    $ykShopPassword . ';');
 
-	            if (strcmp(strtolower($md5), strtolower($request->request->get('md5'))) === 0) {
+                if (strcmp(strtolower($md5), strtolower($request->request->get('md5'))) === 0) {
 
-	                $invoiceId = $request->request->get('invoiceId');
-	                $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
+                    $invoiceId = $request->request->get('invoiceId');
+                    $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
 
-	                if ($transaction != null) {
-	                    $transaction->setPaymentStatus($paymentStatus);
+                    if ($transaction != null) {
+                        $transaction->setPaymentStatus($paymentStatus);
 
-	                    $donor = $transaction->getDonor();
-	                    $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
-	                    $donor->setStatus($status);
+                        $donor = $transaction->getDonor();
+                        $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
+                        $donor->setStatus($status);
 
-	                    $em->persist($transaction);
-	                    $em->persist($donor);
-	                    $em->flush();
+                        $em->persist($transaction);
+                        $em->persist($donor);
+                        $em->flush();
 
-	                    /**
-	                     *  Rebilling
-	                     */
-	                    $rb = $request->request->get('rebillingOn', false);
-	                    if ($rb) {
+                        /**
+                         *  Rebilling
+                         */
+                        $rb = $request->request->get('rebillingOn', false);
+                        if ($rb) {
 
-	                        $payer_email = $donor->getEmail();
+                            $payer_email = $donor->getEmail();
 
-	                        $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
-	                        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+                            $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+                            $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
 
-	                        if ($campaign != null)
-	                            $campaign_title = $campaign->getTitle();
+                            if ($campaign != null)
+                                $campaign_title = $campaign->getTitle();
 
-	                        $amount = stripslashes($request->request->get('orderSumAmount'));
+                            $amount = stripslashes($request->request->get('orderSumAmount'));
 
-							$recurrent = new Recurrent();
-        					$recurrent->setAmount($amount);
-        					$recurrent->setAttempt(0);
-        					$recurrent->setCampaignId($campaignId);
-        					$recurrent->setClientOrderId(0);
-        					$recurrent->setCvv('');
-        					$recurrent->setDonor($donor);
-        					$recurrent->setInvoiceId($invoiceId);
-        					$recurrent->setLastOperationTime(0);
-        					$recurrent->setLastStatus(0);
-        					$recurrent->setLastTechmessage('');
-        					$recurrent->setOrderNumber($campaignId . '-' . time());
-        					$recurrent->setStatus($status);
-        					$recurrent->setSubscriptionDate(time());
-        					$recurrent->setSuccessDate(time());
-        					$em->persist($recurrent);
-        					$em->flush();
+                            $recurrent = new Recurrent();
+                            $recurrent->setAmount($amount);
+                            $recurrent->setAttempt(0);
+                            $recurrent->setCampaignId($campaignId);
+                            $recurrent->setClientOrderId(0);
+                            $recurrent->setCvv('');
+                            $recurrent->setDonor($donor);
+                            $recurrent->setInvoiceId($invoiceId);
+                            $recurrent->setLastOperationTime(0);
+                            $recurrent->setLastStatus(0);
+                            $recurrent->setLastTechmessage('');
+                            $recurrent->setOrderNumber($campaignId . '-' . time());
+                            $recurrent->setStatus($status);
+                            $recurrent->setSubscriptionDate(time());
+                            $recurrent->setSuccessDate(time());
+                            $em->persist($recurrent);
+                            $em->flush();
 
                             // Send the first notification email
-                            $rebilling = new Rebilling(array('icpdo' => $em));
+                            $rebilling = new Rebilling(
+                                array('icpdo' => $em,
+                                    'url_unsubcribe'=>$request->request->get('paymentPage'),
+                                    'url_subcribe'=>$request->request->get('paymentPage'))
+                            );
                             $rebilling->recurrent->email = $payer_email;
                             $rebilling->recurrent->fond = $campaign_title;
                             $rebilling->recurrent->sum = $amount;
                             $rebilling->recurrent->id = $recurrent->getId();
                             $rebilling->recurrent->invoice = $invoiceId;
-                            $rebilling->notify_about_subscription();
-	                    } 
+                            $rebilling->notify_about_subscription($this);
+                        }
 
-	                } else {
-	                    $logger = $this->get('logger');
-	                    $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
-	                    $code = 200;
-	                    $message = "Unknown transaction";
-	                }
-	            } else {
-	                $code = 1;
-	                $message = 'Bad md5';
-	            }
-	        } else {
-	            $code = 200;
-	            $message = 'Bad shopPassword';
-	        }
-		}
-        
+                    } else {
+                        $logger = $this->get('logger');
+                        $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
+                        $code = 200;
+                        $message = "Unknown transaction";
+                    }
+                } else {
+                    $code = 1;
+                    $message = 'Bad md5';
+                }
+            } else {
+                $code = 200;
+                $message = 'Bad shopPassword';
+            }
+        }
+
 
         $xml = new \DOMDocument('1.0', 'utf-8');
         $paymentAvisoResponse = $xml->createElement('paymentAvisoResponse');
@@ -230,7 +243,7 @@ class TransactionController extends Controller
         $output = $xml->saveXML();
 
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
-        $response->send();
+        return $response;
     }
 
     /**
@@ -266,7 +279,7 @@ class TransactionController extends Controller
             $response['error'] = 'Такой подписки не существует';
             return $response;
         }
-        
+
         $donor = $recurrent->getDonor();
         if ($donor == null) {
             $response['error'] = 'Такой подписки не существует';
@@ -291,20 +304,20 @@ class TransactionController extends Controller
         }
 
         if ((int)$this->getRequest()->query->get("yes") == 1) {
-        	$status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'DELETED'));
-        	$recurrent->setStatus($status);
-        	$em->persist($recurrent);
+            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'DELETED'));
+            $recurrent->setStatus($status);
+            $em->persist($recurrent);
             $em->flush();
             return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
         } elseif ((int)$this->getRequest()->query->get("yes") == 2) {
-			return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
-		}
+            return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
+        }
 
         return $response;
 
 
     }
-    
+
     /**
      * @Template
      */
@@ -319,7 +332,7 @@ class TransactionController extends Controller
             'intro' => '',
             'img' => '');
 
-		if ($recurrent_id == null || $invoice_id == null) {
+        if ($recurrent_id == null || $invoice_id == null) {
             $response['error'] = 'Неверные параметры';
             return $response;
         }
@@ -330,7 +343,7 @@ class TransactionController extends Controller
             $response['error'] = 'Такой подписки не существует';
             return $response;
         }
-        
+
         $donor = $recurrent->getDonor();
         if ($donor == null) {
             $response['error'] = 'Такой подписки не существует';
@@ -355,8 +368,8 @@ class TransactionController extends Controller
         }
 
         $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
-    	$recurrent->setStatus($status);
-    	$em->persist($recurrent);
+        $recurrent->setStatus($status);
+        $em->persist($recurrent);
         $em->flush();
 
         return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
@@ -412,26 +425,6 @@ class TransactionController extends Controller
         if ($this->getRequest()->query->get("searchRequest", null) != null) {
 
             $searchRequest = $this->getRequest()->query->get("searchRequest", null);
-
-
-
-
-            /*  $data = $request->get->all();
-              $repo = $this->getDoctrine()
-                  ->getRepository('PfBlogBundle:Article');
-              $query = $repo->createQueryBuilder('a')
-                  ->where('a.title LIKE :title')
-                  ->setParameter('title', '%'.$data['search'].'%')
-                  ->getQuery();
-              $paginator  = $this->get('knp_paginator');
-              $pagination = $paginator->paginate(
-                  $query->getResults(),//get the results here
-                  $this->requrest->get('page',1),
-                  4
-              );
-
-              payername payeremail*/
-
 
             $limit = $this->container->getParameter('paginator.page.items');
             $pageOnSidesLimit = 2;
@@ -525,7 +518,7 @@ class TransactionController extends Controller
 
         if ($separator == 'tab') $separator = "\t";
 
-        $output = chr(0xEF).chr(0xBB).chr(0xBF).'"Проект"' . $separator
+        $output = chr(0xEF) . chr(0xBB) . chr(0xBF) . '"Проект"' . $separator
             . '"Дата платежа"' . $separator
             . '"ФИО"' . $separator
             . '"Email"' . $separator

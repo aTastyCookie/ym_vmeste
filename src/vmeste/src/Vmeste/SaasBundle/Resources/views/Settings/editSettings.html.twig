@@ -6,7 +6,7 @@
 
     <h3>Основные настройки</h3>
     <div>
-        <form action="{{ path('update_email_settings') }}" method="post">
+        <form action="{{ updateEmailSettingsRoute }}" method="post">
             {{ email_setting_errors | raw }}
             <p>
                 <input type="email" name="notification_email" placeholder="no-reply@your.domain"
@@ -25,7 +25,7 @@
                 <br/>
                 Мы отправляем это письмо с благодарностью от вашего имени.
             </p>
-<input type="hidden" name="csv_separator" value=";"/>
+            <input type="hidden" name="csv_separator" value=";"/>
             <!--<p>
                 <select id="csv_separator" name="csv_separator">
                     <option value=";" {{ csv_separator == ';' ? 'selected' : '' }}>Semicolon - ";"</option>
@@ -33,6 +33,9 @@
                     <option value="tab"  {{ csv_separator == 'tab' ? 'selected' : '' }}>Tab</option>
                 </select>
             </p>-->
+            {% if userIdForEdit %}
+                <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>
+            {% endif %}
             <p>
                 <button type="submit" id="form_save" name="save">Сохранить основные настройки</button>
             </p>
@@ -45,7 +48,7 @@
             Если у вас еще нет договора с Яндекс.Деньги, подайте заявку на заключение договора здесь _ссылка_.
         </p>
 
-        <form action="{{ path('update_yk_settings') }}" method="post">
+        <form action="{{ updateYKSettingsRoute }}" method="post">
             <p><label>shopId:
                     <input type="text" name="yandex_shopid" value="{{ shopid }}">
                 </label></p>
@@ -83,6 +86,9 @@
                     Sandbox режим</label></p>
 
             <p>
+                {% if userIdForEdit %}
+                    <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>
+                {% endif %}
                 <button type="submit" id="form_save" name="save">Сохранить настройки Кассы</button>
             </p>
         </form>
@@ -90,13 +96,15 @@
 
     <h3>Настройки доступа</h3>
     <div>
-        <form action="{{ path('update_customer_password') }}" method="post">
+        <form action="{{ updatePasswordRoute }}" method="post">
             {{ password_setting_errors | raw }}
-
-            <p><label>Старый пароль:
-                    <input type="password" name="old_password">
-                </label></p>
-
+            {% if userIdForEdit %}
+                <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>
+            {% else %}
+                <p><label>Старый пароль:
+                        <input type="password" name="old_password">
+                    </label></p>
+            {% endif %}
             <p><label>Новый пароль:
                     <input type="password" name="new_password">
                 </label></p>
@@ -106,6 +114,7 @@
                 </label></p>
 
             <p>
+
                 <button type="submit" id="form_save" name="save">Сохранить настройки доступа</button>
             </p>
         </form>

@@ -67,10 +67,6 @@ class Transaction
      */
     protected $transactionType; //transaction_type varchar(63) COLLATE utf8_unicode_ci NOT NULL,
 
-    /**
-     * @ORM\Column(type="string", length=64)
-     */
-    protected $txnId = ''; //txn_id varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
 
     /**
      * @ORM\Column(type="text")
@@ -266,28 +262,6 @@ class Transaction
         return $this->transactionType;
     }
 
-    /**
-     * Set txnId
-     *
-     * @param string $txnId
-     * @return Transaction
-     */
-    public function setTxnId($txnId)
-    {
-        $this->txnId = $txnId;
-
-        return $this;
-    }
-
-    /**
-     * Get txnId
-     *
-     * @return string 
-     */
-    public function getTxnId()
-    {
-        return $this->txnId;
-    }
 
     /**
      * Set details

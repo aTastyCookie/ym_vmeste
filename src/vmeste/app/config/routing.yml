@@ -89,6 +89,10 @@ customer_settings:
     path: /customer/settings
     defaults: { _controller: VmesteSaasBundle:Settings:editSettings }
 
+admin_customer_settings:
+    path: /admin/user/settings/{userId}
+    defaults: { _controller: VmesteSaasBundle:Settings:editSettings }
+
 update_email_settings:
     path: /customer/update/email/settings
     defaults: { _controller: VmesteSaasBundle:Settings:updateEmailSettings }
@@ -99,6 +103,18 @@ update_yk_settings:
 
 update_customer_password:
     path: /customer/update/password
+    defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
+
+admin_update_email_settings:
+    path: /admin/update/email/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateEmailSettings }
+
+admin_update_yk_settings:
+    path: /admin/customer/update/yk/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateYkSettings }
+
+admin_update_customer_password:
+    path: /admin/customer/update/password
     defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
 
 transaction_home:
