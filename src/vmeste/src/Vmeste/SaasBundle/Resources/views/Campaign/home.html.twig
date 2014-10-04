@@ -32,7 +32,7 @@
         {% for campaign in campaigns %}
             <tr>
                 <td>{{ campaign.title }}</td>
-                <td>{% if yk %}<a href="{{ campaign_url }}{{ campaign.id }}">{{ campaign_url }}{{ campaign.id }}</a>{% endif %}</td>
+                <td>{% if yk %}<a href="{{ campaign_url }}{{ campaign.url }}">{{ campaign_url }}{{ campaign.url }}</a>{% endif %}</td>
                 <td style="text-align: right;">
                     <a href="{{ path('campaign_report', { 'campaignId' : campaign.id }) }}">Отчет</a>
                 </td>

@@ -23,6 +23,20 @@ class Settings {
      */
     protected $id;
 
+    /**
+     * @ORM\Column(type="string", name="company_name")
+     */
+    protected $companyName;
+
+    /**
+     * @ORM\Column(type="text", name="director_name")
+     */
+    protected $directorName;
+
+    /**
+     * @ORM\Column(type="text", name="details", length=1024)
+     */
+    protected $details;
 
     /**
      * @ORM\Column(type="string", nullable=true, name="notification_email")
@@ -218,5 +232,97 @@ class Settings {
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Set companyName
+     *
+     * @param string $companyName
+     * @return Settings
+     */
+    public function setCompanyName($companyName)
+    {
+        $this->companyName = $companyName;
+    
+        return $this;
+    }
+
+    /**
+     * Get companyName
+     *
+     * @return string 
+     */
+    public function getCompanyName()
+    {
+        return $this->companyName;
+    }
+
+    /**
+     * Set formTerms
+     *
+     * @param string $formTerms
+     * @return Settings
+     */
+    public function setFormTerms($formTerms)
+    {
+        $this->formTerms = $formTerms;
+    
+        return $this;
+    }
+
+    /**
+     * Get formTerms
+     *
+     * @return string 
+     */
+    public function getFormTerms()
+    {
+        return $this->formTerms;
+    }
+
+    /**
+     * Set details
+     *
+     * @param string $details
+     * @return Settings
+     */
+    public function setDetails($details)
+    {
+        $this->details = $details;
+    
+        return $this;
+    }
+
+    /**
+     * Get details
+     *
+     * @return string 
+     */
+    public function getDetails()
+    {
+        return $this->details;
+    }
+
+    /**
+     * Set directorName
+     *
+     * @param string $directorName
+     * @return Settings
+     */
+    public function setDirectorName($directorName)
+    {
+        $this->directorName = $directorName;
+    
+        return $this;
+    }
+
+    /**
+     * Get directorName
+     *
+     * @return string 
+     */
+    public function getDirectorName()
+    {
+        return $this->directorName;
     }
 }

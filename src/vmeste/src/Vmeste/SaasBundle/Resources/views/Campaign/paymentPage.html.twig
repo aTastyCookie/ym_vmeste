@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Index</title>
+    <title>{{ campaign.subtitle }} - {{ settings.companyName }}</title>
     <link rel="stylesheet" href="{{ asset('bundles/saasbundle/campaign/payment/css/font.css') }}" />
     <link rel="stylesheet" href="{{ asset('bundles/saasbundle/campaign/payment/css/styles.css') }}" />
     <script src="{{ asset('bundles/saasbundle/campaign/payment/js/libs/jquery-2.1.1.min.js') }}"></script>
@@ -13,7 +13,7 @@
 <div class="page-wrapper">
     <header>
         <div class="content">
-            <h1>{{ campaign.title }}</h1>
+            <h1>{{ settings.companyName }}</h1>
 
             <div class="logo"><img src="{{ imageStoragePath }}{{ campaign.smallPicPath }}" alt="{{ campaign.smallPicPath }}"></div>
         </div>
@@ -164,7 +164,8 @@
             <div class="make_donation">
                 <button type="submit" class="btn yellow">Перевести</button>
                 <div id="monthly_type_icon" class="monthly_type_icon"><img src="{{ asset('bundles/saasbundle/campaign/payment/img/visa-3.jpg') }}"></div>
-                <p class="tip">Нажимая кнопку, я принимаю <a href="#" target="_blank">условия договора.</a></p>
+                <p class="tip">Нажимая кнопку, я принимаю
+                    <a href="/{{ campaign.url }}/oferta" target="_blank">условия договора.</a></p>
 
             </div>
         </div>

@@ -37,7 +37,7 @@
         {% for campaign in campaigns %}
             <tr>
                 <td>{{ campaign.title }}</td>
-                <td><a href="{{ campaign_url }}{{ campaign.id }}">{{ campaign_url }}{{ campaign.id }}</a></td>
+                <td><a href="{{ campaign_url }}{{ campaign.url }}">{{ campaign_url }}{{ campaign.url }}</a></td>
                 <td style="text-align: right;">
                     {{ campaign.user.username }}
                 </td>

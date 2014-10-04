@@ -82,11 +82,6 @@ class Campaign
     protected $formIntro;
 
     /**
-     * @ORM\Column(type="text", name="form_terms",)
-     */
-    protected $formTerms;
-
-    /**
      * @ORM\OneToMany(targetEntity="Transaction", mappedBy="campaign")
      **/
     protected $transactions;
@@ -116,6 +111,11 @@ class Campaign
      * @ORM\Column(type="integer", options={"unsigned"=true})
      */
     protected $changed;
+
+    /**
+     * @ORM\Column(type="text", name="url",)
+     */
+    protected $url;
 
     protected $uploadDir;
 
@@ -271,29 +271,6 @@ class Campaign
     public function getFormIntro()
     {
         return $this->formIntro;
-    }
-
-    /**
-     * Set formTerms
-     *
-     * @param string $formTerms
-     * @return Campaign
-     */
-    public function setFormTerms($formTerms)
-    {
-        $this->formTerms = $formTerms;
-
-        return $this;
-    }
-
-    /**
-     * Get formTerms
-     *
-     * @return string
-     */
-    public function getFormTerms()
-    {
-        return $this->formTerms;
     }
 
     /**
@@ -520,5 +497,28 @@ class Campaign
     public function setBigPic(UploadedFile $bigPic)
     {
         $this->bigPic = $bigPic;
+    }
+
+    /**
+     * Set url
+     *
+     * @param string $url
+     * @return Campaign
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+    
+        return $this;
+    }
+
+    /**
+     * Get url
+     *
+     * @return string 
+     */
+    public function getUrl()
+    {
+        return $this->url;
     }
 }

@@ -75,7 +75,7 @@ class CampaignController extends Controller
 
         return array(
             'campaigns' => $paginator,
-            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/payment/",
+            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/",
             'pages' => $pageNumberArray,
             'page' => $page,
             'campaign_created' => $campaignSuccessfullyCreatedMessage,
@@ -117,7 +117,7 @@ class CampaignController extends Controller
 
         return array(
             'campaigns' => $paginator,
-            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/payment/",
+            'campaign_url' => "http://" . $this->getRequest()->getHost() . "/",
             'pages' => $pageNumberArray,
             'page' => $page,
             'campaign_created' => $campaignSuccessfullyCreatedMessage);
@@ -163,6 +163,11 @@ class CampaignController extends Controller
                 array('constraints' => array(
                     new NotBlank()
                 ), 'label' => 'Подзаголовок')
+            )
+            ->add('url', 'text',
+                array('constraints' => array(
+                    new NotBlank()
+                ), 'label' => 'URL (только латинские буквы, цифры и дефис)')
             )
             ->add(
                 'smallPic', 'file', array(
@@ -235,7 +240,7 @@ class CampaignController extends Controller
             $campaign->setCurrency($data['currency']);
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
-            $campaign->setFormTerms($data['form_terms']);
+            $campaign->setUrl($data['url']);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
             $campaign->setSmallPic($data['smallPic']);
@@ -281,7 +286,16 @@ class CampaignController extends Controller
             ->add('subtitle', 'text',
                 array('constraints' => array(
                     new NotBlank()
-                ), 'label' => 'Подзаголовок')
+                ),
+                    'label' => 'Подзаголовок (на что собираем)',
+                    'data' => $campaign->getSubTitle())
+            )
+            ->add('url', 'text',
+                array('constraints' => array(
+                    new NotBlank()
+                ),
+                    'label' => 'URL (только латинские буквы, цифры и дефис)',
+                    'data' => $campaign->getUrl())
             )
             ->add('smallPic', 'file', array(
                     'label' => 'Логотип (100x70)',
@@ -300,7 +314,7 @@ class CampaignController extends Controller
                 )
             )
             ->add('bigPic', 'file', array(
-                    'label' => 'Большое изображение',
+                    'label' => 'Изображение',
                     'constraints' => array(
                         new Image(array(
                                 'maxSize' => '5M',
@@ -341,15 +355,6 @@ class CampaignController extends Controller
                 ),
                     'label' => 'Текст для платежной страницы',
                     'data' => $campaign->getFormIntro()))
-            // Your donors must be agree with Terms & Conditions before donating
-            ->add(
-                'form_terms',
-                'textarea',
-                array('constraints' => array(
-                    new NotBlank()
-                ),
-                    'label' => 'Реквизиты для оферты',
-                    'data' => $campaign->getFormTerms()))
             ->add('save', 'submit', array('label' => 'Обновить кампанию'))
             ->getForm();
 
@@ -364,10 +369,11 @@ class CampaignController extends Controller
 
             $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
             $campaign->setTitle($data['title']);
+            $campaign->setSubTitle($data['subtitle']);
+            $campaign->setUrl($data['url']);
             $campaign->setCurrency($data['currency']);
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
-            $campaign->setFormTerms($data['form_terms']);
 
             if ($data['smallPic'] != null)
                 $campaign->setSmallPic($data['smallPic']);
@@ -608,16 +614,16 @@ class CampaignController extends Controller
     /**
      * @Template
      */
-    public function paymentPageAction($campaignId)
+    public function paymentPageAction($campaignUrl)
     {
         $em = $this->getDoctrine()->getManager();
-        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => (int)$campaignId));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
         $user = $campaign->getUser();
         $settingsCollection = $user->getSettings();
         $userSettings = $settingsCollection[0];
         $yandexKassa = $userSettings->getYandexKassa();
 
-        $paymentPage = "http://" . $this->getRequest()->getHost() . $this->generateUrl('payment_page') . "/" . $campaign->getId();
+        $paymentPage = "http://" . $this->getRequest()->getHost() . "/" . $campaign->getUrl();
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
 
         return array('campaign' => $campaign,
@@ -626,9 +632,35 @@ class CampaignController extends Controller
             'noIDcustomerNumber' => time(),
             'uniqueId' => time(),
             'paymentPage' => $paymentPage,
-            'imageStoragePath' => $imageStoragePath
+            'imageStoragePath' => $imageStoragePath,
+            'settings'=>$userSettings
         );
 
     }
 
+    /**
+     * @Template
+     */
+    public function ofertaAction($campaignUrl)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
+        $user = $campaign->getUser();
+        $settingsCollection = $user->getSettings();
+        $userSettings = $settingsCollection[0];
+        $months = array(1=>'января',
+                        2=>'февраля',
+                        3=>'марта',
+                        4=>'апреля',
+                        5=>'мая',
+                        6=>'июня',
+                        7=>'июля',
+                        8=>'августа',
+                        9=>'сентября',
+                        10=>'октября',
+                        11=>'ноября',
+                        12=>'декабря');
+        $time = "«".date("d")."» ".$months[date('n')]." ".date("Y")."г.";
+        return array('settings' => $userSettings, 'time'=>$time);
+    }
 } 

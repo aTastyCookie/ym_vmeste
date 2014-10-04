@@ -151,9 +151,13 @@ campaign_report_export:
 
 # Outside
 
+#payment_page:
+#    path: /payment/{campaignId}
+#    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignId: null }
+
 payment_page:
-    path: /payment/{campaignId}
-    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignId: null }
+    path: /{campaignUrl}
+    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignUrl: null }
 
 yandex_check:
     path: /yandex/check
@@ -162,6 +166,10 @@ yandex_check:
 yandex_payment_aviso:
     path: /yandex/payment-aviso
     defaults: { _controller: VmesteSaasBundle:Transaction:yandexPaymentAviso}
+
+payment_oferta:
+    path: /{campaignUrl}/oferta
+    defaults: { _controller: VmesteSaasBundle:Campaign:oferta, campaignUrl: null }
 
 #vmeste_administrator_login:
 #     path:     /contact

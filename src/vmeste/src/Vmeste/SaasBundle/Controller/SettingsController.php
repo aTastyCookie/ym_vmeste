@@ -70,6 +70,9 @@ class SettingsController extends Controller
         return array(
             'email_setting_errors' => $emailSettingsErrors,
             'notification_email' => $userSettings->getNotificationEmail(),
+            'company_name' => $userSettings->getCompanyName(),
+            'director_name' => $userSettings->getDirectorName(),
+            'details' => $userSettings->getDetails(),
             'sender_name' => $userSettings->getSenderName(),
             'sender_email' => $userSettings->getSenderEmail(),
             'csv_separator' => $userSettings->getCsvColumnSeparator(),
@@ -98,6 +101,9 @@ class SettingsController extends Controller
 
         if ($request->isMethod('POST')) {
 
+            $companyName = $request->request->get('company_name');
+            $director_name = $request->request->get('director_name');
+            $details = $request->request->get('details');
             $notificationEmail = $request->request->get('notification_email');
             $senderName = $request->request->get('sender_name');
             $senderEmail = $request->request->get('sender_email');
@@ -106,6 +112,15 @@ class SettingsController extends Controller
             $notificationEmailConstraint = new Email();
             $notificationEmailConstraint->message = "The email " . $notificationEmail . ' is not a valid email';
             $notificationEmailErrorList = $this->get('validator')->validateValue($notificationEmail, $notificationEmailConstraint);
+
+            $companyNameConstraint = new Length(array('min' => 2, 'max' => 255));
+            $companyNameErrorList = $this->get('validator')->validateValue($companyName, $companyNameConstraint);
+
+            $directorNameConstraint = new Length(array('min' => 5, 'max' => 255));
+            $directorNameErrorList = $this->get('validator')->validateValue($director_name, $directorNameConstraint);
+
+            $detailsConstraint = new Length(array('min' => 100, 'max' => 1024));
+            $detailsErrorList = $this->get('validator')->validateValue($details, $detailsConstraint);
 
             $senderNameConstraint = new Length(array('min' => 2, 'max' => 255));
             $senderNameEmailErrorList = $this->get('validator')->validateValue($senderName, $senderNameConstraint);
@@ -120,6 +135,9 @@ class SettingsController extends Controller
 
             if (count($notificationEmailErrorList) == 0 && count($senderNameEmailErrorList) == 0
                 && count($senderEmailErrorList) == 0 && in_array($csvSeparator, $availableSeparators)
+                && count($companyNameErrorList) == 0
+                && count($detailsErrorList) == 0
+                && count($directorNameErrorList) == 0
             ) {
 
                 $em = $this->getDoctrine()->getManager();
@@ -134,6 +152,9 @@ class SettingsController extends Controller
                 $settingsCollection = $user->getSettings();
                 $userSettings = $settingsCollection[0];
 
+                $userSettings->setCompanyName($companyName);
+                $userSettings->setDetails($details);
+                $userSettings->setDirectorName($director_name);
                 $userSettings->setNotificationEmail($notificationEmail);
                 $userSettings->setSenderName($senderName);
                 $userSettings->setSenderEmail($senderEmail);
@@ -151,6 +172,9 @@ class SettingsController extends Controller
             } else {
 
                 $errorList = "<ul>";
+                $errorList .= count($companyNameErrorList) > 0 ? "<li>" . $companyNameErrorList[0]->getMessage() . "</li>" : "";
+                $errorList .= count($directorNameErrorList) > 0 ? "<li>" . $directorNameErrorList[0]->getMessage() . "</li>" : "";
+                $errorList .= count($detailsErrorList) > 0 ? "<li>" . $detailsErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($notificationEmailErrorList) > 0 ? "<li>" . $notificationEmailErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($senderNameEmailErrorList) > 0 ? "<li>" . $senderNameEmailErrorList[0]->getMessage() . "</li>" : "";
                 $errorList .= count($senderEmailErrorList) > 0 ? "<li>" . $senderEmailErrorList[0]->getMessage() . "</li>" : "";

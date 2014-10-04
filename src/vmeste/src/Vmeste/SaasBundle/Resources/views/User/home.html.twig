@@ -17,7 +17,7 @@
     {% endif %}
     <table width="100%">
         <tr>
-            <!--<th>Username</th>-->
+            <th>Username</th>
             <th>Email</th>
             <th>Роль</th>
             <th>Статус</th>
@@ -28,12 +28,8 @@
 
         {% for user in users %}
             <tr>
-                <!--<td>{{ user.username }}</td>-->
-                <td>{{ user.email }}
-                    {% if user.role == 'ROLE_USER' %}
-                        &nbsp;<a href="{{ path('admin_customer_settings', { 'userId' : user.id }) }}">Настройки</a>
-                    {% endif %}
-                </td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
                 <td align="center">
                     {% for role in user.roles %}
                         <p>{{ role.name }}</p>
@@ -63,6 +59,9 @@
                     {#<a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
                         <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" title="Удалить" alt="Удалить" border="0">
                     </a>#}
+                    {% if user.role == 'ROLE_USER' %}
+                        &nbsp;<a href="{{ path('admin_customer_settings', { 'userId' : user.id }) }}">Настройки</a>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}

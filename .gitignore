@@ -10,3 +10,4 @@ src/vmeste/src/Vmeste/SaasBundle/Entity/YandexKassa.php~
 src/vmeste/composer.lock
 src/vmeste/src/Vmeste/SaasBundle/Entity/Donor.php~
 src/vmeste/src/Vmeste/SaasBundle/Entity/Transaction.php~
+src/vmeste/web/uploads/
