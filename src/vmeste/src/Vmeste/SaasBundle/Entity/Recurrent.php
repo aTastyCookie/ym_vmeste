@@ -56,6 +56,11 @@ class Recurrent
     private $order_number;
 
     /**
+     * @ORM\Column(name="pan", type="string")
+     */
+    private $pan;
+
+    /**
      * @ORM\Column(name="cvv", type="string", length=10)
      */
     private $cvv;
@@ -481,5 +486,28 @@ class Recurrent
     public function getLastError()
     {
         return $this->last_error;
+    }
+
+    /**
+     * Set pan
+     *
+     * @param string $pan
+     * @return Recurrent
+     */
+    public function setPan($pan)
+    {
+        $this->pan = $pan;
+    
+        return $this;
+    }
+
+    /**
+     * Get pan
+     *
+     * @return string 
+     */
+    public function getPan()
+    {
+        return $this->pan;
     }
 }

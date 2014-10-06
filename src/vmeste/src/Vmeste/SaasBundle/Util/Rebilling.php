@@ -8,7 +8,7 @@ use Vmeste\SaasBundle\Entity\Campaign;
 class Rebilling {
 	const SSL_VERIFYPEER = false;
 	const SSL_VERIFYHOST = false;
-	const USERAGENT = 'Ymoney CollectMoney';
+	const USERAGENT = 'Ymoney Vmeste';
 	const CONNECTTIMEOUT = 30;
 	const HTTPHEADER = 'application/x-www-form-urlencoded';
 	const NO_ERROR = 0;
@@ -18,27 +18,22 @@ class Rebilling {
 	const MONTH36 = 3110400;
 	const MONTH39 = 3369600;
 	const DAYS_BEFORE = 259200;
-	const TEMPLATE_NOTIFY = 'template_0.php';
-	const EMAIL_SUBJECT_0 = 'Подтверждение автоплатежа [Собирайте Деньги]';
-	const TEMPLATE_THANKS = 'template_1.php';
-	const EMAIL_SUBJECT_1 = 'Спасибо!';
-	const TEMPLATE_DELETED = 'template_2.php';
-	const EMAIL_SUBJECT_2 = 'Автоплатеж удален';
-	const TEMPLATE_SUBSCRIBED = 'template_3.php';
-	const EMAIL_SUBJECT_3 = 'Вы подписаны на автоплатежи';
 	
-	private $url;
+	private $ymurl;
 	private $path_to_cert;
 	private $path_to_key;
 	private $cert_pass;
 	private $icpdo;
-	private $email_headers;
 	private $url_unsubcribe;
 	private $url_subcribe;
 	public 	$recurrent;
 	public 	$data;
-	private $stmt;
     private $status_blocked;
+    private $status_id_blocked;
+    private $status_id_deleted;
+    private $status_id_active;
+    private $context;
+    private $apphost;
 	
 	public function __construct($params = array()) {
 		if(!empty($params)) 
@@ -46,14 +41,21 @@ class Rebilling {
 				$this->$key = $param;
 		else return false;
 		
-		$this->email_headers = 'MIME-Version: 1.0' . "\r\n"
-								. 'Content-type: text/html; charset=utf-8' . "\r\n"
-								. 'From: Автоплатежи <birthday@example.com>' . "\r\n";
-		
 		$this->recurrent = new \stdClass;
         $this->status_blocked = $this->icpdo
                                     ->getRepository('Vmeste\SaasBundle\Entity\Status')
                                     ->findOneBy(array('status' => 'BLOCKED'));
+        $this->status_id_blocked = $this->status_blocked->getId();
+        $this->status_id_deleted = $this->icpdo
+            ->getRepository('Vmeste\SaasBundle\Entity\Status')
+            ->findOneBy(array('status' => 'DELETED'));
+        $this->status_id_deleted = $this->status_id_deleted->getId();
+        $this->status_id_active = $this->icpdo
+            ->getRepository('Vmeste\SaasBundle\Entity\Status')
+            ->findOneBy(array('status' => 'ACTIVE'));
+        $this->status_id_active = $this->status_id_active->getId();
+
+        if(!$this->apphost) $this->apphost = "http://vmeste/";
 	}
 	
 	public function notify()
@@ -98,12 +100,12 @@ class Rebilling {
 	
 	private function send_money(Recurrent $recur)
 	{
-		$attempt = 0;
         $orderId = time();
+        $amount = $recur->getAmount();
         $orderNumber = $recur->getCampaignId() . '-' . $orderId . rand(1, 1000);
         $output_array = array('clientOrderId'=>$orderId,
         						'invoiceId'=>$recur->getInvoiceId(),
-        						'amount'=>$recur->getAmount(),
+        						'amount'=>$amount,
         						'orderNumber'=>$orderNumber);
         if($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
 
@@ -126,12 +128,12 @@ class Rebilling {
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('application/x-www-form-urlencoded'));
+        curl_setopt($ch, CURLOPT_URL, $this->ymurl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Ymoney Vmeste');
+        curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSLCERT, $this->path_to_cert);
@@ -150,7 +152,13 @@ class Rebilling {
 			$result['status'] = $response->getAttribute('status');
 			$result['techMessage'] = $response->getAttribute('techMessage');
 		}
-		
+
+        $emailTo = $donor->getEmail();
+        $settings = $campaign->getUser()->getSettings();
+        $userSettings = $settings[0];
+        $fond = $userSettings->getCompanyName();
+        $emailFrom = $settings->getSenderEmail();
+
 		if($result['error'] == 0) {
 			// Insert transaction
 			$transaction = new Transaction();
@@ -158,19 +166,25 @@ class Rebilling {
 			$transaction->setCurrency("RUB");
 			$transaction->setDetails(mysql_real_escape_string(json_encode($result)));
 			$transaction->setDonor($donor);
-			$transaction->setGross(floatval($recur['amount']));
+			$transaction->setGross(floatval($amount));
 			$transaction->setPaymentStatus("Completed");
             $transaction->setTransactionType("YMKassa: donate");
             $transaction->setCampaign($campaign);
-            $transaction->setInvoiceId($recur['invoiceId']);
+            $transaction->setInvoiceId($recur->getInvoiceId());
             $this->icpdo->persist($transaction);
             $this->icpdo->flush();
 
 			$attempt = 0;
 			$success_date = time();
+
+            $unsubscribe = $this->url_unsubcribe .
+                            '?recurrent=' . $recur->getId() .
+                            '&invoice=' . $recur->getInvoiceId();
+            $this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
 		} else {
 			if($recur->getAttempt() == 3) {
-				$this->notify_about_auto_deleting($donor->getEmail());
+                $campaign_url =  $this->apphost . $campaign->getUrl();
+				$this->notify_about_auto_deleting($emailTo, $fond, $campaign_url, $amount, $recur->getPan(), $emailFrom);
                 $recur->setStatus($this->status_blocked);
                 $this->icpdo->persist($recur);
                 $this->icpdo->flush();
@@ -197,127 +211,145 @@ class Rebilling {
 	
 	private function attempt_send($attempt, $today_start, $today_end, $monthdays)
 	{
-// CHANGE IT
-		$sql = "SELECT r.*, c.title, d.email FROM udb_recurrents r 
-			INNER JOIN udb_campaigns c on c.id = r.campaign_id
-			INNER JOIN udb_donors d on d.id = r.donor_id
-			WHERE c.status = 1 AND c.deleted = 0 AND d.deleted = 0 AND d.status = 1
-			AND (r.success_date + $monthdays)>=$today_start
-			AND (r.success_date + $monthdays)<=$today_end
-			AND r.attempt = $attempt
-			ORDER BY r.id ASC LIMIT :offset, :limit;";
-		//echo $sql;
-		$this->stmt = $this->icpdo->link->prepare($sql);
-		$this->stmt->bindValue(':offset', 0, PDO::PARAM_INT);
-		$this->stmt->bindValue(':limit', self::LIMIT_ROWS, PDO::PARAM_INT);
-		$this->stmt->execute();
-		$this->data = $this->stmt->fetchAll();
-		
+        $offset = 0;
+        $this->data = $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		while(!empty($this->data)){
 			foreach($this->data as $recur) {
 				$this->send_money($recur);
 			}
+            $offset += self::LIMIT_ROWS;
+            $this->data = $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		}
 	}
 	
 	private function attempt_notify($attempt, $today_start, $today_end, $monthdays)
 	{
-// CHANGE IT
-		$sql = "SELECT r.*, c.title, d.email FROM udb_recurrents r 
-			INNER JOIN udb_campaigns c on c.id = r.campaign_id
-			INNER JOIN udb_donors d on d.id = r.donor_id
-			WHERE c.status = 1 AND c.deleted = 0 AND d.deleted = 0 AND d.status = 1
-			AND (r.success_date + $monthdays - ".self::DAYS_BEFORE.")>=$today_start
-			AND (r.success_date + $monthdays - ".self::DAYS_BEFORE.")<=$today_end
-			AND r.attempt = $attempt
-			ORDER BY r.id ASC LIMIT :offset, :limit;";
-		//echo $sql;
-		$this->stmt = $this->icpdo->link->prepare($sql);
-		$this->stmt->bindValue(':offset', 0, PDO::PARAM_INT);
-		$this->stmt->bindValue(':limit', self::LIMIT_ROWS, PDO::PARAM_INT);
-		$this->stmt->execute();
-		$this->data = $this->stmt->fetchAll();
-		//print_r($data);
-		$this->notify_about_payment();
+        $offset = 0;
+        $this->data = $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
+
+        while(!empty($this->data)){
+            foreach($this->data as $recur) {
+                $campaignId = $recur->getCampaignId();
+                $campaign = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                                ->findOneBy(array('id' => $campaignId));
+                $userSettingsArray = $campaign->getUser()->getSettings();
+                $settings = $userSettingsArray[0];
+                $emailFrom = $settings->getSenderEmail();
+                $emailTo = $recur->getDonor()->getEmail();
+
+                $message = \Swift_Message::newInstance()
+                    ->setSubject('Через три дня мы получим ваше пожертвование')
+                    ->setFrom($emailFrom)
+                    ->setTo($emailTo)
+                    ->setBody(
+                        $this->context->renderView(
+                            'VmesteSaasBundle:Email:notifyaboutPayment.html.twig',
+                            array(
+                                'amount' => $recur->getAmount(),
+                                'unsubscribe' => $this->url_unsubcribe .
+                                    '?recurrent=' . $recur->getId() .
+                                    '&invoice=' . $recur->getInvoiceId(),
+                                'fond' => $settings->getCompanyName(),
+                                'pan' => $recur->getPan())
+                        )
+                    );
+                $this->context->get('mailer')->send($message);
+            }
+            $offset += self::LIMIT_ROWS;
+            $this->data = $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
+        }
 	}
 	
-	public function notify_about_subscription( $context )
+	public function notify_about_subscription()
 	{
-
         $message = \Swift_Message::newInstance()
         	->setSubject('Спасибо за помощь!')
-	        ->setFrom($context->container->getParameter('pass.recover.email.from'))
+	        ->setFrom($this->recurrent->emailFrom)
 	        ->setTo($this->recurrent->email)
 	        ->setBody(
-                $context->renderView(
+                $this->context->renderView(
 	                'VmesteSaasBundle:Email:successfullSubscription.html.twig',
 	                array(
-	                    'sum' => $this->recurrent->sum,
-	                    'unsubscribe_url' => $this->url_unsubcribe . 
+	                    'amount' => $this->recurrent->sum,
+	                    'unsubscribe' => $this->url_unsubcribe .
 	                    					'?recurrent=' . $this->recurrent->id . 
 	                    					'&invoice=' . $this->recurrent->invoice,
 	                    'fond' => $this->recurrent->fond)
 	            )
 	        );
+        $this->context->get('mailer')->send($message);
+	}
+	
+	private function notify_about_auto_deleting($email, $fond, $campaign_url, $amount, $pan, $from)
+	{
+        $message = \Swift_Message::newInstance()
+            ->setSubject('Мы отменили ваши ежемесячные пожертвования')
+            ->setFrom($from)
+            ->setTo($email)
+            ->setBody(
+                $this->context->renderView(
+                    'VmesteSaasBundle:Email:autodeletingSubscription.html.twig',
+                    array(
+                        'sum' => $amount,
+                        'campaign_url' => $campaign_url,
+                        'fond' => $fond,
+                        'pan' => $pan)
+                )
+            );
+        $this->context->get('mailer')->send($message);
+	}
 
-        $context->get('mailer')->send($message);
-	}
-	
-	private function notify_about_auto_deleting($email)
+    private function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
+    {
+        $message = \Swift_Message::newInstance()
+            ->setSubject('Спасибо за помощь!')
+            ->setFrom($emailFrom)
+            ->setTo($emailTo)
+            ->setBody(
+                $this->context->renderView(
+                    'VmesteSaasBundle:Email:successfullPaymentMonthly.html.twig',
+                    array(
+                        'amount' => $amount,
+                        'unsubscribe' => $unsubscribe,
+                        'fond' => $fond)
+                )
+            );
+        $this->context->get('mailer')->send($message);
+    }
+
+	private function _next_data($offset, $monthdays, $today_start, $today_end, $attempt)
 	{
-		$offset = 0;
-// CHANGE IT
-		$template = file_get_contents(__DIR__.'/email_templates/'.self::TEMPLATE_DELETED);
-		
-		$body = str_replace('{param1}', $this->url_subcribe, $template);
-		
-		//echo $body;
-		@mail($email, self::EMAIL_SUBJECT_2, $body, $this->headers);	
+        $query = $this->icpdo->createQuery('SELECT *
+                                    FROM Vmeste\SaasBundle\Entity\Recurrent r
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
+                                    WHERE c.status_id = '.$this->status_id_active.'
+                                    AND d.status_id = '.$this->status_id_active.'
+			                        AND (r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')>='.$today_start.'
+			                        AND (r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')<='.$today_end.'
+			                        AND r.attempt = '.$attempt.'
+			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
+                            ->setParameter('offset', $offset)
+                            ->setParameter('limit', self::LIMIT_ROWS);
+        $this->data = $query->getResult();
 	}
-	
-	private function notify_about_success_payment($email)
-	{
-		$offset = 0;
-// CHANGE IT
-		$template = file_get_contents(__DIR__.'/email_templates/'.self::TEMPLATE_THANKS);
-		
-		$body = str_replace('{param1}', '', $template);
-		
-		//echo $body;
-		@mail($email, self::EMAIL_SUBJECT_1, $body, $this->headers);	
-	}
-	
-	private function notify_about_payment()
-	{
-		$offset = 0;
-// CHANGE IT
-		$template = file_get_contents(__DIR__.'/email_templates/'.self::TEMPLATE_NOTIFY);
-		
-		while(!empty($this->data)){
-			foreach($this->data as $recur) {
-				if(!empty($recur['email'])){
-					// TODO: template
-					$body = str_replace('{param1}', $recur['amount'], $template);
-					$body = str_replace('{param2}', $recur['title'], $body);
-					$body = str_replace('{param3}', $this->url_unsubcribe, $body);
-					
-					//echo $body;
-					@mail($recur['email'], self::EMAIL_SUBJECT_0, $body, $this->headers);				
-				} else continue;
-			}
-			$offset += self::LIMIT_ROWS;
-			$this->data = $this->_next_data($this->stmt, $offset);
-		}
-	}
-	
-	private function _next_data($stmt, $offset)
-	{
-// CHANGE IT
-		$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-		$stmt->bindValue(':limit', self::LIMIT_ROWS, PDO::PARAM_INT);
-		$stmt->execute();
-		return $stmt->fetchAll();
-	}
+
+    private function _next_send_data($offset, $monthdays, $today_start, $today_end, $attempt)
+    {
+        $query = $this->icpdo->createQuery('SELECT *
+                                    FROM Vmeste\SaasBundle\Entity\Recurrent r
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
+                                    WHERE c.status_id = '.$this->status_id_active.'
+                                    AND d.status_id = '.$this->status_id_active.'
+			                        AND (r.success_date + '.$monthdays.')>='.$today_start.'
+			                        AND (r.success_date + '.$monthdays.')<='.$today_end.'
+			                        AND r.attempt = '.$attempt.'
+			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
+            ->setParameter('offset', $offset)
+            ->setParameter('limit', self::LIMIT_ROWS);
+        $this->data = $query->getResult();
+    }
 }
 
 ?>

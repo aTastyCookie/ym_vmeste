@@ -5,25 +5,10 @@
     <h2>Редактировать кампанию</h2>
 
     <style>
-
-        .logo-edit img {
-            max-width: 100px;
-        }
-
         .big-edit img {
             max-width: 200px;
         }
-
     </style>
-
-    <div class="logo-edit">
-        <h4>Лого компании</h4>
-        {% if logo %}
-            <img src="{{ logo }}" alt="Лого компании">
-        {% else %}
-            <span class="label label-info">Изображение отсутствует</span>
-        {% endif %}
-    </div>
 
     <div class="big-edit">
         <h4>Большое изображение</h4>
@@ -31,32 +16,6 @@
             <img src="{{ bigImage }}" alt="Большое изображение">
         {% else %}
             <span class="label label-info">Изображение отсутствует</span>
-        {% endif %}
-    </div>
-
-    <style>
-
-        .logo-edit img {
-            max-width: 100px;
-        }
-
-        .big-edit img {
-            max-width: 200px;
-        }
-
-    </style>
-
-    <div class="logo-edit">
-        <h4>Лого компании</h4>
-        {% if logo %}
-        <img src="{{ logo }}" alt="Лого компании">
-        {% endif %}
-    </div>
-
-    <div class="big-edit">
-        <h4>Большое изображение</h4>
-        {% if bigImage %}
-            <img src="{{ bigImage }}" alt="Большое изображение">
         {% endif %}
     </div>
 

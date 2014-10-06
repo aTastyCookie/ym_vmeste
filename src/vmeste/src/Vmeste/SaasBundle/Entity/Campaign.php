@@ -45,19 +45,6 @@ class Campaign
     protected $subTitle;
 
     /**
-     * @Assert\File(maxSize="500000")
-     */
-
-    /**
-     * @Assert\File(
-     *     maxSize = "500k",
-     *     mimeTypes = {"image/jpeg", "image/png"},
-     *     mimeTypesMessage = "Пожалуйста загрузите изображение корректного формата"
-     * )
-     */
-    protected $smallPic;
-
-    /**
      * @Assert\File(
      *     maxSize = "5M",
      *     mimeTypes = {"image/jpeg", "image/png"},
@@ -65,11 +52,6 @@ class Campaign
      * )
      */
     protected $bigPic;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    public $smallPicPath;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -124,7 +106,6 @@ class Campaign
         $this->transactions = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
-
     public function getAbsolutePath()
     {
         return null === $this->path ? null : $this->getUploadRootDir() . '/' . $this->path;
@@ -152,13 +133,6 @@ class Campaign
 
     public function upload()
     {
-        if (null !== $this->getSmallPic()) {
-            $smallPicName = sha1(uniqid(mt_rand(), true)) . "." . $this->getSmallPic()->guessClientExtension();
-            $this->getSmallPic()->move($this->getUploadRootDir(), $smallPicName);
-            $this->smallPicPath = $smallPicName;
-            $this->smallPic = null;
-        }
-
         if (null !== $this->getBigPic()) {
             $bigPicName = sha1(uniqid(mt_rand(), true)) . "." . $this->getBigPic()->guessClientExtension();
             $this->getBigPic()->move($this->getUploadRootDir(), $bigPicName);
@@ -422,29 +396,6 @@ class Campaign
     }
 
     /**
-     * Set smallPicPath
-     *
-     * @param string $smallPicPath
-     * @return Campaign
-     */
-    public function setSmallPicPath($smallPicPath)
-    {
-        $this->smallPicPath = $smallPicPath;
-
-        return $this;
-    }
-
-    /**
-     * Get smallPicPath
-     *
-     * @return string
-     */
-    public function getSmallPicPath()
-    {
-        return $this->smallPicPath;
-    }
-
-    /**
      * Set bigPicPath
      *
      * @param string $bigPicPath
@@ -465,22 +416,6 @@ class Campaign
     public function getBigPicPath()
     {
         return $this->bigPicPath;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSmallPic()
-    {
-        return $this->smallPic;
-    }
-
-    /**
-     * @param mixed $smallPic
-     */
-    public function setSmallPic(UploadedFile $smallPic)
-    {
-        $this->smallPic = $smallPic;
     }
 
     /**

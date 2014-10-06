@@ -15,6 +15,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
@@ -102,6 +103,22 @@ class UserController extends Controller
                         )
                 )
             )))
+            ->add('logo', 'file', array(
+                    'label' => 'Логотип (100x70)',
+                    'constraints' => array(
+                        new Image(
+                            array(
+                                'minWidth' => 100,
+                                'maxWidth' => 100,
+                                'minHeight' => 70,
+                                'maxHeight' => 70,
+                                'maxSize' => '500k',
+                            )
+                        )
+                    ),
+                    'required' => false
+                )
+            )
             ->add('save', 'submit', array('label' => 'Создать пользователя'))
             ->getForm();
 
@@ -114,8 +131,14 @@ class UserController extends Controller
             $em = $this->getDoctrine()->getManager();
 
             $user = new User();
+
+            $user->setUploadDir($this->container->getParameter('image.upload.dir'));
+
             $user->setUsername($data['username']);
             $user->setEmail($data['email']);
+
+            $user->setLogo($data['logo']);
+            $user->upload();
 
             $factory = $this->get('security.encoder_factory');
             $encoder = $factory->getEncoder($user);
@@ -200,6 +223,22 @@ class UserController extends Controller
                         )
                     )
                 )))
+            ->add('logo', 'file', array(
+                    'label' => 'Логотип (100x70)',
+                    'constraints' => array(
+                        new Image(
+                            array(
+                                'minWidth' => 100,
+                                'maxWidth' => 100,
+                                'minHeight' => 70,
+                                'maxHeight' => 70,
+                                'maxSize' => '500k',
+                            )
+                        )
+                    ),
+                    'required' => false
+                )
+            )
             ->add('save', 'submit', array('label' => 'Обновить пользователя'))
             ->getForm();
 
@@ -208,8 +247,14 @@ class UserController extends Controller
 
             $data = $form->getData();
 
+            $user->setUploadDir($this->container->getParameter('image.upload.dir'));
+
             $user->setUsername($data['username']);
             $user->setEmail($data['email']);
+
+            $user->setLogo($data['logo']);
+            $user->upload();
+
             if($data['password'] != NULL) {
                 $factory = $this->get('security.encoder_factory');
                 $encoder = $factory->getEncoder($user);
@@ -239,6 +284,7 @@ class UserController extends Controller
 
         return array(
             'form' => $form->createView(),
+            'logo' => ($user->getLogoPath() != null) ? $this->container->getParameter('image.upload.dir') . $user->getLogoPath() : null,
         );
 
     }

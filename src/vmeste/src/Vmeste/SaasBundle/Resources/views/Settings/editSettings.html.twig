@@ -2,6 +2,16 @@
 
 {% block body %}
 
+    <style>
+        .reg-sup {
+            font-size: 18px;
+            color: #f00;
+            left: -5px;
+            position: relative;
+            top: -11px;
+        }
+    </style>
+
     <h2>Настройки</h2>
 
     <h3>Основные настройки</h3>
@@ -9,15 +19,15 @@
         <form action="{{ updateEmailSettingsRoute }}" method="post">
             {{ email_setting_errors | raw }}
             <p>
-                <input type="text" name="company_name" placeholder="Название организации"
+                <sup class="reg-sup">*</sup><input type="text" name="company_name" placeholder="Название организации"
                        value="{{ company_name }}">
                 Название организации </p>
             <p>
-                <input type="text" name="director_name" placeholder="ФИО директора"
+                <sup class="reg-sup">*</sup><input type="text" name="director_name" placeholder="ФИО директора"
                        value="{{ director_name }}">
                 ФИО директора </p>
             <p>
-                <textarea rows="5" cols="60" name="details" placeholder="Юр.адрес: ___________________
+                <sup class="reg-sup">*</sup><textarea rows="5" cols="60" name="details" placeholder="Юр.адрес: ___________________
 Почтовый адрес: ______________
 ОГРН _________
 ИНН ___________
@@ -27,17 +37,17 @@
 БИК ______________ ">{{ details }}</textarea>
                 Реквизиты </p>
             <p>
-                <input type="email" name="notification_email" placeholder="no-reply@your.domain"
+                <sup class="reg-sup">*</sup><input type="email" name="notification_email" placeholder="no-reply@your.domain"
                        value="{{ notification_email }}">
                 Ваш e-mail для получения уведомлений о поступивших пожертвованиях </p>
 
             <p>
-                <input type="text" name="sender_name" placeholder="John Doe" value="{{ sender_name }}"><br/>
+                <sup class="reg-sup">*</sup><input type="text" name="sender_name" placeholder="John Doe" value="{{ sender_name }}"><br/>
                 Ваше имя, которое жертвователь увидит в письме-уведомлении об успешно сделанном пожертвовании.
             </p>
 
             <p>
-                <input type="email" name="sender_email" placeholder="your.email@your.domain"
+                <sup class="reg-sup">*</sup><input type="email" name="sender_email" placeholder="your.email@your.domain"
                        value="{{ sender_email }}"><br/>
                 Ваш e-mail, адрес которого жертвователь увидит в письме-уведомлении об успешно сделанном пожертвовании.
                 <br/>
@@ -67,15 +77,15 @@
         </p>
 
         <form action="{{ updateYKSettingsRoute }}" method="post">
-            <p><label>shopId:
+            <p><label><sup class="reg-sup">*</sup>shopId:
                     <input type="text" name="yandex_shopid" value="{{ shopid }}">
                 </label></p>
 
-            <p><label>scid:
+            <p><label><sup class="reg-sup">*</sup>scid:
                     <input type="text" name="yandex_scid" value="{{ scid }}">
                 </label></p>
 
-            <p><label>shoppw:
+            <p><label><sup class="reg-sup">*</sup>shoppw:
                     <input type="text" name="yandex_shoppw" value="{{ shoppw }}">
                 </label></p>
 
@@ -119,15 +129,15 @@
             {% if userIdForEdit %}
                 <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>
             {% else %}
-                <p><label>Старый пароль:
+                <p><label><sup class="reg-sup">*</sup>Старый пароль:
                         <input type="password" name="old_password">
                     </label></p>
             {% endif %}
-            <p><label>Новый пароль:
+            <p><label><sup class="reg-sup">*</sup>Новый пароль:
                     <input type="password" name="new_password">
                 </label></p>
 
-            <p><label>Повторите новый пароль:
+            <p><label><sup class="reg-sup">*</sup>Повторите новый пароль:
                     <input type="password" name="new_password_repeat">
                 </label></p>
 

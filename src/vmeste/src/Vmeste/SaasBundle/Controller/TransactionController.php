@@ -177,11 +177,11 @@ class TransactionController extends Controller
 
                             $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
                             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+                            $userSettingsArray = $campaign->getUser()->getSettings();
+                            $settings = $userSettingsArray[0];
 
-                            if ($campaign != null)
-                                $campaign_title = $campaign->getTitle();
-
-                            $amount = stripslashes($request->request->get('orderSumAmount'));
+                            $amount = number_format((float)stripslashes($request->request->get('orderSumAmount')), 2);
+                            $pan = $request->request->get('cdd_pan_mask');
 
                             $recurrent = new Recurrent();
                             $recurrent->setAmount($amount);
@@ -189,6 +189,7 @@ class TransactionController extends Controller
                             $recurrent->setCampaignId($campaignId);
                             $recurrent->setClientOrderId(0);
                             $recurrent->setCvv('');
+                            $recurrent->setPan($pan);
                             $recurrent->setDonor($donor);
                             $recurrent->setInvoiceId($invoiceId);
                             $recurrent->setLastOperationTime(0);
@@ -204,17 +205,41 @@ class TransactionController extends Controller
                             // Send the first notification email
                             $rebilling = new Rebilling(
                                 array('icpdo' => $em,
-                                    'url_unsubcribe'=>$request->request->get('paymentPage'),
-                                    'url_subcribe'=>$request->request->get('paymentPage'))
+                                    'url_unsubcribe'=>"http://" . $this->getRequest()->getHost() ."/" ,
+                                    'url_subcribe'=>"http://" . $this->getRequest()->getHost() ."/",
+                                    'context' => $this)
                             );
                             $rebilling->recurrent->email = $payer_email;
-                            $rebilling->recurrent->fond = $campaign_title;
+                            $rebilling->recurrent->fond = $settings->getCompanyName();
                             $rebilling->recurrent->sum = $amount;
                             $rebilling->recurrent->id = $recurrent->getId();
                             $rebilling->recurrent->invoice = $invoiceId;
-                            $rebilling->notify_about_subscription($this);
-                        }
+                            $rebilling->recurrent->invoice = $settings->getSenderEmail();
+                            $rebilling->notify_about_subscription();
+                        } else {
 
+                            $userSettingsArray = $transaction->getCampaign()->getUser()->getSettings();
+                            $settings = $userSettingsArray[0];
+                            $emailFrom = $settings->getSenderEmail();
+
+                            $message = \Swift_Message::newInstance()
+                                ->setSubject('Спасибо за помощь!')
+                                ->setFrom($emailFrom)
+                                ->setTo($donor->getEmail())
+                                ->setBody(
+                                    $this->renderView(
+                                        'VmesteSaasBundle:Email:successfullPayment.html.twig',
+                                        array(
+                                            'name' => $donor->getName(),
+                                            'amount' => $transaction->getAmount(),
+                                            'yandexMoneyPage' =>
+                                                $this->getRequest()->getHost() . "/"
+                                                . $this->generateUrl('payment_page')
+                                                . "/" . $transaction->getCampaign()->getUrl())
+                                    )
+                                );
+                            $this->get('mailer')->send($message);
+                        }
                     } else {
                         $logger = $this->get('logger');
                         $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
@@ -249,7 +274,8 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public function homeAction()
+    public
+    function homeAction()
     {
         return array('data' => true);
     }
@@ -257,7 +283,8 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public function unsubscribeAction()
+    public
+    function unsubscribeAction()
     {
         $recurrent_id = $this->getRequest()->query->get("recurrent");
         $invoice_id = $this->getRequest()->query->get("invoice");
@@ -321,7 +348,8 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public function subscribeAction()
+    public
+    function subscribeAction()
     {
         $recurrent_id = $this->getRequest()->query->get("recurrent");
         $invoice_id = $this->getRequest()->query->get("invoice");
@@ -378,7 +406,8 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public function reportAction()
+    public
+    function reportAction()
     {
 
         $limit = $this->container->getParameter('paginator.page.items');
@@ -419,7 +448,8 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public function searchAction()
+    public
+    function searchAction()
     {
 
         if ($this->getRequest()->query->get("searchRequest", null) != null) {
@@ -471,7 +501,8 @@ class TransactionController extends Controller
 
     }
 
-    public function reportExportAction()
+    public
+    function reportExportAction()
     {
 
         $startTimestamp = $endTimestamp = 0;
@@ -547,7 +578,8 @@ class TransactionController extends Controller
      * @param $postParamsArray
      * @return string
      */
-    private function createRequestString($postParamsArray)
+    private
+    function createRequestString($postParamsArray)
     {
         $response = "";
         foreach ($postParamsArray as $key => $value) {
@@ -561,7 +593,8 @@ class TransactionController extends Controller
      * @param $orderNumber
      * @return mixed
      */
-    private function getCampaignId($orderNumber)
+    private
+    function getCampaignId($orderNumber)
     {
         $orderNumberExploded = explode("-", $orderNumber);
         $campaignId = $orderNumberExploded[0];
@@ -572,7 +605,8 @@ class TransactionController extends Controller
      * @param $dateStr
      * @return int
      */
-    private function parseDateToTimestamp($dateStr)
+    private
+    function parseDateToTimestamp($dateStr)
     {
         $a = date_parse_from_format('Y-m-d', $dateStr);
         $timestamp = mktime(0, 0, 0, $a['month'], $a['day'], $a['year']);

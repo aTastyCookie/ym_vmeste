@@ -2,7 +2,25 @@
 
 {% block body %}
 
+    <style>
+        .logo-edit img {
+            max-width: 100px;
+        }
+    </style>
+
     <h2>Редактирование пользователя</h2>
+    <span class="label label-important">Все поля обязательны для заполнения</span>
+    <br>
+    <br>
+    <div class="logo-edit">
+        <h4>Лого компании</h4>
+        {% if logo %}
+            <img src="{{ logo }}" alt="Лого компании">
+        {% else %}
+            <span class="label label-info">Изображение отсутствует</span>
+        {% endif %}
+    </div>
+    <br>
 
     {{ form(form) }}
 

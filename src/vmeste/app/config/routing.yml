@@ -121,13 +121,7 @@ transaction_home:
     path: /transaction/home
     defaults: { _controller: VmesteSaasBundle:Transaction:home }
 
-transaction_unsubscribe:
-    path: /outside/transaction/unsubscribe
-    defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
 
-transaction_subscribe:
-    path: /outside/transaction/subscribe
-    defaults: { _controller: VmesteSaasBundle:Transaction:subscribe }
     
 transaction_report:
     path: /transaction/report
@@ -170,6 +164,14 @@ yandex_payment_aviso:
 payment_oferta:
     path: /{campaignUrl}/oferta
     defaults: { _controller: VmesteSaasBundle:Campaign:oferta, campaignUrl: null }
+
+transaction_unsubscribe:
+    path: /outside/transaction/unsubscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
+
+transaction_subscribe:
+    path: /outside/transaction/subscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:subscribe }
 
 #vmeste_administrator_login:
 #     path:     /contact

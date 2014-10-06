@@ -20,10 +20,13 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Util\PaginationUtils;
+use Vmeste\SaasBundle\Validator\ForbiddenUriConstraint;
+use Vmeste\SaasBundle\Validator\ForbiddenUriValidator;
 
 class CampaignController extends Controller
 {
@@ -133,6 +136,7 @@ class CampaignController extends Controller
 
 
         $connection = $this->getDoctrine()->getConnection();
+        $em =  $this->getDoctrine()->getManager();
         $queryBuilder = $connection->createQueryBuilder();
 
         $queryBuilder
@@ -166,24 +170,16 @@ class CampaignController extends Controller
             )
             ->add('url', 'text',
                 array('constraints' => array(
-                    new NotBlank()
+                    new NotBlank(),
+                    new Regex(
+                        array(
+                            'pattern' => '/^[a-zA-Z0-9]+([a-zA-Z0-9]-?)+[a-zA-Z0-9]$/',
+                            'message' => 'Формат введенного URL неверен!'
+                        ),
+                    new ForbiddenUriConstraint()
+                    ),
                 ), 'label' => 'URL (только латинские буквы, цифры и дефис)')
             )
-            ->add(
-                'smallPic', 'file', array(
-                'label' => 'Логотип (100x70)',
-                'constraints' => array(
-                    new Image(
-                        array(
-                            'minWidth' => 100,
-                            'maxWidth' => 100,
-                            'minHeight' => 70,
-                            'maxHeight' => 70,
-                            'maxSize' => '500k',
-                        )
-                    )
-                )
-            ))
             ->add(
                 'bigPic', 'file', array(
                     'label' => 'Большое изображение',
@@ -243,7 +239,6 @@ class CampaignController extends Controller
             $campaign->setUrl($data['url']);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
             $campaign->setStatus($status);
-            $campaign->setSmallPic($data['smallPic']);
             $campaign->setBigPic($data['bigPic']);
             $campaign->upload();
 
@@ -292,26 +287,17 @@ class CampaignController extends Controller
             )
             ->add('url', 'text',
                 array('constraints' => array(
-                    new NotBlank()
+                    new NotBlank(),
+                    new Regex(
+                        array(
+                            'pattern' => '/^[a-zA-Z0-9]+([a-zA-Z0-9]-?)+[a-zA-Z0-9]$/',
+                            'message' => 'Формат введенного URL неверен!'
+                        )
+                    ),
+                    new ForbiddenUriConstraint()
                 ),
                     'label' => 'URL (только латинские буквы, цифры и дефис)',
                     'data' => $campaign->getUrl())
-            )
-            ->add('smallPic', 'file', array(
-                    'label' => 'Логотип (100x70)',
-                    'constraints' => array(
-                        new Image(
-                            array(
-                                'minWidth' => 100,
-                                'maxWidth' => 100,
-                                'minHeight' => 70,
-                                'maxHeight' => 70,
-                                'maxSize' => '500k',
-                            )
-                        )
-                    ),
-                    'required' => false
-                )
             )
             ->add('bigPic', 'file', array(
                     'label' => 'Изображение',
@@ -375,9 +361,6 @@ class CampaignController extends Controller
             $campaign->setMinAmount($data['min_amount']);
             $campaign->setFormIntro($data['form_intro']);
 
-            if ($data['smallPic'] != null)
-                $campaign->setSmallPic($data['smallPic']);
-
             if ($data['bigPic'] != null)
                 $campaign->setBigPic($data['bigPic']);
 
@@ -393,7 +376,6 @@ class CampaignController extends Controller
 
         return array(
             'form' => $form->createView(),
-            'logo' => ($campaign->getSmallPicPath() != null) ? $this->container->getParameter('image.upload.dir') . $campaign->getSmallPicPath() : null,
             'bigImage' => ($campaign->getBigPicPath() != null) ? $this->container->getParameter('image.upload.dir') . $campaign->getBigPicPath() : null,
         );
     }
@@ -619,6 +601,7 @@ class CampaignController extends Controller
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
         $user = $campaign->getUser();
+        $userLogoPath = $user->getLogoPath();
         $settingsCollection = $user->getSettings();
         $userSettings = $settingsCollection[0];
         $yandexKassa = $userSettings->getYandexKassa();
@@ -633,7 +616,8 @@ class CampaignController extends Controller
             'uniqueId' => time(),
             'paymentPage' => $paymentPage,
             'imageStoragePath' => $imageStoragePath,
-            'settings'=>$userSettings
+            'settings' => $userSettings,
+            'logo' => $userLogoPath,
         );
 
     }
@@ -648,19 +632,19 @@ class CampaignController extends Controller
         $user = $campaign->getUser();
         $settingsCollection = $user->getSettings();
         $userSettings = $settingsCollection[0];
-        $months = array(1=>'января',
-                        2=>'февраля',
-                        3=>'марта',
-                        4=>'апреля',
-                        5=>'мая',
-                        6=>'июня',
-                        7=>'июля',
-                        8=>'августа',
-                        9=>'сентября',
-                        10=>'октября',
-                        11=>'ноября',
-                        12=>'декабря');
-        $time = "«".date("d")."» ".$months[date('n')]." ".date("Y")."г.";
-        return array('settings' => $userSettings, 'time'=>$time);
+        $months = array(1 => 'января',
+            2 => 'февраля',
+            3 => 'марта',
+            4 => 'апреля',
+            5 => 'мая',
+            6 => 'июня',
+            7 => 'июля',
+            8 => 'августа',
+            9 => 'сентября',
+            10 => 'октября',
+            11 => 'ноября',
+            12 => 'декабря');
+        $time = "«" . date("d") . "» " . $months[date('n')] . " " . date("Y") . "г.";
+        return array('settings' => $userSettings, 'time' => $time);
     }
 } 

@@ -10,7 +10,9 @@ namespace Vmeste\SaasBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="Vmeste\SaasBundle\Entity\UserRepository")
@@ -82,6 +84,50 @@ class User implements UserInterface, \Serializable
      * @ORM\ManyToMany(targetEntity="Settings", inversedBy="users")
      */
     protected $settings;
+
+    /**
+     * @Assert\File(
+     *     maxSize = "500k",
+     *     mimeTypes = {"image/jpeg", "image/png"},
+     *     mimeTypesMessage = "Пожалуйста загрузите изображение корректного формата"
+     * )
+     */
+    protected $logo;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $logoPath;
+
+    /**
+     * @var string
+     */
+    protected $uploadDir;
+
+    public function getUploadDir()
+    {
+        return $this->uploadDir;
+    }
+
+    public function setUploadDir($dir)
+    {
+        $this->uploadDir = $dir;
+    }
+
+    public function upload()
+    {
+        if (null !== $this->getLogo()) {
+            $logoTitle = sha1(uniqid(mt_rand(), true)) . "." . $this->getLogo()->guessClientExtension();
+            $this->getLogo()->move($this->getUploadRootDir(), $logoTitle);
+            $this->logoPath = $logoTitle;
+            $this->logo = null;
+        }
+    }
+
+    protected function getUploadRootDir()
+    {
+        return __DIR__ . '/../../../../web/' . $this->getUploadDir();
+    }
 
 
     public function __construct()
@@ -345,7 +391,8 @@ class User implements UserInterface, \Serializable
         return $this;
     }
 
-    public function getRole() {
+    public function getRole()
+    {
 
         return $this->roles[0]->getRole();
     }
@@ -359,7 +406,6 @@ class User implements UserInterface, \Serializable
     {
         $this->roles->removeElement($roles);
     }
-
 
 
     /**
@@ -388,7 +434,7 @@ class User implements UserInterface, \Serializable
     /**
      * Get statuses
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getStatuses()
     {
@@ -421,7 +467,7 @@ class User implements UserInterface, \Serializable
     /**
      * Get campaigns
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getCampaigns()
     {
@@ -455,10 +501,50 @@ class User implements UserInterface, \Serializable
     /**
      * Get settings
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getSettings()
     {
         return $this->settings;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLogo()
+    {
+        return $this->logo;
+    }
+
+    /**
+     * @param UploadedFile $logo
+     * @internal param mixed $bigPic
+     */
+    public function setLogo(UploadedFile $logo)
+    {
+        $this->logo = $logo;
+    }
+
+    /**
+     * Set logoPath
+     *
+     * @param string $logoPath
+     * @return User
+     */
+    public function setLogoPath($logoPath)
+    {
+        $this->logoPath = $logoPath;
+
+        return $this;
+    }
+
+    /**
+     * Get logoPath
+     *
+     * @return string
+     */
+    public function getLogoPath()
+    {
+        return $this->logoPath;
     }
 }

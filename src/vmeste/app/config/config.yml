@@ -85,3 +85,9 @@ parameters:
     paginator.page.items: 5
 
     image.upload.dir: /uploads/documents/
+
+    recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+    recurrent.path_to_cert: /home/robimgut/www/ymfbru.robimgut.com/library/robimgut.cer
+    recurrent.path_to_key: /home/robimgut/www/ymfbru.robimgut.com/library/private.key
+    recurrent.cert_pass: 123455
+    recurrent.apphost: http://vmeste.yandex.ru/

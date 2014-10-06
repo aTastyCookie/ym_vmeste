@@ -24,17 +24,17 @@ class Settings {
     protected $id;
 
     /**
-     * @ORM\Column(type="string", name="company_name")
+     * @ORM\Column(type="string", nullable=true , name="company_name")
      */
     protected $companyName;
 
     /**
-     * @ORM\Column(type="text", name="director_name")
+     * @ORM\Column(type="text", nullable=true , name="director_name")
      */
     protected $directorName;
 
     /**
-     * @ORM\Column(type="text", name="details", length=1024)
+     * @ORM\Column(type="text", nullable=true , name="details", length=1024)
      */
     protected $details;
 
