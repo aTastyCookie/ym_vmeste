@@ -326,7 +326,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
               <?php if(!$error) { ?>
               	<p class="success_submit">Приятно познакомиться! Мы перезвоним вам<br> 
                   в течение двух дней, чтобы вы успели подготовить текст и картинки для вашей страницы.</p>
-              <? } else {?>
+              <?php } else {?>
               	<p class="error_submit">С Вашего IP-адреса недавно уже была отправлена заявка. Попробуйте снова немного позже.</p>
               <?php } ?>
                   <button type="submit" class="submit" id="form_submit" name="send">Отправить заявку</button>
