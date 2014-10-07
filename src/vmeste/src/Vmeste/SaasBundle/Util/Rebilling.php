@@ -319,7 +319,23 @@ class Rebilling {
 
 	private function _next_data($offset, $monthdays, $today_start, $today_end, $attempt)
 	{
-        $query = $this->icpdo->createQuery('SELECT *
+	    $queryBuilder = $this->icpdo->createQueryBuilder();
+	    $queryBuilder
+                    ->select('*')
+                    ->from('Vmeste\SaasBundle\Entity\Recurrent','r')
+                    ->where('c.status_id = '.$this->status_id_active)
+                    ->andWhere('d.status_id = '.$this->status_id_active)
+                    ->andWhere('(r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')>='.$today_start)
+                    ->andWhere('(r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')<='.$today_end)
+                    ->andWhere('r.attempt = '.$attempt)
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 'r.donor_id = d.id')
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign_id = c.id')
+	                ->orderBy('r.id', 'ASC')
+                    ->setFirstResult( $offset )
+                    ->setMaxResults( self::LIMIT_ROWS );
+        $statement = $queryBuilder->execute();
+        $this->data = $statement->fetchAll();
+        /* $query = $this->icpdo->createQuery('SELECT *
                                     FROM Vmeste\SaasBundle\Entity\Recurrent r
                                     INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
                                     INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
@@ -331,12 +347,29 @@ class Rebilling {
 			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
                             ->setParameter('offset', $offset)
                             ->setParameter('limit', self::LIMIT_ROWS);
-        $this->data = $query->getResult();
+        $this->data = $query->getResult(); */
 	}
 
     private function _next_send_data($offset, $monthdays, $today_start, $today_end, $attempt)
     {
-        $query = $this->icpdo->createQuery('SELECT *
+        $queryBuilder = $this->icpdo->createQueryBuilder();
+        $queryBuilder
+                    ->select('*')
+                    ->from('Vmeste\SaasBundle\Entity\Recurrent','r')
+                    ->where('c.status_id = '.$this->status_id_active)
+                    ->andWhere('d.status_id = '.$this->status_id_active)
+                    ->andWhere('(r.success_date + '.$monthdays.')>='.$today_start)
+                    ->andWhere('(r.success_date + '.$monthdays.')<='.$today_end)
+                    ->andWhere('r.attempt = '.$attempt)
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 'r.donor_id = d.id')
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign_id = c.id')
+                    ->orderBy('r.id', 'ASC')
+                    ->setFirstResult( $offset )
+                    ->setMaxResults( self::LIMIT_ROWS );
+        $statement = $queryBuilder->execute();
+        $this->data = $statement->fetchAll();
+        
+        /*$query = $this->icpdo->createQuery('SELECT *
                                     FROM Vmeste\SaasBundle\Entity\Recurrent r
                                     INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
                                     INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
@@ -348,7 +381,7 @@ class Rebilling {
 			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
             ->setParameter('offset', $offset)
             ->setParameter('limit', self::LIMIT_ROWS);
-        $this->data = $query->getResult();
+        $this->data = $query->getResult();*/
     }
 }
 
