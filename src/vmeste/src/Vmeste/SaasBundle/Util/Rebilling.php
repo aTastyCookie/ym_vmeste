@@ -319,6 +319,32 @@ class Rebilling {
 
 	private function _next_data($offset, $monthdays, $today_start, $today_end, $attempt)
 	{
+
+        $queryBuilder = $this->icpdo->createQueryBuilder();
+
+        // Или select('*')
+        $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' d.id = r.donor_id')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', ' c.id = r.campaign_id')
+            ->where('c.status_id = :statusIdActive')
+            ->andWhere('d.status_id = :statusIdActive')
+            ->andWhere('(r.success_date + :monthDays - :selfBefore) >= :todayStart')
+            ->andWhere('(r.success_date + :monthDays - :selfBefore) <= :todayEnd')
+            ->andWhere('r.attempt = :attempt')
+            ->setParameter('statusIdActive', $this->status_id_active)
+            ->setParameter('selfBefore', self::DAYS_BEFORE)
+            ->setParameter('monthDays', $monthdays)
+            ->setParameter('todayStart', $today_start)
+            ->setParameter('todayEnd', $today_end)
+            ->setParameter('attempt', $attempt)
+            ->orderBy('r.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults(self::LIMIT_ROWS);
+
+        $query = $queryBuilder->getQuery();
+        $this->data = $query->getResult();
+
+        /*
 	    $queryBuilder = $this->icpdo->createQueryBuilder();
 	    $queryBuilder
                     ->select('*')
@@ -333,9 +359,12 @@ class Rebilling {
 	                ->orderBy('r.id', 'ASC')
                     ->setFirstResult( $offset )
                     ->setMaxResults( self::LIMIT_ROWS );
+
+
         $statement = $queryBuilder->execute();
         $this->data = $statement->fetchAll();
-        /* $query = $this->icpdo->createQuery('SELECT *
+
+        $query = $this->icpdo->createQuery('SELECT *
                                     FROM Vmeste\SaasBundle\Entity\Recurrent r
                                     INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
                                     INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
@@ -352,6 +381,33 @@ class Rebilling {
 
     private function _next_send_data($offset, $monthdays, $today_start, $today_end, $attempt)
     {
+
+
+        $queryBuilder = $this->icpdo->createQueryBuilder();
+
+        // Или select('*')
+        $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' d.id = r.donor_id')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', ' c.id = r.campaign_id')
+            ->where('c.status_id = :statusIdActive')
+            ->andWhere('d.status_id = :statusIdActive')
+            ->andWhere('(r.success_date + :monthDays) >= :todayStart')
+            ->andWhere('(r.success_date + :monthDays) <= :todayEnd')
+            ->andWhere('r.attempt = :attempt')
+            ->setParameter('statusIdActive', $this->status_id_active)
+            ->setParameter('monthDays', $monthdays)
+            ->setParameter('todayStart', $today_start)
+            ->setParameter('todayEnd', $today_end)
+            ->setParameter('attempt', $attempt)
+            ->orderBy('r.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults(self::LIMIT_ROWS);
+
+        $query = $queryBuilder->getQuery();
+        $this->data = $query->getResult();
+
+
+        /*
         $queryBuilder = $this->icpdo->createQueryBuilder();
         $queryBuilder
                     ->select('*')
@@ -369,7 +425,7 @@ class Rebilling {
         $statement = $queryBuilder->execute();
         $this->data = $statement->fetchAll();
         
-        /*$query = $this->icpdo->createQuery('SELECT *
+        $query = $this->icpdo->createQuery('SELECT *
                                     FROM Vmeste\SaasBundle\Entity\Recurrent r
                                     INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
                                     INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
