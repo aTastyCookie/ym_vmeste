@@ -32,18 +32,39 @@ class RecurrentCommand extends ContainerAwareCommand
     {
         $doctrine = $this->getContainer()->get('doctrine');
         $em = $doctrine->getManager();
-
+        $container = new Adapter($this->getContainer());
+        //$context = $container->get('templating');
+        $context_mailer = $container->get('mailer');
         $params = array(
             'ymurl' =>  $this->getContainer()->getParameter('recurrent.ymurl'),
             'path_to_cert' =>  $this->getContainer()->getParameter('recurrent.path_to_cert'),
             'path_to_key' =>  $this->getContainer()->getParameter('recurrent.path_to_key'),
             'cert_pass' =>  $this->getContainer()->getParameter('recurrent.cert_pass'),
             'icpdo' => $em,
-            'apphost' =>  $this->getContainer()->getParameter('recurrent.apphost')
+            'apphost' =>  $this->getContainer()->getParameter('recurrent.apphost'),
+            'context' => $container,
+            'context_mailer' => $context_mailer
         );
         $recurrent = new Rebilling($params);
         $recurrent->notify();
         $recurrent->run();
         echo("Finished" . "\n\n");
     }
-} 
+}
+
+class Adapter {
+
+    private $_container;
+
+    function __construct($container) {
+        $this->_container = $container;
+    }
+
+    function renderView($template, array $params) {
+        return $this->_container->get('templating')->render($template, $params);
+    }
+
+    function get($service) {
+        return $this->_container->get($service);
+    }
+}
