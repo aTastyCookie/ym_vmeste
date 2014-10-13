@@ -212,20 +212,20 @@ class Rebilling {
 	private function attempt_send($attempt, $today_start, $today_end, $monthdays)
 	{
         $offset = 0;
-        $this->data = $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
+        $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		while(!empty($this->data)){
 			foreach($this->data as $recur) {
 				$this->send_money($recur);
 			}
             $offset += self::LIMIT_ROWS;
-            $this->data = $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
+            $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		}
 	}
 	
 	private function attempt_notify($attempt, $today_start, $today_end, $monthdays)
 	{
         $offset = 0;
-        $this->data = $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
+        $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
 
         while(!empty($this->data)){
             foreach($this->data as $recur) {
@@ -256,7 +256,7 @@ class Rebilling {
                 $this->context->get('mailer')->send($message);
             }
             $offset += self::LIMIT_ROWS;
-            $this->data = $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
+            $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
         }
 	}
 	
@@ -322,7 +322,6 @@ class Rebilling {
 
         $queryBuilder = $this->icpdo->createQueryBuilder();
 
-        // Или select('*')
         $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' r.donor = d')
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'c.id = r.campaign_id')
@@ -385,7 +384,6 @@ class Rebilling {
 
         $queryBuilder = $this->icpdo->createQueryBuilder();
 
-        // Или select('*')
         $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' r.donor = d')
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'c.id = r.campaign_id')
