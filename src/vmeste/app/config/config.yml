@@ -87,7 +87,7 @@ parameters:
     image.upload.dir: /uploads/documents/
 
     recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
-    recurrent.path_to_cert: d:/work/ymoney/ymfbru.robimgut.com/library/robimgut.cer
-    recurrent.path_to_key: d:/work/ymoney/ymfbru.robimgut.com/library/private.key
+    recurrent.path_to_cert: /home/robimgut/www/ymfbru.robimgut.com/library/robimgut.cer
+    recurrent.path_to_key: /home/robimgut/www/ymfbru.robimgut.com/library/private.key
     recurrent.cert_pass: 123455
-    recurrent.apphost: http://vmeste/
+    recurrent.apphost: http://vmeste.yandex.ru/

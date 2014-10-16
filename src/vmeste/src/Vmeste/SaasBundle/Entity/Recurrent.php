@@ -29,13 +29,11 @@ class Recurrent
      * @ORM\JoinColumn(name="donor_id", referencedColumnName="id")
      **/
     private $donor;
-
+    
     /**
-     * @ORM\ManyToOne(targetEntity="Campaign", inversedBy="recurrents")
-     * @ORM\JoinColumn(name="campaign_id", referencedColumnName="id")
-     **/
-    protected $campaign;
-
+     * @ORM\Column(name="campaign_id", type="integer")
+     */
+    private $campaign_id;
     
     /**
      * @ORM\Column(name="clientOrderId", type="integer", options={"unsigned"=true})
@@ -92,17 +90,16 @@ class Recurrent
      * @ORM\Column(name="subscription_date", type="integer", options={"unsigned"=true})
      */
     private $subscription_date;
-
+    
+    /**
+     * @ORM\Column(name="attempt", type="integer", length=1)
+     */
+    private $attempt;
     
     /**
      * @ORM\Column(name="success_date", type="integer")
      */
     private $success_date;
-
-    /**
-     * @ORM\Column(name="next_date", type="integer")
-     */
-    private $next_date;
 
 	/**
      * @ORM\ManyToOne(targetEntity="Status")
@@ -350,6 +347,28 @@ class Recurrent
         return $this->subscription_date;
     }
 
+    /**
+     * Set attempt
+     *
+     * @param integer $attempt
+     * @return Recurrent
+     */
+    public function setAttempt($attempt)
+    {
+        $this->attempt = $attempt;
+    
+        return $this;
+    }
+
+    /**
+     * Get attempt
+     *
+     * @return integer 
+     */
+    public function getAttempt()
+    {
+        return $this->attempt;
+    }
 
     /**
      * Set success_date
@@ -490,51 +509,5 @@ class Recurrent
     public function getPan()
     {
         return $this->pan;
-    }
-
-    /**
-     * Set next_date
-     *
-     * @param integer $nextDate
-     * @return Recurrent
-     */
-    public function setNextDate($nextDate)
-    {
-        $this->next_date = $nextDate;
-    
-        return $this;
-    }
-
-    /**
-     * Get next_date
-     *
-     * @return integer 
-     */
-    public function getNextDate()
-    {
-        return $this->next_date;
-    }
-
-    /**
-     * Set campaign
-     *
-     * @param \Vmeste\SaasBundle\Entity\Campaign $campaign
-     * @return Recurrent
-     */
-    public function setCampaign(\Vmeste\SaasBundle\Entity\Campaign $campaign = null)
-    {
-        $this->campaign = $campaign;
-    
-        return $this;
-    }
-
-    /**
-     * Get campaign
-     *
-     * @return \Vmeste\SaasBundle\Entity\Campaign 
-     */
-    public function getCampaign()
-    {
-        return $this->campaign;
     }
 }

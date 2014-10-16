@@ -183,31 +183,22 @@ class TransactionController extends Controller
                             $amount = number_format((float)stripslashes($request->request->get('orderSumAmount')), 2);
                             $pan = $request->request->get('cdd_pan_mask');
 
-                            $time = time();
                             $recurrent = new Recurrent();
                             $recurrent->setAmount($amount);
-                            $recurrent->setCampaign($campaign);
+                            $recurrent->setAttempt(0);
+                            $recurrent->setCampaignId($campaignId);
                             $recurrent->setClientOrderId(0);
                             $recurrent->setCvv('');
                             $recurrent->setPan($pan);
                             $recurrent->setDonor($donor);
                             $recurrent->setInvoiceId($invoiceId);
-                            $recurrent->setLastOperationTime($time);
+                            $recurrent->setLastOperationTime(0);
                             $recurrent->setLastStatus(0);
                             $recurrent->setLastTechmessage('');
-                            $recurrent->setOrderNumber($campaignId . '-' . $time);
+                            $recurrent->setOrderNumber($campaignId . '-' . time());
                             $recurrent->setStatus($status);
-                            $recurrent->setSubscriptionDate($time);
-                            $recurrent->setSuccessDate($time);
-                            $day = date('j');
-                            $month = date('n') + 1;
-                            $year = date('Y');
-                            if($month > 12) {
-                                $month = 1;
-                                $year += 1;
-                            }
-                            if($day>28) $day = 28;
-                            $recurrent->setNextDate(mktime(12, 0, 0, $month, $day, $year));
+                            $recurrent->setSubscriptionDate(time());
+                            $recurrent->setSuccessDate(time());
                             $em->persist($recurrent);
                             $em->flush();
 
@@ -216,14 +207,14 @@ class TransactionController extends Controller
                                 array('icpdo' => $em,
                                     'url_unsubcribe'=>"http://" . $this->getRequest()->getHost() ."/" ,
                                     'url_subcribe'=>"http://" . $this->getRequest()->getHost() ."/",
-                                    'context' => $this,
-                                    'context_mailer' => $this->get('mailer'))
+                                    'context' => $this)
                             );
                             $rebilling->recurrent->email = $payer_email;
                             $rebilling->recurrent->fond = $settings->getCompanyName();
                             $rebilling->recurrent->sum = $amount;
                             $rebilling->recurrent->id = $recurrent->getId();
                             $rebilling->recurrent->invoice = $invoiceId;
+                            $rebilling->recurrent->invoice = $settings->getSenderEmail();
                             $rebilling->notify_about_subscription();
                         } else {
 

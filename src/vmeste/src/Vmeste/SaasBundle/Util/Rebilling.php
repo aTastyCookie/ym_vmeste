@@ -13,6 +13,11 @@ class Rebilling {
 	const HTTPHEADER = 'application/x-www-form-urlencoded';
 	const NO_ERROR = 0;
 	const LIMIT_ROWS = 100;
+	const MONTH = 2592000;
+	const MONTH33 = 2851200;
+	const MONTH36 = 3110400;
+	const MONTH39 = 3369600;
+	const DAYS_BEFORE = 259200;
 	
 	private $ymurl;
 	private $path_to_cert;
@@ -28,7 +33,6 @@ class Rebilling {
     private $status_id_deleted;
     private $status_id_active;
     private $context;
-    private $context_mailer;
     private $apphost;
 	
 	public function __construct($params = array()) {
@@ -56,27 +60,41 @@ class Rebilling {
 	
 	public function notify()
 	{
-		$today_d = date("j");
-		$today_m = date("n");
-		$today_y = date("Y");
-        $today_t = date("t");
-        $today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y) + 259200;
-        $today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y) + 259200;
+		$time = time();
+		$today_d = date("j", $time);
+		$today_m = date("n", $time);
+		$today_y = date("Y", $time);
+		$today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y);
+		$today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y);
 
-		$this->attempt_notify($today_start, $today_end);
+		// First notification
+		$this->attempt_notify(0, $today_start, $today_end, self::MONTH);
+			
+		// Second notification
+		$this->attempt_notify(1, $today_start, $today_end, self::MONTH33);
+		
+		// Third notification
+		$this->attempt_notify(2, $today_start, $today_end, self::MONTH36);
+		
+		//Fourth notification
+		$this->attempt_notify(3, $today_start, $today_end, self::MONTH39);
 			
 		return true;
 	}
 	
 	public function run()
 	{
-		$today_d = date("j");
-		$today_m = date("n");
-		$today_y = date("Y");
+		$time = time();
+		$today_d = date("j", $time);
+		$today_m = date("n", $time);
+		$today_y = date("Y", $time);
 		$today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y);
 		$today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y);
 		
-		$this->attempt_send($today_start, $today_end);
+		$this->attempt_send(0, $today_start, $today_end, self::MONTH);
+		$this->attempt_send(1, $today_start, $today_end, self::MONTH33);
+		$this->attempt_send(2, $today_start, $today_end, self::MONTH36);
+		$this->attempt_send(3, $today_start, $today_end, self::MONTH39);
 		return true;
 	}
 	
@@ -84,8 +102,7 @@ class Rebilling {
 	{
         $orderId = time();
         $amount = $recur->getAmount();
-        $campaign = $recur->getCampaign();
-        $orderNumber = $campaign->getId() . '-' . $orderId . rand(1, 1000);
+        $orderNumber = $recur->getCampaignId() . '-' . $orderId . rand(1, 1000);
         $output_array = array('clientOrderId'=>$orderId,
         						'invoiceId'=>$recur->getInvoiceId(),
         						'amount'=>$amount,
@@ -100,23 +117,15 @@ class Rebilling {
             return false;
         }
 
+        $campaign = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                                ->findOneBy(array('id' => $recur->getCampaignId()));
+
         if($campaign == null || $campaign->getStatus()->getStatus() === 'BLOCKED') {
             $recur->setStatus($this->status_blocked);
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
             return false;
         }
-
-        $emailTo = $donor->getEmail();
-        $settings = $campaign->getUser()->getSettings();
-        $userSettings = $settings[0];
-        $fond = $userSettings->getCompanyName();
-        $emailFrom = $userSettings->getSenderEmail();
-        $unsubscribe = $this->url_unsubcribe .
-            '?recurrent=' . $recur->getId() .
-            '&invoice=' . $recur->getInvoiceId();
-
-        echo "Send " . $amount . " to " . $orderNumber . ". Result: ";
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->ymurl);
@@ -133,30 +142,29 @@ class Rebilling {
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
         $result = curl_exec($ch);
         curl_close($ch);
+        //echo $result, PHP_EOL;
+        $xml = new \DOMDocument();
+		$xml->loadXML($result);
+		$result = array();
+		$responses = $xml->getElementsByTagName('repeatCardPaymentResponse');
+		foreach($responses as $response) {
+			$result['error'] = $response->getAttribute('error');
+			$result['status'] = $response->getAttribute('status');
+			$result['techMessage'] = $response->getAttribute('techMessage');
+		}
 
-        echo ($result) . "\n";
-
-        if(!empty($result) && $result != false) {
-            $xml = new \DOMDocument();
-            $xml->loadXML($result);
-            $result = array();
-            $responses = $xml->getElementsByTagName('repeatCardPaymentResponse');
-            foreach($responses as $response) {
-                $result['error'] = $response->getAttribute('error');
-                $result['status'] = $response->getAttribute('status');
-                $result['techMessage'] = $response->getAttribute('techMessage');
-            }
-        } else {
-            $result['techMessage'] = 'no connection';
-            $result['error'] = 1000;
-        }
+        $emailTo = $donor->getEmail();
+        $settings = $campaign->getUser()->getSettings();
+        $userSettings = $settings[0];
+        $fond = $userSettings->getCompanyName();
+        $emailFrom = $settings->getSenderEmail();
 
 		if($result['error'] == 0) {
 			// Insert transaction
 			$transaction = new Transaction();
 			$transaction->setDates();
 			$transaction->setCurrency("RUB");
-			$transaction->setDetails(json_encode($result));
+			$transaction->setDetails(mysql_real_escape_string(json_encode($result)));
 			$transaction->setDonor($donor);
 			$transaction->setGross(floatval($amount));
 			$transaction->setPaymentStatus("Completed");
@@ -166,71 +174,64 @@ class Rebilling {
             $this->icpdo->persist($transaction);
             $this->icpdo->flush();
 
-            $day = date('j');
-            $month = date('n') + 1;
-            $year = date('Y');
-            if($month > 12) {
-                $month = 1;
-                $year += 1;
-            }
-            if($day>28) $day = 28;
-            $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));
-            $recur->setSuccessDate(time());
-            $recur->setClientOrderId($orderId);
-            $recur->setOrderNumber($orderNumber);
-            $recur->setLastOperationTime(time());
-            $recur->setLastTechmessage($result['techMessage']);
-            $recur->setLastError($result['error']);
-            $this->icpdo->persist($recur);
-            $this->icpdo->flush();
+			$attempt = 0;
+			$success_date = time();
 
+            $unsubscribe = $this->url_unsubcribe .
+                            '?recurrent=' . $recur->getId() .
+                            '&invoice=' . $recur->getInvoiceId();
             $this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
 		} else {
-            // NEW DATE = TOMORROW
-            $day = date('j') + 1;
-            $month = date('n');
-            $year = date('Y');
-            if($day > 28) {
-                $day = 1;
-                $month += 1;
-                if($month > 12) {
-                    $month = 1;
-                    $year += 1;
-                }
-            }
-            $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));
+			if($recur->getAttempt() == 3) {
+                $campaign_url =  $this->apphost . $campaign->getUrl();
+				$this->notify_about_auto_deleting($emailTo, $fond, $campaign_url, $amount, $recur->getPan(), $emailFrom);
+                $recur->setStatus($this->status_blocked);
+                $this->icpdo->persist($recur);
+                $this->icpdo->flush();
+				$attempt = 4;
+			} else {
+				$attempt = $recur->getAttempt() + 1;
+				$success_date = $recur->getSuccessDate();
+			}
+		}
+		
+		if($attempt<4) {
+            $recur->setClientOrderId($orderId);
+            $recur->setOrderNumber($orderNumber);
+            $recur->setAttempt($attempt);
+            $recur->setSuccessDate($success_date);
             $recur->setLastOperationTime(time());
+            $recur->setLastStatus($result['status']);
             $recur->setLastTechmessage($result['techMessage']);
             $recur->setLastError($result['error']);
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
-
-            //$this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
 		}
 	}
 	
-	private function attempt_send($today_start, $today_end)
+	private function attempt_send($attempt, $today_start, $today_end, $monthdays)
 	{
         $offset = 0;
-        $this->_next_send_data($offset, $today_start, $today_end);
-
+        $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		while(!empty($this->data)){
 			foreach($this->data as $recur) {
 				$this->send_money($recur);
 			}
             $offset += self::LIMIT_ROWS;
-            $this->_next_send_data($offset, $today_start, $today_end);
+            $this->_next_send_data($offset, $monthdays, $today_start, $today_end, $attempt);
 		}
 	}
 	
-	private function attempt_notify($today_start, $today_end)
+	private function attempt_notify($attempt, $today_start, $today_end, $monthdays)
 	{
         $offset = 0;
-        $this->_next_send_data($offset, $today_start, $today_end);
+        $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
 
         while(!empty($this->data)){
             foreach($this->data as $recur) {
-                $campaign = $recur->getCampaign();
+                $campaignId = $recur->getCampaignId();
+                $campaign = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                                ->findOneBy(array('id' => $campaignId));
                 $userSettingsArray = $campaign->getUser()->getSettings();
                 $settings = $userSettingsArray[0];
                 $emailFrom = $settings->getSenderEmail();
@@ -252,10 +253,10 @@ class Rebilling {
                                 'pan' => $recur->getPan())
                         )
                     );
-                $this->context_mailer->send($message);
+                $this->context->get('mailer')->send($message);
             }
             $offset += self::LIMIT_ROWS;
-            $this->_next_data($offset, $monthdays, $today_start, $today_end);
+            $this->_next_data($offset, $monthdays, $today_start, $today_end, $attempt);
         }
 	}
 	
@@ -276,7 +277,26 @@ class Rebilling {
 	                    'fond' => $this->recurrent->fond)
 	            )
 	        );
-        $this->context_mailer->send($message);
+        $this->context->get('mailer')->send($message);
+	}
+	
+	private function notify_about_auto_deleting($email, $fond, $campaign_url, $amount, $pan, $from)
+	{
+        $message = \Swift_Message::newInstance()
+            ->setSubject('Мы отменили ваши ежемесячные пожертвования')
+            ->setFrom($from)
+            ->setTo($email)
+            ->setBody(
+                $this->context->renderView(
+                    'VmesteSaasBundle:Email:autodeletingSubscription.html.twig',
+                    array(
+                        'sum' => $amount,
+                        'campaign_url' => $campaign_url,
+                        'fond' => $fond,
+                        'pan' => $pan)
+                )
+            );
+        $this->context->get('mailer')->send($message);
 	}
 
     private function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
@@ -294,24 +314,28 @@ class Rebilling {
                         'fond' => $fond)
                 )
             );
-        $this->context_mailer->send($message);
+        $this->context->get('mailer')->send($message);
     }
 
-	private function _next_data($offset, $today_start, $today_end)
+	private function _next_data($offset, $monthdays, $today_start, $today_end, $attempt)
 	{
 
         $queryBuilder = $this->icpdo->createQueryBuilder();
 
         $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' r.donor = d')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign = c')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'c.id = r.campaign_id')
             ->where('c.status = :statusIdActive')
             ->andWhere('d.status = :statusIdActive')
-            ->andWhere('r.next_date >= :todayStart')
-            ->andWhere('r.next_date <= :todayEnd')
+            ->andWhere('(r.success_date + :monthDays - :selfBefore) >= :todayStart')
+            ->andWhere('(r.success_date + :monthDays - :selfBefore) <= :todayEnd')
+            ->andWhere('r.attempt = :attempt')
             ->setParameter('statusIdActive', $this->status_id_active)
+            ->setParameter('selfBefore', self::DAYS_BEFORE)
+            ->setParameter('monthDays', $monthdays)
             ->setParameter('todayStart', $today_start)
             ->setParameter('todayEnd', $today_end)
+            ->setParameter('attempt', $attempt)
             ->orderBy('r.id', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults(self::LIMIT_ROWS);
@@ -319,22 +343,60 @@ class Rebilling {
         $query = $queryBuilder->getQuery();
         $this->data = $query->getResult();
 
+        /*
+	    $queryBuilder = $this->icpdo->createQueryBuilder();
+	    $queryBuilder
+                    ->select('*')
+                    ->from('Vmeste\SaasBundle\Entity\Recurrent','r')
+                    ->where('c.status_id = '.$this->status_id_active)
+                    ->andWhere('d.status_id = '.$this->status_id_active)
+                    ->andWhere('(r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')>='.$today_start)
+                    ->andWhere('(r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')<='.$today_end)
+                    ->andWhere('r.attempt = '.$attempt)
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 'r.donor_id = d.id')
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign_id = c.id')
+	                ->orderBy('r.id', 'ASC')
+                    ->setFirstResult( $offset )
+                    ->setMaxResults( self::LIMIT_ROWS );
+
+
+        $statement = $queryBuilder->execute();
+        $this->data = $statement->fetchAll();
+
+        $query = $this->icpdo->createQuery('SELECT *
+                                    FROM Vmeste\SaasBundle\Entity\Recurrent r
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
+                                    WHERE c.status_id = '.$this->status_id_active.'
+                                    AND d.status_id = '.$this->status_id_active.'
+			                        AND (r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')>='.$today_start.'
+			                        AND (r.success_date + '.$monthdays.' - '.self::DAYS_BEFORE.')<='.$today_end.'
+			                        AND r.attempt = '.$attempt.'
+			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
+                            ->setParameter('offset', $offset)
+                            ->setParameter('limit', self::LIMIT_ROWS);
+        $this->data = $query->getResult(); */
 	}
 
-    private function _next_send_data($offset, $today_start, $today_end)
+    private function _next_send_data($offset, $monthdays, $today_start, $today_end, $attempt)
     {
+
+
         $queryBuilder = $this->icpdo->createQueryBuilder();
 
         $queryBuilder->select('r')->from('Vmeste\SaasBundle\Entity\Recurrent', 'r')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', ' r.donor = d')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign = c')
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'c.id = r.campaign_id')
             ->where('c.status = :statusIdActive')
             ->andWhere('d.status = :statusIdActive')
-            ->andWhere('r.next_date >= :todayStart')
-            ->andWhere('r.next_date <= :todayEnd')
+            ->andWhere('(r.success_date + :monthDays) >= :todayStart')
+            ->andWhere('(r.success_date + :monthDays) <= :todayEnd')
+            ->andWhere('r.attempt = :attempt')
             ->setParameter('statusIdActive', $this->status_id_active)
+            ->setParameter('monthDays', $monthdays)
             ->setParameter('todayStart', $today_start)
             ->setParameter('todayEnd', $today_end)
+            ->setParameter('attempt', $attempt)
             ->orderBy('r.id', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults(self::LIMIT_ROWS);
@@ -342,6 +404,38 @@ class Rebilling {
         $query = $queryBuilder->getQuery();
         $this->data = $query->getResult();
 
+
+        /*
+        $queryBuilder = $this->icpdo->createQueryBuilder();
+        $queryBuilder
+                    ->select('*')
+                    ->from('Vmeste\SaasBundle\Entity\Recurrent','r')
+                    ->where('c.status_id = '.$this->status_id_active)
+                    ->andWhere('d.status_id = '.$this->status_id_active)
+                    ->andWhere('(r.success_date + '.$monthdays.')>='.$today_start)
+                    ->andWhere('(r.success_date + '.$monthdays.')<='.$today_end)
+                    ->andWhere('r.attempt = '.$attempt)
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 'r.donor_id = d.id')
+                    ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 'r.campaign_id = c.id')
+                    ->orderBy('r.id', 'ASC')
+                    ->setFirstResult( $offset )
+                    ->setMaxResults( self::LIMIT_ROWS );
+        $statement = $queryBuilder->execute();
+        $this->data = $statement->fetchAll();
+        
+        $query = $this->icpdo->createQuery('SELECT *
+                                    FROM Vmeste\SaasBundle\Entity\Recurrent r
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Donor d WITH (r.donor_id = d.id)
+                                    INNER JOIN Vmeste\SaasBundle\Entity\Campaign c WITH (r.campaign_id = c.id)
+                                    WHERE c.status_id = '.$this->status_id_active.'
+                                    AND d.status_id = '.$this->status_id_active.'
+			                        AND (r.success_date + '.$monthdays.')>='.$today_start.'
+			                        AND (r.success_date + '.$monthdays.')<='.$today_end.'
+			                        AND r.attempt = '.$attempt.'
+			                        ORDER BY r.id ASC LIMIT :offset, :limit;')
+            ->setParameter('offset', $offset)
+            ->setParameter('limit', self::LIMIT_ROWS);
+        $this->data = $query->getResult();*/
     }
 }
 
