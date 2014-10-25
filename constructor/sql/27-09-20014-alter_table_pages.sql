@@ -1,0 +1,1 @@
+ALTER TABLE `pages` CHANGE `account` `account` BIGINT( 20 ) NOT NULL 

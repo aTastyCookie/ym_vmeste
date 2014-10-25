@@ -1,0 +1,28 @@
+@font-face {
+  font-family: tbn;
+  src:         url('../fonts/i-font_face_textbook.eot');
+  src:         url('../fonts/i-font_face_textbook.eot') format('embedded-opentype'),
+               url('../fonts/i-font_face_textbook.woff') format('woff'),
+               url('../fonts/i-font_face_textbook.ttf') format('truetype');
+}
+
+
+@font-face {
+  font-family: tbn;
+  src:         url('../fonts/i-font_face_textbook.eot');
+  src:         url('../fonts/i-font_face_textbook.eot') format('embedded-opentype'),
+               url('../fonts/i-font_face_textbook.woff') format('woff'),
+               url('../fonts/i-font_face_textbook.ttf') format('truetype');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'als_rublregular';
+  src: url('../fonts/rouble-webfont.eot');
+  src: url('../fonts/rouble-webfont.eot?#iefix') format('embedded-opentype'),
+               url('../fonts/rouble-webfont.woff') format('woff'),
+               url('../fonts/rouble-webfont.ttf') format('truetype'),
+               url('../fonts/rouble-webfont.svg#als_rublregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
