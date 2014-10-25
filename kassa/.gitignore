@@ -14,5 +14,5 @@ src/vmeste/src/Vmeste/SaasBundle/Entity/YandexKassa.php~
 .idea/workspace.xml
 .idea/vmeste-avr.iml
 src/vmeste/composer.lock
-src/vmeste/web/uploads/
-src/vmeste/data/
+src/vmeste/web/uploads/*
+src/vmeste/data/*
