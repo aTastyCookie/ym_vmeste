@@ -1,0 +1,117 @@
+
+.screen3 .player_holder {
+  -skrollr-animation-name: player_holder; border-style: solid; border-width: 3px 0 0 5px; border-color: #575757 transparent transparent #4d4d4d; width: 100px; height: 100px; margin: -50px 0 0 -250px; left: 50%; top: 50%; background: #666666; position: absolute; }
+
+@-skrollr-keyframes player_holder {
+-20-bottom { border-width: 3px 0 0 5px; width: 100px; height: 100px; margin: -50px 0 0 -250px; }
+150-center { width: 160px; height: 160px; margin: -80px 0 0 -80px; }
+  center { border-width: 5px 0 0 10px; width: 620px; height: 350px; margin: -175px 0 0 -310px; }
+}
+
+.screen3 .player_holder .left_bottom { -skrollr-animation-name: left_bottom; border-color: transparent transparent transparent #cadce5; border-style: solid; border-width: 3px 0 0 5px; bottom: 0px; left: -5px; position: absolute; }
+@-skrollr-keyframes left_bottom {
+-20-bottom { border-width: 6px 0 0 10px; left: -10px; }
+  center { border-width: 10px 0 0 20px; left: -20px; }
+}
+
+.screen3 .player_holder .right_top { -skrollr-animation-name: right_top; border-color: transparent #cadce5 transparent transparent; border-style: solid; border-width: 0 5px 3px 0; top: -3px; right: 0px; position: absolute; }
+@-skrollr-keyframes right_top {
+-20-bottom { border-width: 0 5px 3px 0; top: -3px; }
+  center { border-width: 0 10px 5px 0; top: -5px; }
+}
+
+.screen3 .play_btn { -skrollr-animation-name: play_btn; }
+
+@-skrollr-keyframes play_btn {
+-20-bottom { height: 105px; width: 90px; margin: -52px 0 0 150px; }
+  center { width: 58px; height: 66px; margin: -33px 0 0 -20px; }
+}
+
+.screen1 .bike .part1 { -skrollr-animation-name: part1; }
+.screen1 .bike .part2 { -skrollr-animation-name: part2; }
+.screen1 .bike .part3 { -skrollr-animation-name: part3; }
+.screen1 .bike .part4 { -skrollr-animation-name: part4; }
+.screen1 .bike .part5 { -skrollr-animation-name: part5; }
+.screen1 .bike .part6 { -skrollr-animation-name: part6; }
+.screen1 .bike .part7 { -skrollr-animation-name: part7; }
+
+@-skrollr-keyframes part1 {
+0 {
+  left: -17px;
+  top:  68px;
+}
+800 {
+  left: 241px;
+  top:  191px;
+}
+}
+
+@-skrollr-keyframes part2 {
+0 {
+  left: 323px;
+  top:  310px;
+}
+800 {
+  left: 321px;
+  top:  193px;
+}
+}
+
+@-skrollr-keyframes part3 {
+0 {
+  left: 0px;
+  top:  262px;
+}
+800 {
+  left: 419px;
+  top:  262px;
+}
+}
+
+@-skrollr-keyframes part4 {
+0 {
+  left: 300px;
+  top:  68px;
+}
+800 {
+  left: 0;
+  top:  262px;
+}
+}
+
+@-skrollr-keyframes part5 {
+0 {
+  top:       150px;
+  left:      156px;
+  transform: rotate(90deg);
+}
+800 {
+  top:       113px;
+  left:      106px;
+  transform: rotate(0deg);
+}
+}
+
+@-skrollr-keyframes part6 {
+0 {
+  left: 219px;
+  top:  67px;
+}
+800 {
+  left: 409px;
+  top:  161px;
+}
+}
+
+@-skrollr-keyframes part7 {
+0 {
+  left: 178px;
+  top:  438px;
+}
+800 {
+  left: 297px;
+  top:  62px;
+}
+}
+
+

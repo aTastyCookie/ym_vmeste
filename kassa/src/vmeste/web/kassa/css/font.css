@@ -1,0 +1,22 @@
+@font-face {
+  font-family: tbn;
+  src:         url('../fonts/i-font_face_textbook.eot');
+  src:         url('../fonts/i-font_face_textbook.eot') format('embedded-opentype'),
+               url('../fonts/i-font_face_textbook.woff') format('woff'),
+               url('../fonts/i-font_face_textbook.ttf') format('truetype');
+}
+
+
+@font-face {
+  font-family: tbn;
+  src:         url('../fonts/i-font_face_textbook.eot');
+  src:         url('../fonts/i-font_face_textbook.eot') format('embedded-opentype'),
+               url('../fonts/i-font_face_textbook.woff') format('woff'),
+               url('../fonts/i-font_face_textbook.ttf') format('truetype');
+  font-weight: bold;
+}
+
+
+
+
+

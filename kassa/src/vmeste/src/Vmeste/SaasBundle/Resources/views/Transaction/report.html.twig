@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h2>Транзакции</h2>
+
+    <form action="{{ path('transaction_report_search') }}" method="get" style="margin-bottom: 10px;">
+        <input type="text" name="searchRequest" value="">
+        <input type="submit" class="btn" value="Search">
+    </form>
+
+    <table class="table table-striped">
+        <tr>
+            <th>Название компании</th>
+            <th>Имя</th>
+            <th style="width: 100px; text-align: right;">Email</th>
+            <th style="width: 100px; text-align: right;">Пожертвовано</th>
+            <th style="width: 120px;">Дата создания</th>
+            <th style="width: 80px;">Действия</th>
+        </tr>
+
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.campaign.title }}</td>
+                <td>{{ transaction.donor.name }}</td>
+                <td>{{ transaction.donor.email }}</td>
+                <td>{{ transaction.gross }} {{ transaction.currency }}</td>
+                <td>{{ transaction.changed | date("d/m/Y") }}</td>
+                <td></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for pageId in pages %}
+        <a href="{{ path('transaction_report', { 'page': pageId }) }}">{{ pageId }}</a>
+    {% endfor %}
+
+    <p>
+        Отчет по поступившим пожертвованиям: <a href="{{ path('transaction_report_export') }}" target="_blank">По всем транзакциям</a>
+    </p>
+
+    <form action="{{ path('transaction_report_export') }}" enctype="application/x-www-form-urlencoded" method="GET" class="report-form">
+        или в <button type="submit">период</button>
+        <input type="date" name="start" value="2014-09-29" required="">
+        <input type="date" name="end" value="2014-09-29" required="">
+    </form>
+
+
+{% endblock %}

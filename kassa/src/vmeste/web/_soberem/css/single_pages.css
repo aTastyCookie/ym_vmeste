@@ -1,0 +1,64 @@
+* { margin: 0; padding: 0; border: 0; }
+html { -webkit-font-smoothing: antialiased; height: 100%; }
+body { color: #262626; font: 14px/19px tbn; vertical-align: top; -webkit-text-size-adjust: none; min-width: 1200px; background: #f6f5f3; }
+h1, h2, h3, h4, h5, fieldset { font-weight: normal; }
+ul, li { list-style-type: none; }
+*:focus { outline: 0 !important; }
+a { text-decoration: none; color: #666699; font-size: 15px; }
+a:hover { text-decoration: none; color: #F12C25; }
+a img { border: 0; }
+a span { cursor: pointer; }
+strong { font-weight: bold; }
+table { border-collapse: collapse; }
+td { vertical-align: top; }
+a, input, textarea { outline: 0 !important; }
+fieldset { border: 0; }
+select, textarea { overflow-x: hidden; overflow-y: auto; }
+textarea { resize: none; }
+input[type="text"] { padding: 0; font-family: tbn; }
+select, input, textarea, button { margin: 0; padding: 0; font-family: tbn; }
+input[type="button"], input[type="submit"], input[type="reset"], button { cursor: pointer; }
+button { width: auto; overflow: visible; }
+.placeholder { color: inherit; }
+textarea::-webkit-input-placeholder { color: inherit; }
+textarea:-moz-placeholder { color: inherit; }
+textarea:-ms-input-placeholder { color: inherit; }
+input::-webkit-input-placeholder { color: inherit; }
+input:-moz-placeholder { color: inherit; }
+input:-ms-input-placeholder { color: inherit; }
+input::-moz-focus-inner { border: 0; padding: 0; }
+.no_select { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.clearfix:before, .clearfix:after { content: "\0020"; display: block; height: 0; visibility: hidden; }
+.clearfix:after { clear: both; }
+.break { display: inline-block; width: 100%; overflow: hidden; font-size: 1px; vertical-align: top; }
+
+/* styles */
+.page_wrapper { padding: 100px 0 0 0; }
+.dialog_box { width: 560px; margin: 0 auto; background: #fff; border: 1px solid #e7e6e4; }
+.dialog_box .btn { height: 32px; display: inline-block; vertical-align: top; background: #fff; border: 1px solid #c0bfc0; border-radius: 3px; color: #000; font-size: 15px; line-height: 32px; padding: 0 16px; font-family: Arial; }
+.dialog_box .btn.btn-default { background: #fff; }
+.dialog_box .btn.btn-primary { background: #ffdb4d; border: 1px solid #ccad33; }
+.dialog_box p { font-size: 15px; line-height: 20px; word-spacing: -1px; }
+.dialog_box a { font-size: inherit; }
+
+.dialog_box .dialog_body { padding: 14px 20px 19px; position: relative; }
+.dialog_box .dialog_body i.dialog_icon { height: 32px; position: absolute; right: 20px; top: 19px; width: 32px; }
+.dialog_box .dialog_body i.dialog_icon.icon_sad { background-image: url("../img/single_pages/icon_sad.png"); }
+.dialog_box .dialog_body i.dialog_icon.icon_smile { background-image: url("../img/single_pages/icon_smile.png"); }
+.dialog_box .dialog_body h1 { font-size: 24px; line-height: 30px; padding: 0 40px 10px 0; }
+.dialog_box .dialog_footer { border-top: 1px solid #e7e6e4; padding: 19px 20px 19px; }
+.dialog_box .dialog_footer .actions { font-size: 1px; }
+.dialog_box .dialog_footer .actions .btn:first-child { margin-left: 0; }
+.dialog_box .dialog_footer .actions .btn { margin-left: 9px; }
+.dialog_box .secret_word { padding: 16px 0 0 0; }
+.dialog_box .secret_word label { display: inline-block; font-family: Arial; font-size: 14px; margin: 0 0 6px 0; vertical-align: top; color: #605d5d; }
+.dialog_box .secret_word .input { }
+.dialog_box .secret_word .input input { border: 1px solid #c0bfc0; height: 34px; padding: 0 10px; width: 100%; box-sizing: border-box; font-size: 15px; }
+.dialog_box .infos_box { }
+.dialog_box .infos_box h2 { font-size: 18px; line-height: 20px; }
+.dialog_box .infos_box .items {  padding: 9px 0 0 0; }
+.dialog_box .infos_box .item { box-sizing: border-box; display: block; font-size: 15px; width: 50%; }
+.dialog_box .infos_box .item:nth-child(2n+1) { padding: 0 15px 0 0; float: left;}
+.dialog_box .infos_box .item:nth-child(2n) {  float: right;}
+.dialog_box .infos_box .item a { }
+.dialog_box .infos_box .item span { color: #b3b3b3; display: block; font-size: 13px; }

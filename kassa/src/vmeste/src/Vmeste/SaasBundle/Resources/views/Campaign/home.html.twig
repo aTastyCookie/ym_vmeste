@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h2>Компании</h2>
+{#<div class="row">
+	<div class="span12">
+		<div class="btn-group pull-right">
+    		<a class="btn btn-primary" href="{{ path('admin_campaign_create') }}">Add New Campaign</a>
+    		<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+			<ul class="dropdown-menu">
+				<li><a href="{{ path('customer_campaign_create') }}">Add New Campaign</a></li>
+				<li><a href="" onclick="return submitOperation();">Delete All Campaigns</a></li>				
+			</ul>
+		</div>
+	</div>
+</div>#}
+    {% if campaign_created %}
+        <div>{{ campaign_created }}</div>
+    {% endif %}
+    <table class="table table-striped">
+        <tr>
+            <th>Название</th>
+            <th>Ссылка и код</th>
+            <th style="width: 100px; text-align: right;">Отчеты</th>
+            <th style="width: 100px; text-align: right;">Пожертвовано</th>
+            <th style="width: 120px;">Дата создания</th>
+            <th>Статус</th>
+            <th style="width: 80px;">Действия</th>
+        </tr>
+
+        {% for campaign in campaigns %}
+            <tr>
+                <td>{{ campaign.title }}</td>
+                <td>{% if yk %}<a href="{{ campaign_url }}{{ campaign.url }}" target="_blank">{{ campaign_url }}{{ campaign.url }}</a>{% endif %}</td>
+                <td style="text-align: right;">
+                    <a href="{{ path('campaign_report', { 'campaignId' : campaign.id }) }}">Отчет</a>
+                </td>
+                <td style="text-align: right;">0.00 {{ campaign.currency }}</td>
+                <td>{{ campaign.changed | date("d/m/Y") }}</td>
+                <td>{{ campaign.status.name }}</td>
+                <td>
+                    {# <a href="{{ path('customer_campaign_edit', { 'id' : campaign.id, 'page' : page }) }}">
+                         <img src="{{ asset('bundles/saasbundle/img/edit.png') }}" alt="Редактировать" border="0">
+                     </a>
+                     {% if campaign.status.status != 'ON_MODERATION' %}
+                         {% if campaign.status.status == 'BLOCKED' %}
+                         <a href="{{ path('customer_campaign_activate', { 'id' : campaign.id, 'page' : page }) }}">Активировать</a>
+                         {% else %}
+                         <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
+                             <img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
+                         </a>
+                         {% endif %}
+                     {% endif %}#}
+                     {#<a href="{{ path('customer_campaign_delete', { 'id' : campaign.id, 'page' : page }) }}">
+                        <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" alt="Удалить" border="0">
+                     </a>#}
+                    <a href="{{ path('customer_campaign_block', { 'id' : campaign.id, 'page' : page }) }}">
+                        <img src="{{ asset('bundles/saasbundle/img/block.png') }}" alt="Заблокировать" border="0">
+                    </a>
+                        
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for pageId in pages %}
+        <a href="{{ path('customer_campaign', { 'page': pageId }) }}">{{ pageId }}</a>
+    {% endfor %}
+
+
+{% endblock %}

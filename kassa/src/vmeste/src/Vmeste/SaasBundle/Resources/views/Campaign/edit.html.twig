@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h2>Редактировать кампанию</h2>
+
+    <style>
+        .big-edit img {
+            max-width: 200px;
+        }
+    </style>
+
+    <div class="big-edit">
+        <h4>Большое изображение</h4>
+        {% if bigImage %}
+            <img src="{{ bigImage }}" alt="Большое изображение">
+        {% else %}
+            <span class="label label-info">Изображение отсутствует</span>
+        {% endif %}
+    </div>
+
+    {{ form(form) }}
+
+{% endblock %}

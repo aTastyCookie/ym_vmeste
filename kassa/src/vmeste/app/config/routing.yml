@@ -1,0 +1,181 @@
+vmeste_saas:
+    path: /
+    defaults: { _controller: VmesteSaasBundle:Index:home }
+
+login:
+    path: /login
+    defaults: { _controller: VmesteSaasBundle:Auth:login }
+
+logout:
+    path: /logout
+
+login_check:
+    path: /login_check
+
+forgot_pass:
+    path: /forgot-pass
+    defaults: { _controller: VmesteSaasBundle:Auth:forgotPassword }
+
+recover_pass:
+    path: /recover-pass/{token}
+    defaults: { _controller: VmesteSaasBundle:Auth:recoverPassword, token: null }
+
+admin_home:
+    path: /admin/home
+    defaults: { _controller: VmesteSaasBundle:Administrator:home }
+
+admin_user:
+    path: /admin/user
+    defaults: { _controller: VmesteSaasBundle:User:home }
+
+admin_user_create:
+    path: /admin/user/create
+    defaults: { _controller: VmesteSaasBundle:User:create }
+
+admin_user_edit:
+    path: /admin/user/edit
+    defaults: { _controller: VmesteSaasBundle:User:edit }
+
+admin_user_block:
+    path: /admin/user/block
+    defaults: { _controller: VmesteSaasBundle:User:block }
+
+admin_user_activate:
+    path: /admin/user/activate
+    defaults: { _controller: VmesteSaasBundle:User:activate }
+
+admin_user_delete:
+    path: /admin/user/delete
+    defaults: { _controller: VmesteSaasBundle:User:delete }
+
+
+customer_home:
+    path: /customer/home
+    defaults: { _controller: VmesteSaasBundle:Customer:home }
+
+customer_campaign:
+    path: /customer/campaign/home
+    defaults: { _controller: VmesteSaasBundle:Campaign:home }
+
+admin_campaign_show_all:
+    path: /campaign/showall
+    defaults: { _controller: VmesteSaasBundle:Campaign:showAll }
+
+admin_campaign_create:
+    path: /campaign/create
+    defaults: { _controller: VmesteSaasBundle:Campaign:create }
+
+admin_campaign_edit:
+    path: /campaign/edit
+    defaults: { _controller: VmesteSaasBundle:Campaign:edit }
+
+admin_campaign_activate:
+    path: /campaign/activate
+    defaults: { _controller: VmesteSaasBundle:Campaign:activate }
+
+admin_campaign_block:
+    path: /campaign/block
+    defaults: { _controller: VmesteSaasBundle:Campaign:block }
+
+customer_campaign_block:
+    path: /customer/campaign/block
+    defaults: { _controller: VmesteSaasBundle:Campaign:block }
+
+admin_campaign_delete:
+    path: /campaign/delete
+    defaults: { _controller: VmesteSaasBundle:Campaign:delete }
+
+customer_settings:
+    path: /customer/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:editSettings }
+
+admin_customer_settings:
+    path: /admin/user/settings/{userId}
+    defaults: { _controller: VmesteSaasBundle:Settings:editSettings }
+
+update_email_settings:
+    path: /customer/update/email/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateEmailSettings }
+
+update_yk_settings:
+    path: /customer/update/yk/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateYkSettings }
+
+update_customer_password:
+    path: /customer/update/password
+    defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
+
+admin_update_email_settings:
+    path: /admin/update/email/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateEmailSettings }
+
+admin_update_yk_settings:
+    path: /admin/customer/update/yk/settings
+    defaults: { _controller: VmesteSaasBundle:Settings:updateYkSettings }
+
+admin_update_customer_password:
+    path: /admin/customer/update/password
+    defaults: { _controller: VmesteSaasBundle:Settings:updatePassword }
+
+transaction_home:
+    path: /transaction/home
+    defaults: { _controller: VmesteSaasBundle:Transaction:home }
+
+
+    
+transaction_report:
+    path: /transaction/report
+    defaults:  { _controller: VmesteSaasBundle:Transaction:report }
+
+transaction_report_search:
+    path: /transaction/search
+    defaults:  { _controller: VmesteSaasBundle:Transaction:search }
+
+transaction_report_export:
+    path: /transaction/report/export
+    defaults:  { _controller: VmesteSaasBundle:Transaction:reportExport }
+
+campaign_report:
+    path: /customer/campaign/report
+    defaults:  { _controller: VmesteSaasBundle:Campaign:report }
+
+campaign_report_export:
+    path: /customer/campaign/report/export
+    defaults:  { _controller: VmesteSaasBundle:Campaign:reportExport }
+
+# Outside
+
+#payment_page:
+#    path: /payment/{campaignId}
+#    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignId: null }
+
+payment_page:
+    path: /{campaignUrl}
+    defaults: { _controller: VmesteSaasBundle:Campaign:paymentPage, campaignUrl: null }
+
+yandex_check:
+    path: /yandex/check
+    defaults: { _controller: VmesteSaasBundle:Transaction:yandexCheck}
+
+yandex_payment_aviso:
+    path: /yandex/payment-aviso
+    defaults: { _controller: VmesteSaasBundle:Transaction:yandexPaymentAviso}
+
+payment_oferta:
+    path: /{campaignUrl}/oferta
+    defaults: { _controller: VmesteSaasBundle:Campaign:oferta, campaignUrl: null }
+
+transaction_unsubscribe:
+    path: /outside/transaction/unsubscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:unsubscribe }
+
+transaction_subscribe:
+    path: /outside/transaction/subscribe
+    defaults: { _controller: VmesteSaasBundle:Transaction:subscribe }
+
+#vmeste_administrator_login:
+#     path:     /contact
+#     defaults: { _controller: AcmeDemoBundle:Main:contact }
+#     methods:  [GET]
+
+
