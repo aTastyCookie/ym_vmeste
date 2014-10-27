@@ -36,7 +36,7 @@ class SiteController extends Controller
         $http = Yii::app()->request->getIsSecureConnection() ? 'https' : 'http';
         if($http == 'http') {
             $port = $_SERVER['SERVER_PORT'];
-            if($port!=80) {
+            if($port == 443) {
                 $http = 'https';
             }
         }
