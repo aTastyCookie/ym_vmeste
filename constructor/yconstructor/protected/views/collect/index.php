@@ -82,7 +82,7 @@
             <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="none" data-yashareQuickServices="vkontakte,facebook,twitter"></div>
         </div>
         <div class="right_side">
-            <a href="https://soberem.vmeste.yandex.ru/">Сделать свою страницу для сбора денег</a>
+            <a href="http://yasobe.ru/">Сделать свою страницу для сбора денег</a>
         </div>
     </section>
 </footer>

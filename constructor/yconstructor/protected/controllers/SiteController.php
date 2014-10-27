@@ -286,7 +286,7 @@ class SiteController extends Controller
                     }
 
                     //$this->redirect('/site/ok');
-                    $this->redirect('http://yasobe.ru/na/'.$attributes['page_address']);
+                    $this->redirect($base.'na/'.$attributes['page_address']);
                 }
             }
         }
