@@ -11,13 +11,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Конструктор Скидывайся</title>
-    <link rel="stylesheet" href="<?php echo $baseUrl; ?>/css/font.css" />
-    <link rel="stylesheet" href="<?php echo $baseUrl; ?>/css/styles.css" />
-    <link rel="stylesheet" href="<?php echo $baseUrl; ?>/css/animations.css" data-skrollr-stylesheet />
-    <script src="<?php echo $baseUrl; ?>/js/libs/jquery-2.1.1.min.js"></script>
-    <script src="<?php echo $baseUrl; ?>/js/libs/jquery.inputmask.js"></script>
-    <script src="<?php echo $baseUrl; ?>/js/libs/spin.min.js"></script>
-    <script src="<?php echo $baseUrl; ?>/js/app.js"></script>
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/animations.css" data-skrollr-stylesheet />
+    <script src="/js/libs/jquery-2.1.1.min.js"></script>
+    <script src="/js/libs/jquery.inputmask.js"></script>
+    <script src="/js/libs/spin.min.js"></script>
+    <script src="/js/app.js"></script>
     <!-- v 2014-10-24-005  -->
 </head>
 <body class="before_load">
@@ -268,15 +268,15 @@
 </div>
 </div>
 <div id="preload"></div>
-<script src="<?php echo $baseUrl; ?>/js/libs/skrollr.stylesheets.min.js"></script>
-<script src="<?php echo $baseUrl; ?>/js/libs/skrollr.min.js"></script>
+<script src="/js/libs/skrollr.stylesheets.min.js"></script>
+<script src="/js/libs/skrollr.min.js"></script>
 <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>-->
 <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
-<script src="<?php echo $baseUrl; ?>/js/vendor/jquery.ui.widget.js"></script>
+<script src="/js/vendor/jquery.ui.widget.js"></script>
 <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-<script src="<?php echo $baseUrl; ?>/js/jquery.iframe-transport.js"></script>
+<script src="/js/jquery.iframe-transport.js"></script>
 <!-- The basic File Upload plugin -->
-<script src="<?php echo $baseUrl; ?>/js/jquery.fileupload.js"></script>
+<script src="/js/jquery.fileupload.js"></script>
 
 <script>
     /*jslint unparam: true */

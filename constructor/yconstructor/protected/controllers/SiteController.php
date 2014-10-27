@@ -2,7 +2,7 @@
 
 /**
  * Class SiteController
- * Version 2014-10-24-005
+ * Version 2014-10-27-006
  */
 
 class SiteController extends Controller
@@ -286,7 +286,7 @@ class SiteController extends Controller
                     }
 
                     //$this->redirect('/site/ok');
-                    $this->redirect('/na/'.$attributes['page_address']);
+                    $this->redirect('http://yasobe.ru/na/'.$attributes['page_address']);
                 }
             }
         }

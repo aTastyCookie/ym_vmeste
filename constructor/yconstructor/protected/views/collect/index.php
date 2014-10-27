@@ -12,7 +12,7 @@
     <script src="/js/libs/jquery-2.1.1.min.js"></script>
     <script src="/js/payment.js"></script>
     <script type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script>
-    <!-- v 2014-10-23-003  -->
+    <!-- v 2014-10-27-004  -->
 </head>
 <body>
 <div class="payment_page <?php echo $model->background ? $model->background : 'theme1'; ?> styled">
@@ -82,7 +82,7 @@
             <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="none" data-yashareQuickServices="vkontakte,facebook,twitter"></div>
         </div>
         <div class="right_side">
-            <a href="/">Сделать свою страницу для сбора денег</a>
+            <a href="https://soberem.vmeste.yandex.ru/">Сделать свою страницу для сбора денег</a>
         </div>
     </section>
 </footer>
