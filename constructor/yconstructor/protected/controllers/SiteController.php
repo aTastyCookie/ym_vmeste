@@ -65,7 +65,7 @@ class SiteController extends Controller
             }
 
             $attributes = $_POST['Pages'];
-            $attributes['page_address'] = $this->removeCRLF(str_replace('vmeste.yandex.ru/na/','', $attributes['page_address']));
+            $attributes['page_address'] = $this->removeCRLF(str_replace('yasobe.ru/na/','', $attributes['page_address']));
             $attributes['title'] = $this->removeCRLF($attributes['title']);
             $attributes['text'] = $this->removeCRLF($attributes['text']);
             $attributes['account'] = $this->removeCRLF($attributes['account']);
@@ -286,7 +286,7 @@ class SiteController extends Controller
                     }
 
                     //$this->redirect('/site/ok');
-                    $this->redirect($base.'na/'.$attributes['page_address']);
+                    $this->redirect($base.'/na/'.$attributes['page_address']);
                 }
             }
         }

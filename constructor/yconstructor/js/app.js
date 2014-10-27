@@ -153,7 +153,7 @@ var Konstructor = (function (app, $) {
         });
 
       $('#page_url').inputmask({
-          mask: "vmeste.y\\andex.ru/n\\a/q*{*}",
+          mask: "y\\asobe.ru/n\\a/q*{*}",
           showMaskOnHover: false,
           definitions: {
               '*': {

@@ -209,7 +209,7 @@
                 <div class="page_addr item">
                     <label>Адрес страницы</label>
                     <div class="input_field">
-                        <?php echo $form->textField($model,'page_address', array('placeholder'=>'vmeste.yandex.ru/na/', 'id'=>'page_url')); ?>
+                        <?php echo $form->textField($model,'page_address', array('placeholder'=>'yasobe.ru/na/', 'id'=>'page_url')); ?>
                         <div class="tooltip">
                             <span>Используйте цифры, латинские буквы, дефисы и подчеркивания — без пробелов.</span>
                         </div>
