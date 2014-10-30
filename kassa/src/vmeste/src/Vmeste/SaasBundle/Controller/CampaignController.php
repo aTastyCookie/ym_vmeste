@@ -79,7 +79,7 @@ class CampaignController extends Controller
 
         return array(
             'campaigns' => $paginator,
-            'campaign_url' => "https://" . $this->getRequest()->getHost() . "/",
+            'campaign_url' => $this->container->getParameter('recurrent.apphost'),
             'pages' => $pageNumberArray,
             'page' => $page,
             'campaign_created' => $campaignSuccessfullyCreatedMessage,
@@ -121,7 +121,7 @@ class CampaignController extends Controller
 
         return array(
             'campaigns' => $paginator,
-            'campaign_url' => "https://" . $this->getRequest()->getHost() . "/",
+            'campaign_url' => $this->container->getParameter('recurrent.apphost'),
             'pages' => $pageNumberArray,
             'page' => $page,
             'campaign_created' => $campaignSuccessfullyCreatedMessage);

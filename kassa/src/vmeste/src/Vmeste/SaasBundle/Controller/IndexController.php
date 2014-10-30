@@ -12,7 +12,9 @@ class IndexController extends Controller {
      * @Template()
      */
     public function homeAction() {
-
-        return array();
+        $apphost = $this->container->getParameter('recurrent.apphost');
+        return array(
+            'apphost' => $apphost
+        );
     }
 } 

@@ -122,6 +122,7 @@
 
             {{ fileErrors | raw }}
 
+            {#
             <p><label><sup class="reg-sup">*</sup>Файл сертификата: {{ certificate }}
                     <input type="file" name="cert_file">
                 </label></p>
@@ -133,7 +134,7 @@
             <p><label><sup class="reg-sup">*</sup>Пароль к сертификату:
                     <input type="text" name="cert_pass" value="{{ certpass }}">
                 </label></p>
-
+            #}
             <p>
                 {% if userIdForEdit %}
                     <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>

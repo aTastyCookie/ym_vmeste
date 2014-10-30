@@ -97,9 +97,9 @@ class SettingsController extends Controller
             'mc' => $yandexKassa->getMc(),
             'gp' => $yandexKassa->getGp(),
             'sandbox' => $yandexKassa->getSandbox(),
-            'certificate' => $yandexKassa->getCertFilePath(),
+            /*'certificate' => $yandexKassa->getCertFilePath(),
             'certkey' => $yandexKassa->getCertKeyFilePath(),
-            'certpass' => $yandexKassa->getCertPass(),
+            'certpass' => $yandexKassa->getCertPass(),*/
             'password_setting_errors' => $passwordSettingsErrors,
             'updateEmailSettingsRoute' => $updateEmailSettingsRoute,
             'updateYKSettingsRoute' => $updateYKSettingsRoute,

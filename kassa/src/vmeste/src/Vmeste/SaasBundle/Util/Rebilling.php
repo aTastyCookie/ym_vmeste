@@ -137,9 +137,12 @@ class Rebilling
         curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSLCERT, $yandexKassa->getUploadRootDir() . $yandexKassa->getCertFilePath());
-        curl_setopt($ch, CURLOPT_SSLKEY, $yandexKassa->getUploadRootDir() . $yandexKassa->getCertKeyFilePath());
-        curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $yandexKassa->getCertPass());
+        //curl_setopt($ch, CURLOPT_SSLCERT, $yandexKassa->getUploadRootDir() . $yandexKassa->getCertFilePath());
+        //curl_setopt($ch, CURLOPT_SSLKEY, $yandexKassa->getUploadRootDir() . $yandexKassa->getCertKeyFilePath());
+        //curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $yandexKassa->getCertPass());
+        curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
+        curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
+        curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
         $result = curl_exec($ch);
         curl_close($ch);

@@ -103,8 +103,11 @@ parameters:
 
     recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
     sandbox.recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+    recurrent.cert_path: /srv/www/certificates/123.cer
+    recurrent.key_path: /srv/www/certificates/123.key
+    recurrent.cert_pass: 123456
 
-    recurrent.apphost: https://vmeste.yandex.ru/
+    recurrent.apphost: https://109.235.163.7/
 
     production.payment.host: https://money.yandex.ru/eshop.xml
     sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml
