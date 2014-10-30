@@ -5,6 +5,7 @@ use Vmeste\SaasBundle\Entity\Recurrent;
 use Vmeste\SaasBundle\Entity\Transaction;
 use Vmeste\SaasBundle\Entity\Donor;
 use Vmeste\SaasBundle\Entity\Campaign;
+use Vmeste\SaasBundle\Entity\YandexKassa;
 
 class Rebilling
 {
@@ -122,6 +123,10 @@ class Rebilling
         echo "Send " . $amount . " to " . $orderNumber . ". Result: ";
 
         $yandexKassa = $userSettings->getYandexKassa();
+        $sandboxMode = $yandexKassa->getSandbox();
+
+        if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
+            $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->ymurl);

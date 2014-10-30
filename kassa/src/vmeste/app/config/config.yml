@@ -102,4 +102,9 @@ parameters:
     image.upload.dir: /uploads/documents/
 
     recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+    sandbox.recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+
     recurrent.apphost: https://vmeste.yandex.ru/
+
+    production.payment.host: https://money.yandex.ru/eshop.xml
+    sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml

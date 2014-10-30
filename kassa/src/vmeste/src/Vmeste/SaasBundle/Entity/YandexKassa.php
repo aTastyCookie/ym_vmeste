@@ -19,6 +19,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class YandexKassa
 {
 
+    const SANDBOX_ENABLED = 1;
+
+    const SANDBOX_DISABLED = 0;
+
     /**
      * @ORM\Column(type="integer", name="id", options={"unsigned"=true})
      * @ORM\Id

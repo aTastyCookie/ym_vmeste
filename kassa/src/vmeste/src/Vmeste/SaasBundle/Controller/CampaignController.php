@@ -24,6 +24,7 @@ use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Entity\YandexKassa;
 use Vmeste\SaasBundle\Util\PaginationUtils;
 use Vmeste\SaasBundle\Validator\ForbiddenUriConstraint;
 use Vmeste\SaasBundle\Validator\ForbiddenUriValidator;
@@ -597,13 +598,23 @@ class CampaignController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
+
         $user = $campaign->getUser();
         $userLogoPath = $user->getLogoPath();
+
         $settingsCollection = $user->getSettings();
         $userSettings = $settingsCollection[0];
+
         $yandexKassa = $userSettings->getYandexKassa();
+        $sandboxMode = $yandexKassa->getSandbox();
+
+        $paymentHost = $this->container->getParameter('production.payment.host');
+
+        if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
+            $paymentHost = $this->container->getParameter('sandbox.payment.host');
 
         $paymentPage = "https://" . $this->getRequest()->getHost() . "/" . $campaign->getUrl();
+
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
 
         return array('campaign' => $campaign,
@@ -613,6 +624,7 @@ class CampaignController extends Controller
             'noIDcustomerNumber' => time(),
             'uniqueId' => time(),
             'paymentPage' => $paymentPage,
+            'paymentHost' => $paymentHost,
             'imageStoragePath' => $imageStoragePath,
             'settings' => $userSettings,
             'logo' => $userLogoPath,
