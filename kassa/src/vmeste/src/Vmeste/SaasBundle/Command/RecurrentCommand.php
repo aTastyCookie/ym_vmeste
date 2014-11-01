@@ -15,9 +15,6 @@ use Vmeste\SaasBundle\Util\Rebilling;
  */
 class RecurrentCommand extends ContainerAwareCommand
 {
-    const ACTIVE = 1;
-
-    const NON_ACTIVE = 0;
 
     protected function configure()
     {

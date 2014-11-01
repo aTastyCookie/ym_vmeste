@@ -111,3 +111,6 @@ parameters:
 
     production.payment.host: https://money.yandex.ru/eshop.xml
     sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml
+
+    reestr.email.to: iaaman@yamoney.ru
+    reestr.email.from: no-reply@vmeste.ru
