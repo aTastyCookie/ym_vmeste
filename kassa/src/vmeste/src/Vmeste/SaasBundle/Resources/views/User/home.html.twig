@@ -19,6 +19,7 @@
         <tr>
             <th>Username</th>
             <th>Email</th>
+            <th>Организация</th>
             <th>Роль</th>
             <th>Статус</th>
             <th>Создан</th>
@@ -29,7 +30,12 @@
         {% for user in users %}
             <tr>
                 <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
+                <td align="center">{{ user.email }}</td>
+                <td align="center">
+                    {% if user.settings is not empty %}
+                        {{ user.settings[0].companyName }}
+                    {% endif %}
+                </td>
                 <td align="center">
                     {% for role in user.roles %}
                         <p>{{ role.name }}</p>

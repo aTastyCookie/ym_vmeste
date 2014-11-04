@@ -599,6 +599,10 @@ class CampaignController extends Controller
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
 
+        if(!$campaign) {
+            throw $this->createNotFoundException('Упс... Запрошенная страница не существует!');
+        }
+
         $user = $campaign->getUser();
         $userLogoPath = $user->getLogoPath();
 

@@ -46,7 +46,9 @@ class UserController extends Controller
         $em = $this->getDoctrine()->getManager();
         $queryBuilder = $em->createQueryBuilder();
 
-        $queryBuilder->select('u')->from('Vmeste\SaasBundle\Entity\User', 'u');
+        $queryBuilder->select('u')
+                        ->from('Vmeste\SaasBundle\Entity\User', 'u')
+                        ->leftJoin('u.settings', 's');
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
