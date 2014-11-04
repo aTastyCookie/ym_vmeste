@@ -42,6 +42,10 @@
     -->
 
     <services>
+        <service id="sys_event_tracker" class="Vmeste\SaasBundle\Service\SysEventTracker">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="monolog.logger" />
+        </service>
         <service id="cache.listener" class="Vmeste\SaasBundle\Handler\CacheHandler">
             <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
         </service>
