@@ -25,7 +25,9 @@ use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\YandexKassa;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\PaginationUtils;
+use Vmeste\SaasBundle\Util\Clear;
 use Vmeste\SaasBundle\Validator\ForbiddenUriConstraint;
 use Vmeste\SaasBundle\Validator\ForbiddenUriValidator;
 
@@ -42,11 +44,10 @@ class CampaignController extends Controller
         if ($this->getRequest()->query->get("campaign_creation") == 'success')
             $campaignSuccessfullyCreatedMessage = "New campaign has been created successfully!";
 
-
         $limit = $this->container->getParameter('paginator.page.items');
         $pageOnSidesLimit = 10;
 
-        $page = $this->getRequest()->query->get("page", 1);
+        $page = Clear::integer($this->getRequest()->query->get("page", 1), 1);
 
         $em = $this->getDoctrine()->getManager();
 
@@ -100,7 +101,7 @@ class CampaignController extends Controller
         $limit = $this->container->getParameter('paginator.page.items');
         $pageOnSidesLimit = 10;
 
-        $page = $this->getRequest()->query->get("page", 1);
+        $page = Clear::integer($this->getRequest()->query->get("page", 1), 1);
 
         $em = $this->getDoctrine()->getManager();
 
@@ -134,10 +135,7 @@ class CampaignController extends Controller
     {
 
 //        $currentUser = $this->get('security.context')->getToken()->getUser();
-
-
         $connection = $this->getDoctrine()->getConnection();
-        $em = $this->getDoctrine()->getManager();
         $queryBuilder = $connection->createQueryBuilder();
 
         $queryBuilder
@@ -228,10 +226,10 @@ class CampaignController extends Controller
 
             $campaign = new Campaign();
             $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
-            $campaign->setTitle($data['title']);
+            $campaign->setTitle(Clear::string_without_quotes($data['title']));
             $campaign->setSubTitle($data['subtitle']);
             $campaign->setCurrency($data['currency']);
-            $campaign->setMinAmount($data['min_amount']);
+            $campaign->setMinAmount(Clear::number($data['min_amount']));
             $campaign->setFormIntro($data['form_intro']);
             $campaign->setUrl($data['url']);
             $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
@@ -244,6 +242,14 @@ class CampaignController extends Controller
 
             $em->persist($campaign);
             $em->flush();
+
+            $user = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent(SysEvent::CREATE_CAMPAIGN);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
 
             return $this->redirect($this->generateUrl('admin_campaign_show_all', array('campaign_creation' => 'success')));
         }
@@ -262,9 +268,17 @@ class CampaignController extends Controller
 
         $em = $this->getDoctrine()->getManager();
 
-        $id = $this->getRequest()->query->get("id");
+        $id = Clear::integer($this->getRequest()->query->get("id"));
+
+        if($id<1) {
+            throw $this->createNotFoundException();
+        }
 
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
+
+        if(!$campaign) {
+            throw $this->createNotFoundException();
+        }
 
         $form = $this->createFormBuilder()
             ->add(
@@ -352,11 +366,11 @@ class CampaignController extends Controller
             $data = $form->getData();
 
             $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
-            $campaign->setTitle($data['title']);
+            $campaign->setTitle(Clear::string_without_quotes($data['title']));
             $campaign->setSubTitle($data['subtitle']);
             $campaign->setUrl($data['url']);
             $campaign->setCurrency($data['currency']);
-            $campaign->setMinAmount($data['min_amount']);
+            $campaign->setMinAmount(Clear::number($data['min_amount']));
             $campaign->setFormIntro($data['form_intro']);
 
             if ($data['bigPic'] != null)
@@ -369,6 +383,14 @@ class CampaignController extends Controller
 
             $em->persist($campaign);
             $em->flush();
+
+            $user = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent(SysEvent::UPDATE_CAMPAIGN . ' ' . $id);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
         }
 
 
@@ -381,19 +403,34 @@ class CampaignController extends Controller
     public function blockAction()
     {
 
+        $id = Clear::integer($this->getRequest()->query->get("id"));
 
-        $id = $this->getRequest()->query->get("id");
-        $page = $this->getRequest()->query->get("page");
+        if($id<1) {
+            throw $this->createNotFoundException();
+        }
+
+        $page = Clear::integer($this->getRequest()->query->get("page"));
 
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
+        if(!$campaign) {
+            throw $this->createNotFoundException();
+        }
 
         $statusBlocked = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'BLOCKED'));
         $campaign->setStatus($statusBlocked);
 
         $em->persist($campaign);
         $em->flush();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::BLOCK_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
@@ -409,11 +446,20 @@ class CampaignController extends Controller
     public function activateAction()
     {
 
-        $id = $this->getRequest()->query->get("id");
-        $page = $this->getRequest()->query->get("page");
+        $id = Clear::integer($this->getRequest()->query->get("id"));
+
+        if($id<1) {
+            throw $this->createNotFoundException();
+        }
+
+        $page = Clear::integer($this->getRequest()->query->get("page"));
 
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
+
+        if(!$campaign) {
+            throw $this->createNotFoundException();
+        }
 
 
         $statusActivated = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
@@ -421,6 +467,14 @@ class CampaignController extends Controller
 
         $em->persist($campaign);
         $em->flush();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::ACTIVATE_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
     }
@@ -430,17 +484,34 @@ class CampaignController extends Controller
      */
     public function deleteAction()
     {
-        $id = $this->getRequest()->query->get("id");
-        $page = $this->getRequest()->query->get("page");
+        $id = Clear::integer($this->getRequest()->query->get("id"));
+
+        if($id<1) {
+            throw $this->createNotFoundException();
+        }
+
+        $page = Clear::integer($this->getRequest()->query->get("page"));
 
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
+
+        if(!$campaign) {
+            throw $this->createNotFoundException();
+        }
 
         $statusActivated = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'DELETED'));
         $campaign->setStatus($statusActivated);
 
         $em->persist($campaign);
         $em->flush();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::DELETE_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
     }
@@ -455,9 +526,9 @@ class CampaignController extends Controller
         $limit = $this->container->getParameter('paginator.page.items');
         $pageOnSidesLimit = 10;
 
-        $page = $this->getRequest()->query->get("page", 1);
+        $page = Clear::integer($this->getRequest()->query->get("page", 1), 1);
 
-        $campaignId = $this->getRequest()->query->get("campaignId", null);
+        $campaignId = Clear::integer($this->getRequest()->query->get("campaignId", null), null);
 
 
         $em = $this->getDoctrine()->getManager();
@@ -501,7 +572,6 @@ class CampaignController extends Controller
     public function reportExportAction()
     {
 
-        $recurrent = '';
 
         $em = $this->getDoctrine()->getManager();
 
@@ -509,7 +579,7 @@ class CampaignController extends Controller
 
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
 
-        if ($this->getRequest()->query->get("recurrent", 0) == 1) {
+        if (Clear::integer($this->getRequest()->query->get("recurrent", 0), 0) == 1) {
             $recurrent = 'AND r.id is not null';
         } else {
             $recurrent = '';
@@ -534,12 +604,12 @@ class CampaignController extends Controller
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d');
 
-        if ($this->getRequest()->query->get("recurrent", 0) == 1) {
+        if (Clear::integer($this->getRequest()->query->get("recurrent", 0), 0) == 1) {
             $queryBuilder
                 ->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign_id = c.id')
                 ->where('c.user = ?1')
                 ->andWhere('r.id is not null');
-            $recurrent = '-recurrent'; // FIXME Andrei
+            $recurrent = '-recurrent';
         } else {
             $queryBuilder->where('c.user = ?1');
         }
@@ -597,10 +667,11 @@ class CampaignController extends Controller
     public function paymentPageAction($campaignUrl)
     {
         $em = $this->getDoctrine()->getManager();
-        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                    ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
 
         if(!$campaign) {
-            throw $this->createNotFoundException('Упс... Запрошенная страница не существует!');
+            throw $this->createNotFoundException();
         }
 
         $user = $campaign->getUser();
@@ -642,7 +713,13 @@ class CampaignController extends Controller
     public function ofertaAction($campaignUrl)
     {
         $em = $this->getDoctrine()->getManager();
-        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('url' => $campaignUrl));
+        $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
+                        ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
+
+        if(!$campaign) {
+            throw $this->createNotFoundException();
+        }
+
         $user = $campaign->getUser();
         $settingsCollection = $user->getSettings();
         $userSettings = $settingsCollection[0];

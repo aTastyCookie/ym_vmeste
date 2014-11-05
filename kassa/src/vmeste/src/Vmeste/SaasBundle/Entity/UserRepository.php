@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Vmeste\SaasBundle\Util\Clear;
 
 /**
  * UserRepository
@@ -34,7 +35,7 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      */
     public function loadUserByUsername($username)
     {
-
+        $username = Clear::string_without_quotes($username);
         $q = $this
             ->createQueryBuilder('u')
             ->where('u.username = :username OR u.email = :email')

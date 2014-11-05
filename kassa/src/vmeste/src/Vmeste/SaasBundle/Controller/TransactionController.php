@@ -18,8 +18,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Vmeste\SaasBundle\Entity\Donor;
 use Vmeste\SaasBundle\Entity\Recurrent;
 use Vmeste\SaasBundle\Entity\Transaction;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\PaginationUtils;
 use Vmeste\SaasBundle\Util\Rebilling;
+use Vmeste\SaasBundle\Util\Clear;
 
 /**
  * @Cache(expires="Thu, 19 Nov 1981 08:52:00 GMT", maxage=0, smaxage=0)
@@ -41,7 +43,7 @@ class TransactionController extends Controller
         $code = 0;
         $message = "Ok";
 
-        $ykShopId = $request->request->get('shopId');
+        $ykShopId = Clear::integer($request->request->get('shopId'));
 
         $em = $this->getDoctrine()->getManager();
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
@@ -64,7 +66,7 @@ class TransactionController extends Controller
                 $message = 'Bad md5';
             }
 
-            $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+            $campaignId = $this->getCampaignId(Clear::string_without_quotes($request->request->get('orderNumber')));
 
             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
 
@@ -76,9 +78,13 @@ class TransactionController extends Controller
                 $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
 
                 $donor = new Donor();
-                $donor->setName($request->request->get('customerName', $request->request->get('orderNumber')));
-                $donor->setEmail($request->request->get('customerEmail', ""));
-                $donor->setDetails($request->request->get('customerComment', ""));
+                $donor->setName(
+                    Clear::string_without_quotes(
+                        $request->request->get('customerName', $request->request->get('orderNumber'))
+                    )
+                );
+                $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
+                $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
                 $donor->setCurrency("RUB");
                 $donor->setStatus($status);
 
@@ -87,8 +93,8 @@ class TransactionController extends Controller
                 $transaction = new Transaction();
                 $transaction->setCampaign($campaign);
                 $transaction->setDonor($donor);
-                $transaction->setInvoiceId($request->request->get('invoiceId'));
-                $transaction->setGross($request->request->get('orderSumAmount'));
+                $transaction->setInvoiceId(Clear::string_without_quotes($request->request->get('invoiceId')));
+                $transaction->setGross(Clear::number($request->request->get('orderSumAmount')));
                 $transaction->setCurrency("RUB");
                 $transaction->setPaymentStatus($paymentStatus);
                 $transaction->setTransactionType("YMKassa: donate");
@@ -114,6 +120,13 @@ class TransactionController extends Controller
         $xml->appendChild($checkOrderResponse);
         $output = $xml->saveXML();
 
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' ' . $output);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
         return $response;
 
@@ -130,7 +143,7 @@ class TransactionController extends Controller
         $paymentStatus = self::PAYMENT_COMPLETED;
         $em = $this->getDoctrine()->getManager();
 
-        $ykShopId = $request->request->get('shopId');
+        $ykShopId = Clear::integer($request->request->get('shopId'));
         $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
 
         if (!$yandexKassa) {
@@ -175,12 +188,14 @@ class TransactionController extends Controller
 
                             $payer_email = $donor->getEmail();
 
-                            $campaignId = $this->getCampaignId($request->request->get('orderNumber'));
+                            $campaignId = Clear::integer($this->getCampaignId($request->request->get('orderNumber')));
                             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
                             $userSettingsArray = $campaign->getUser()->getSettings();
                             $settings = $userSettingsArray[0];
 
-                            $amount = number_format((float)stripslashes($request->request->get('orderSumAmount')), 2);
+                            $amount = Clear::string_without_quotes(
+                                number_format((float)stripslashes($request->request->get('orderSumAmount')), 2)
+                            );
                             $pan = $request->request->get('cdd_pan_mask');
 
                             $time = time();
@@ -276,6 +291,13 @@ class TransactionController extends Controller
         $xml->appendChild($paymentAvisoResponse);
         $output = $xml->saveXML();
 
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' ' . $output);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
         return $response;
     }
@@ -283,8 +305,7 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public
-    function homeAction()
+    public function homeAction()
     {
         return array('data' => true);
     }
@@ -292,8 +313,7 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public
-    function unsubscribeAction()
+    public function unsubscribeAction()
     {
         $recurrent_id = $this->getRequest()->query->get("recurrent");
         $invoice_id = $this->getRequest()->query->get("invoice");
@@ -303,6 +323,13 @@ class TransactionController extends Controller
             'title' => '',
             'intro' => '',
             'img' => '');
+
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " request $recurrent_id $invoice_id");
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if ($recurrent_id == null || $invoice_id == null) {
             $response['error'] = 'Неверные параметры';
@@ -344,6 +371,10 @@ class TransactionController extends Controller
             $recurrent->setStatus($status);
             $em->persist($recurrent);
             $em->flush();
+
+            $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " done $recurrent_id $invoice_id");
+            $eventTracker->track($sysEvent);
+
             return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
         } elseif ((int)$this->getRequest()->query->get("yes") == 2) {
             return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
@@ -357,8 +388,7 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public
-    function subscribeAction()
+    public function subscribeAction()
     {
         $recurrent_id = $this->getRequest()->query->get("recurrent");
         $invoice_id = $this->getRequest()->query->get("invoice");
@@ -368,6 +398,14 @@ class TransactionController extends Controller
             'title' => '',
             'intro' => '',
             'img' => '');
+
+
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " request $recurrent_id $invoice_id");
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if ($recurrent_id == null || $invoice_id == null) {
             $response['error'] = 'Неверные параметры';
@@ -409,14 +447,16 @@ class TransactionController extends Controller
         $em->persist($recurrent);
         $em->flush();
 
+        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " done $recurrent_id $invoice_id");
+        $eventTracker->track($sysEvent);
+
         return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
     }
 
     /**
      * @Template
      */
-    public
-    function reportAction()
+    public function reportAction()
     {
 
         $limit = $this->container->getParameter('paginator.page.items');
@@ -429,6 +469,14 @@ class TransactionController extends Controller
         $currentUser = $this->get('security.context')->getToken()->getUser();
 
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::REPORT_ALL_TRANSACTIONS);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         $queryBuilder = $em->createQueryBuilder();
 
@@ -457,8 +505,7 @@ class TransactionController extends Controller
     /**
      * @Template
      */
-    public
-    function searchAction()
+    public function searchAction()
     {
 
         if ($this->getRequest()->query->get("searchRequest", null) != null) {
@@ -475,6 +522,14 @@ class TransactionController extends Controller
             $currentUser = $this->get('security.context')->getToken()->getUser();
 
             $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
+
+            $user = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent(SysEvent::SEARCH_TRANSACTION);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
 
             $queryBuilder = $em->createQueryBuilder();
 
@@ -510,8 +565,7 @@ class TransactionController extends Controller
 
     }
 
-    public
-    function reportExportAction()
+    public function reportExportAction()
     {
 
         $startTimestamp = $endTimestamp = 0;
@@ -524,6 +578,14 @@ class TransactionController extends Controller
             $startTimestamp = $this->parseDateToTimestamp($start);
             $endTimestamp = $this->parseDateToTimestamp($end);
         }
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::REPORT_TRANSACTIONS_BY_DATE);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         $em = $this->getDoctrine()->getManager();
         $queryBuilder = $em->createQueryBuilder();
@@ -587,8 +649,7 @@ class TransactionController extends Controller
      * @param $postParamsArray
      * @return string
      */
-    private
-    function createRequestString($postParamsArray)
+    private function createRequestString($postParamsArray)
     {
         $response = "";
         foreach ($postParamsArray as $key => $value) {
@@ -602,8 +663,7 @@ class TransactionController extends Controller
      * @param $orderNumber
      * @return mixed
      */
-    private
-    function getCampaignId($orderNumber)
+    private function getCampaignId($orderNumber)
     {
         $orderNumberExploded = explode("-", $orderNumber);
         $campaignId = $orderNumberExploded[0];
@@ -614,8 +674,7 @@ class TransactionController extends Controller
      * @param $dateStr
      * @return int
      */
-    private
-    function parseDateToTimestamp($dateStr)
+    private function parseDateToTimestamp($dateStr)
     {
         $a = date_parse_from_format('Y-m-d', $dateStr);
         $timestamp = mktime(0, 0, 0, $a['month'], $a['day'], $a['year']);

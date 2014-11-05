@@ -17,7 +17,9 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
+use Vmeste\SaasBundle\Util\Clear;
 
 class SettingsController extends Controller
 {
@@ -27,7 +29,7 @@ class SettingsController extends Controller
      */
     public function editSettingsAction($errors = null)
     {
-        $userId = $this->getRequest()->get('userId', null);
+        $userId = Clear::integer($this->getRequest()->get('userId', null), null);
 
         $emailSettingsErrors = null;
         if (count($this->get('session')->getFlashBag()->peek('email_setting_errors')) > 0) {
@@ -117,15 +119,15 @@ class SettingsController extends Controller
 
         if ($request->isMethod('POST')) {
 
-            $companyName = $request->request->get('company_name');
-            $director_name = $request->request->get('director_name');
-            $position = $request->request->get('position');
-            $authority = $request->request->get('authority');
-            $details = $request->request->get('details');
-            $notificationEmail = $request->request->get('notification_email');
-            $senderName = $request->request->get('sender_name');
-            $senderEmail = $request->request->get('sender_email');
-            $csvSeparator = $request->request->get('csv_separator');
+            $companyName = Clear::removeCRLF($request->request->get('company_name'));
+            $director_name = Clear::string_without_quotes($request->request->get('director_name'));
+            $position = Clear::string_without_quotes($request->request->get('position'));
+            $authority = Clear::string_without_quotes($request->request->get('authority'));
+            $details = Clear::string_without_quotes($request->request->get('details'));
+            $notificationEmail = Clear::string_without_quotes($request->request->get('notification_email'));
+            $senderName = Clear::string_without_quotes($request->request->get('sender_name'));
+            $senderEmail = Clear::string_without_quotes($request->request->get('sender_email'));
+            $csvSeparator = Clear::string_without_quotes($request->request->get('csv_separator'));
 
             $notificationEmailConstraint = new Email();
             $notificationEmailConstraint->message = "The email " . $notificationEmail . ' is not a valid email';
@@ -143,7 +145,7 @@ class SettingsController extends Controller
             $authorityConstraint = new Length(array('min' => 3, 'max' => 512));
             $authorityErrorList = $this->get('validator')->validateValue($authority, $authorityConstraint);
 
-            $detailsConstraint = new Length(array('min' => 100, 'max' => 1024));
+            $detailsConstraint = new Length(array('min' => 25, 'max' => 1024));
             $detailsErrorList = $this->get('validator')->validateValue($details, $detailsConstraint);
 
             $senderNameConstraint = new Length(array('min' => 2, 'max' => 255));
@@ -189,6 +191,14 @@ class SettingsController extends Controller
                 $em->persist($userSettings);
                 $em->flush();
 
+                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($userEvent->getId());
+                $sysEvent->setEvent(SysEvent::UPDATE_EMAIL_SETTINGS . " of user " . $userId);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
                 $redirectUri = $this->generateUrl('customer_settings');
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
@@ -231,9 +241,9 @@ class SettingsController extends Controller
 
         if ($request->isMethod('POST')) {
 
-            $shopid = $request->request->get('yandex_shopid', NULL);
-            $scid = $request->request->get('yandex_scid', NULL);
-            $shoppw = $request->request->get('yandex_shoppw', NULL);
+            $shopid = Clear::integer($request->request->get('yandex_shopid', NULL), null);
+            $scid = Clear::integer($request->request->get('yandex_scid', NULL), null);
+            $shoppw = Clear::removeCRLF($request->request->get('yandex_shoppw', NULL));
 
             $pc = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_pc'));
             $ac = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_ac'));
@@ -355,6 +365,14 @@ class SettingsController extends Controller
                 $em->persist($yandexKassa);
                 $em->flush();
 
+                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($userEvent->getId());
+                $sysEvent->setEvent(SysEvent::UPDATE_YK_SETTINGS . " of user " . $userId);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
                 $redirectUri = $this->generateUrl('customer_settings');
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
@@ -444,6 +462,14 @@ class SettingsController extends Controller
 
                     $em->persist($user);
                     $em->flush();
+
+                    $userEvent = $this->get('security.context')->getToken()->getUser();
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId($userEvent->getId());
+                    $sysEvent->setEvent(SysEvent::UPDATE_PASSWORD . " of user " . $userId);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
 
                     $logger->info('[CHANGE_PASSWORD] For user with id: ' . $userId);
 
