@@ -30,7 +30,9 @@ class AuthController extends Controller
     {
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
+
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
+
                 return $this->redirect($this->generateUrl('admin_home'));
             } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
                 return $this->redirect($this->generateUrl('customer_home'));
