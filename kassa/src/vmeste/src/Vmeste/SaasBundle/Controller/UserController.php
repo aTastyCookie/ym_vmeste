@@ -21,6 +21,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\YandexKassa;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\PaginationUtils;
 
@@ -148,6 +149,10 @@ class UserController extends Controller
             $role = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
             $user->addRole($role);
 
+            $userEvent = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($userEvent->getId());
+
             if($data['role'] == 'ROLE_USER') {
 
                 $settings = new Settings();
@@ -158,6 +163,10 @@ class UserController extends Controller
 
                 $settings->setYandexKassa($yandexKassa);
                 $user->addSetting($settings);
+
+                $sysEvent->setEvent(SysEvent::CREATE_ADMIN);
+            } else {
+                $sysEvent->setEvent(SysEvent::CREATE_USER);
             }
 
             $role->addUser($user);
@@ -168,6 +177,10 @@ class UserController extends Controller
 
             $em->persist($user);
             $em->flush();
+
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
 
             return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
         }
@@ -274,6 +287,20 @@ class UserController extends Controller
             $em->persist($user);
             $em->flush();
 
+            $userEvent = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($userEvent->getId());
+
+            if($data['role'] == 'ROLE_USER') {
+                $sysEvent->setEvent(SysEvent::UPDATE_ADMIN);
+            } else {
+                $sysEvent->setEvent(SysEvent::UPDATE_USER);
+            }
+
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
+
             return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
         }
 
@@ -307,6 +334,14 @@ class UserController extends Controller
         $em->persist($user);
         $em->flush();
 
+        $userEvent = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($userEvent->getId());
+        $sysEvent->setEvent(SysEvent::BLOCK_USER);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
     }
 
@@ -330,6 +365,14 @@ class UserController extends Controller
         $em->persist($user);
         $em->flush();
 
+        $userEvent = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($userEvent->getId());
+        $sysEvent->setEvent(SysEvent::ACTIVATE_USER);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
     }
 
@@ -339,7 +382,7 @@ class UserController extends Controller
     public function deleteAction()
     {
 
-
+        $page = $this->getRequest()->query->get("page");
         return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
     }
 

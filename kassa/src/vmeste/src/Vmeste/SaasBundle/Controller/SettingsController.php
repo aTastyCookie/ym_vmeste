@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
 
 class SettingsController extends Controller
@@ -189,6 +190,14 @@ class SettingsController extends Controller
                 $em->persist($userSettings);
                 $em->flush();
 
+                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($userEvent->getId());
+                $sysEvent->setEvent(SysEvent::UPDATE_EMAIL_SETTINGS . " of user " . $userId);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
                 $redirectUri = $this->generateUrl('customer_settings');
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
@@ -355,6 +364,14 @@ class SettingsController extends Controller
                 $em->persist($yandexKassa);
                 $em->flush();
 
+                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($userEvent->getId());
+                $sysEvent->setEvent(SysEvent::UPDATE_YK_SETTINGS . " of user " . $userId);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
                 $redirectUri = $this->generateUrl('customer_settings');
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
@@ -444,6 +461,14 @@ class SettingsController extends Controller
 
                     $em->persist($user);
                     $em->flush();
+
+                    $userEvent = $this->get('security.context')->getToken()->getUser();
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId($userEvent->getId());
+                    $sysEvent->setEvent(SysEvent::UPDATE_PASSWORD . " of user " . $userId);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
 
                     $logger->info('[CHANGE_PASSWORD] For user with id: ' . $userId);
 

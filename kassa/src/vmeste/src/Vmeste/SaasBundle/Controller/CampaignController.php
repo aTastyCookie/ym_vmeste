@@ -25,6 +25,7 @@ use Symfony\Component\Validator\Constraints\Url;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\YandexKassa;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\PaginationUtils;
 use Vmeste\SaasBundle\Validator\ForbiddenUriConstraint;
 use Vmeste\SaasBundle\Validator\ForbiddenUriValidator;
@@ -245,6 +246,14 @@ class CampaignController extends Controller
             $em->persist($campaign);
             $em->flush();
 
+            $user = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent(SysEvent::CREATE_CAMPAIGN);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
+
             return $this->redirect($this->generateUrl('admin_campaign_show_all', array('campaign_creation' => 'success')));
         }
 
@@ -369,6 +378,14 @@ class CampaignController extends Controller
 
             $em->persist($campaign);
             $em->flush();
+
+            $user = $this->get('security.context')->getToken()->getUser();
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent(SysEvent::UPDATE_CAMPAIGN . ' ' . $id);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
         }
 
 
@@ -394,6 +411,14 @@ class CampaignController extends Controller
 
         $em->persist($campaign);
         $em->flush();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::BLOCK_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
@@ -422,6 +447,14 @@ class CampaignController extends Controller
         $em->persist($campaign);
         $em->flush();
 
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::ACTIVATE_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
     }
 
@@ -441,6 +474,14 @@ class CampaignController extends Controller
 
         $em->persist($campaign);
         $em->flush();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($user->getId());
+        $sysEvent->setEvent(SysEvent::DELETE_CAMPAIGN);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
     }

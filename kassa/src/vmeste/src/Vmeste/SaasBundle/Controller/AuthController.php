@@ -15,7 +15,9 @@ use Vmeste\SaasBundle\Entity\RecoverPassword;
 use Vmeste\SaasBundle\Entity\RecoverToken;
 use Vmeste\SaasBundle\Entity\Role;
 use Vmeste\SaasBundle\Entity\User;
+use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
+
 
 class AuthController extends Controller
 {
@@ -28,7 +30,9 @@ class AuthController extends Controller
     {
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
+
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
+
                 return $this->redirect($this->generateUrl('admin_home'));
             } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
                 return $this->redirect($this->generateUrl('customer_home'));
@@ -148,6 +152,13 @@ class AuthController extends Controller
 
                     $successMessage = 'Recover letter has been sent on your email!';
 
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId($user->getId());
+                    $sysEvent->setEvent(SysEvent::RECOVER_PASSWORD);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
+
                 } else {
                     $errorMessage = 'User with email ' . $email . ' doesn\'t exists!';
                 }
@@ -228,6 +239,13 @@ class AuthController extends Controller
                         $em->persist($recoverToken);
                         $em->flush();
 
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId($userId);
+                        $sysEvent->setEvent(SysEvent::RECOVER_PASSWORD);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
+
                         $logger->info('[CHANGE_PASSWORD] For user with id: ' . $userId);
 
                         return $this->redirect($this->generateUrl("login"));
@@ -262,7 +280,6 @@ class AuthController extends Controller
      */
     public function updatePasswordAction()
     {
-
         return array();
     }
 
