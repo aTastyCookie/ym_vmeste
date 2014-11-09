@@ -33,7 +33,7 @@ security:
                 path:   logout
                 #target: /
                 success_handler: logout_handler
-                invalidate_session: true
+                invalidate_session: false
 
             anonymous: true
             #http_basic:

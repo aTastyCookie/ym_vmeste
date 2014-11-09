@@ -270,13 +270,13 @@ class CampaignController extends Controller
 
         $id = Clear::integer($this->getRequest()->query->get("id"));
 
-        if($id<1) {
+        if ($id < 1) {
             throw $this->createNotFoundException();
         }
 
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        if(!$campaign) {
+        if (!$campaign) {
             throw $this->createNotFoundException();
         }
 
@@ -331,18 +331,18 @@ class CampaignController extends Controller
                     'data' => $campaign->getMinAmount()))
             ->add(
                 'currency', 'choice', array(
-                'choices' => array(
-                    'RUB' => 'RUB',
-                ),
-                'label' => 'Валюта',
-                'constraints' => array(
-                    new Choice(array(
-                            'choices' => array('RUB'),
-                            'message' => 'Выберите корректную валюту',
+                    'choices' => array(
+                        'RUB' => 'RUB',
+                    ),
+                    'label' => 'Валюта',
+                    'constraints' => array(
+                        new Choice(array(
+                                'choices' => array('RUB'),
+                                'message' => 'Выберите корректную валюту',
+                            )
                         )
-                    )
-                ),
-                'data' => $campaign->getCurrency()))
+                    ),
+                    'data' => $campaign->getCurrency()))
             // Please enter content of donation form box.
             ->add(
                 'form_intro',
@@ -405,7 +405,7 @@ class CampaignController extends Controller
 
         $id = Clear::integer($this->getRequest()->query->get("id"));
 
-        if($id<1) {
+        if ($id < 1) {
             throw $this->createNotFoundException();
         }
 
@@ -414,7 +414,7 @@ class CampaignController extends Controller
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        if(!$campaign) {
+        if (!$campaign) {
             throw $this->createNotFoundException();
         }
 
@@ -432,15 +432,17 @@ class CampaignController extends Controller
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
 
+        $redirectUrl = $this->generateUrl('login');
+
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
-                return $this->redirect($this->generateUrl('admin_campaign_show_all', array('page' => $page)));
+                $redirectUrl = $this->generateUrl('admin_campaign_show_all', array('page' => $page));
             } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
-                return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+                $redirectUrl = $this->generateUrl('customer_campaign', array('page' => $page));
             }
         }
 
-        return $this->redirect($this->generateUrl('login'));
+        return $this->redirect($redirectUrl);
     }
 
     public function activateAction()
@@ -448,7 +450,7 @@ class CampaignController extends Controller
 
         $id = Clear::integer($this->getRequest()->query->get("id"));
 
-        if($id<1) {
+        if ($id < 1) {
             throw $this->createNotFoundException();
         }
 
@@ -457,7 +459,7 @@ class CampaignController extends Controller
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $id));
 
-        if(!$campaign) {
+        if (!$campaign) {
             throw $this->createNotFoundException();
         }
 
@@ -486,7 +488,7 @@ class CampaignController extends Controller
     {
         $id = Clear::integer($this->getRequest()->query->get("id"));
 
-        if($id<1) {
+        if ($id < 1) {
             throw $this->createNotFoundException();
         }
 
@@ -513,7 +515,17 @@ class CampaignController extends Controller
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
 
-        return $this->redirect($this->generateUrl('customer_campaign', array('page' => $page)));
+        $redirectUrl = $this->generateUrl('login');
+
+        if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
+                $redirectUrl = $this->generateUrl('admin_campaign_show_all', array('page' => $page));
+            } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
+                $redirectUrl = $this->generateUrl('customer_campaign', array('page' => $page));
+            }
+        }
+
+        return $this->redirect($redirectUrl);
     }
 
 
@@ -668,9 +680,9 @@ class CampaignController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
-                    ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
+            ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
 
-        if(!$campaign) {
+        if (!$campaign) {
             throw $this->createNotFoundException();
         }
 
@@ -685,7 +697,7 @@ class CampaignController extends Controller
 
         $paymentHost = $this->container->getParameter('production.payment.host');
 
-        if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
+        if ($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $paymentHost = $this->container->getParameter('sandbox.payment.host');
 
         $paymentPage = "https://" . $this->getRequest()->getHost() . "/" . $campaign->getUrl();
@@ -693,7 +705,7 @@ class CampaignController extends Controller
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
 
         return array('campaign' => $campaign,
-            'description'=>nl2br($campaign->getFormIntro()),
+            'description' => nl2br($campaign->getFormIntro()),
             'yandexKassa' => $yandexKassa,
             'customerNumber' => time(),
             'noIDcustomerNumber' => time(),
@@ -714,9 +726,9 @@ class CampaignController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
-                        ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
+            ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
 
-        if(!$campaign) {
+        if (!$campaign) {
             throw $this->createNotFoundException();
         }
 

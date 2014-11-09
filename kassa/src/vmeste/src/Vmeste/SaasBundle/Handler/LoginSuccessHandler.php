@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Vmeste\SaasBundle\Controller\AuthController;
+use Vmeste\SaasBundle\Entity\SysEvent;
 
 class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
@@ -41,13 +43,18 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
 
+
         if ($this->security->isGranted('ROLE_ADMIN')) {
             $response = new RedirectResponse($this->router->generate('admin_home'));
+
         } elseif ($this->security->isGranted('ROLE_USER')) {
             $response = new RedirectResponse($this->router->generate('customer_home'));
         } else {
             $response = new RedirectResponse($this->router->generate('login'));
         }
+
+        $session = $request->getSession();
+        $session->set(AuthController::SYS_EVENT, 'LOGIN');
 
         return $response;
     }

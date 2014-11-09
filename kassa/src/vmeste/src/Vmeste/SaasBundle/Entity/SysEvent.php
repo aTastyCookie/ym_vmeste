@@ -20,8 +20,8 @@ class SysEvent {
     /**
      * System Events
      */
-    const USER_LOGIN = 'USER_LOGIN';
-    const USER_LOGOUT = 'USER_LOGOUT';
+    const CUSTOMER_LOGIN = 'CUSTOMER_LOGIN';
+    const CUSTOMER_LOGOUT = 'CUSTOMER_LOGOUT';
     const ADMIN_LOGIN = 'ADMIN_LOGIN';
     const ADMIN_LOGOUT = 'ADMIN_LOGOUT';
     const RECOVER_PASSWORD = 'RECOVER_PASSWORD';
@@ -179,7 +179,7 @@ class SysEvent {
      */
     private function setDatetime()
     {
-        $this->datetime = new \DateTime('@'.time());;
+        $this->datetime = new \DateTime('@'.time());
         return $this;
     }
 

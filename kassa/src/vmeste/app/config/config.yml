@@ -3,19 +3,6 @@ imports:
     - { resource: security.yml }
 
 framework:
-    session:
-        storage_id:           session.storage.native
-        handler_id:           session.handler.native_file
-        name:                 ~
-        cookie_lifetime:      ~
-        cookie_path:          ~
-        cookie_domain:        ~
-        cookie_secure:        ~
-        cookie_httponly:      true
-        gc_divisor:           ~
-        gc_probability:       ~
-        gc_maxlifetime:       ~
-        save_path:            "%kernel.cache_dir%/sessions"
     #esi:             ~
     #translator:      { fallback: "%locale%" }
     secret:          "%secret%"
@@ -30,7 +17,11 @@ framework:
         #assets_version: SomeVersionScheme
     default_locale:  "%locale%"
     trusted_proxies: ~
-    session:         ~
+
+    session:
+        cookie_httponly: true
+        cookie_secure: true
+
     fragments:       ~
     http_method_override: true
 
@@ -114,3 +105,6 @@ parameters:
 
     reestr.email.to: iaaman@yamoney.ru
     reestr.email.from: no-reply@vmeste.ru
+
+    security.login.attempts: 5
+    security.login.ip_block_time_sec: 30

@@ -6,11 +6,14 @@ use PDO;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
+use Vmeste\SaasBundle\Entity\Ip;
 use Vmeste\SaasBundle\Entity\RecoverPassword;
 use Vmeste\SaasBundle\Entity\RecoverToken;
 use Vmeste\SaasBundle\Entity\Role;
@@ -22,17 +25,19 @@ use Vmeste\SaasBundle\Util\Hash;
 class AuthController extends Controller
 {
 
-    const NON_ACTIVE = 0;
+    const NON_ACTIVE_TOKEN = 0;
 
-    const ACTIVE = 1;
+    const ACTIVE_TOKEN = 1;
+
+    const SYS_EVENT = 'SYS_EVENT';
+
+    const RECENT_SYS_USER = 'RECENT_SYS_USER';
 
     public function loginAction()
     {
 
         if ($this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
-
             if ($this->get('security.context')->isGranted('ROLE_ADMIN')) {
-
                 return $this->redirect($this->generateUrl('admin_home'));
             } else if ($this->get('security.context')->isGranted('ROLE_USER')) {
                 return $this->redirect($this->generateUrl('customer_home'));
@@ -40,9 +45,15 @@ class AuthController extends Controller
         }
 
         $request = $this->getRequest();
-        $session = $request->getSession();
 
-        // get the login error if there is one
+        $session = $request->getSession();
+        $this->trackLogoutSysEvent($session);
+
+        $clientIp = $request->getClientIp();
+        $requestAllowed = $this->bruteForceCheck($clientIp);
+        if (!$requestAllowed)
+            return $this->redirect($this->generateUrl('forgot_pass'));
+
         if ($request->attributes->has(SecurityContextInterface::AUTHENTICATION_ERROR)) {
             $error = $request->attributes->get(
                 SecurityContextInterface::AUTHENTICATION_ERROR
@@ -108,17 +119,17 @@ class AuthController extends Controller
                         ->set('rt.active', '?1')
                         ->where('rt.userId = ?2')
                         ->andWhere('rt.active = ?3')
-                        ->setParameter(1, self::NON_ACTIVE)
+                        ->setParameter(1, self::NON_ACTIVE_TOKEN)
                         ->setParameter(2, $user->getId())
-                        ->setParameter(3, self::ACTIVE)
+                        ->setParameter(3, self::ACTIVE_TOKEN)
                         ->getQuery();
 
 
-                    $logger->info('[RECOVER_EMAIL] Disabled tokens SQL query: ' . $disablePreviousActiveTokensQuery->getSql());
+//                    $logger->info('[RECOVER_EMAIL] Disabled tokens SQL query: ' . $disablePreviousActiveTokensQuery->getSql());
 
                     $disabledTokenNum = $disablePreviousActiveTokensQuery->execute();
 
-                    $logger->info('[RECOVER_EMAIL] Disabled tokens: ' . $disabledTokenNum . ' for user: ' . $user->getEmail());
+//                    $logger->info('[RECOVER_EMAIL] Disabled tokens: ' . $disabledTokenNum . ' for user: ' . $user->getEmail());
 
                     $recoverTokenHash = Hash::generateRecoverToken();
 
@@ -214,7 +225,7 @@ class AuthController extends Controller
                 $em = $doctrine->getManager();
 
                 $recoverToken = $em->getRepository('Vmeste\SaasBundle\Entity\RecoverToken')
-                    ->findOneBy(array('token' => $token, 'active' => self::ACTIVE));
+                    ->findOneBy(array('token' => $token, 'active' => self::ACTIVE_TOKEN));
 
                 if ($recoverToken == null) {
                     array_push($errorMessageArray, "Token doesn't exist!");
@@ -283,4 +294,113 @@ class AuthController extends Controller
         return array();
     }
 
+    /**
+     * @return \Doctrine\Common\Persistence\ObjectManager|object
+     */
+    public function getEntityManager()
+    {
+        $em = $this->getDoctrine()->getManager();
+        return $em;
+    }
+
+    /**
+     * @param $em
+     * @param $clientIp
+     */
+    public function getClientIpFromDatabase($em, $clientIp)
+    {
+        return $em->getRepository('Vmeste\SaasBundle\Entity\Ip')->findOneBy(array('ip' => $clientIp));
+    }
+
+    /**
+     * @param $clientIp
+     * @param $em
+     */
+    public function remeberNewIP($clientIp, $em)
+    {
+        $newClientIp = new Ip();
+        $newClientIp->setIp($clientIp);
+        $newClientIp->setState(Ip::PENDING);
+        $newClientIp->setAttempt(0);
+        $em->persist($newClientIp);
+        $em->flush();
+    }
+
+    /**
+     * @param $ipTime
+     * @return int
+     */
+    public function getElapsedTimeAfterBlock($ipTime)
+    {
+        $currentDatetime = new \DateTime();
+        $timeElapsed = $currentDatetime->getTimestamp() - $ipTime;
+        return $timeElapsed;
+    }
+
+    /**
+     * @param $clientIp
+     * @return bool
+     */
+    public function bruteForceCheck($clientIp)
+    {
+
+        $requestAllowed = true;
+
+        $ipBlockTimeSec = intval($this->container->getParameter('security.login.ip_block_time_sec'));
+
+        $em = $this->getEntityManager();
+        $ip = $this->getClientIpFromDatabase($em, $clientIp);
+
+        if (is_null($ip)) {
+            $this->remeberNewIP($clientIp, $em);
+        } else { // ip exists in the database
+
+            if ($ip->getState() == Ip::BLOCKED) {
+
+                $datetime = $ip->getTime();
+                $ipTime = $datetime->getTimestamp();
+
+                $timeElapsed = $this->getElapsedTimeAfterBlock($ipTime);
+
+                if ($timeElapsed < $ipBlockTimeSec) { // ip blocked
+                    $requestAllowed = false;
+                } else { // block time has been finished
+                    $ip->setAttempt(0);
+                    $ip->setState(Ip::PENDING);
+                    $em->persist($ip);
+                    $em->flush();
+                }
+            }
+        }
+
+        return $requestAllowed;
+    }
+
+    /**
+     * @param $session
+     */
+    public function trackLogoutSysEvent($session)
+    {
+        $sysEventVal = $session->get(self::SYS_EVENT, NULL);
+
+        if ($sysEventVal != NULL && $sysEventVal == 'LOGOUT') {
+
+            $recentSysUserDataArray = $session->get(self::RECENT_SYS_USER, NULL);
+
+            if ($recentSysUserDataArray != NULL) {
+
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($recentSysUserDataArray['userId']);
+                $sysEvent->setEvent($recentSysUserDataArray['event']);
+                $sysEvent->setIp($recentSysUserDataArray['ip']);
+
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
+                $session->remove(self::SYS_EVENT);
+                $session->remove(self::RECENT_SYS_USER);
+
+            }
+        }
+    }
 }

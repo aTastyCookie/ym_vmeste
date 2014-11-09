@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Vmeste\SaasBundle\Controller\AuthController;
 
 class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
 {
@@ -29,6 +30,10 @@ class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
     {
         $referer_url = $request->headers->get('referer');
         $response = new RedirectResponse($referer_url);
+
+        $session = $request->getSession();
+        $session->set(AuthController::SYS_EVENT, 'LOGOUT');
+
         return $response;
     }
 
