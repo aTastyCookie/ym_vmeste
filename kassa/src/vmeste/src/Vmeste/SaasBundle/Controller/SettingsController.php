@@ -23,6 +23,8 @@ use Vmeste\SaasBundle\Util\Clear;
 
 class SettingsController extends Controller
 {
+    const RECENT_CUSTOMER_SETTINGS = 'recent_customer_settings';
+    const EMAIL_SETTING_ERRORS = 'email_setting_errors';
 
     /**
      * @Template
@@ -32,9 +34,13 @@ class SettingsController extends Controller
         $userId = Clear::integer($this->getRequest()->get('userId', null), null);
 
         $emailSettingsErrors = null;
-        if (count($this->get('session')->getFlashBag()->peek('email_setting_errors')) > 0) {
-            $emailSettingsErrorsArray = $this->get('session')->getFlashBag()->get('email_setting_errors');
+        $recentCustomerSetting = null;
+        if (count($this->get('session')->getFlashBag()->peek(self::EMAIL_SETTING_ERRORS)) > 0) {
+            $emailSettingsErrorsArray = $this->get('session')->getFlashBag()->get(self::EMAIL_SETTING_ERRORS);
             $emailSettingsErrors = $emailSettingsErrorsArray[0];
+            $session = $this->get('session');
+            $recentCustomerSetting = $session->get(self::RECENT_CUSTOMER_SETTINGS);
+            $session->remove(self::RECENT_CUSTOMER_SETTINGS);
         }
 
         $passwordSettingsErrors = null;
@@ -63,8 +69,10 @@ class SettingsController extends Controller
             $settingsCollection = $user->getSettings();
             $userSettings = $settingsCollection[0];
             $yandexKassa = $userSettings->getYandexKassa();
+            if(!is_null($recentCustomerSetting)) {
+                $this->reinitializeUserSettings($userSettings, $recentCustomerSetting);
+            }
         }
-
 
         $updateEmailSettingsRoute = $this->generateUrl('update_email_settings');
         $updateYKSettingsRoute = $this->generateUrl('update_yk_settings');
@@ -80,7 +88,7 @@ class SettingsController extends Controller
         }
 
         return array(
-            'email_setting_errors' => $emailSettingsErrors,
+            self::EMAIL_SETTING_ERRORS => $emailSettingsErrors,
             'notification_email' => $userSettings->getNotificationEmail(),
             'company_name' => $userSettings->getCompanyName(),
             'director_name' => $userSettings->getDirectorName(),
@@ -119,15 +127,17 @@ class SettingsController extends Controller
 
         if ($request->isMethod('POST')) {
 
-            $companyName = Clear::removeCRLF($request->request->get('company_name'));
-            $director_name = Clear::string_without_quotes($request->request->get('director_name'));
-            $position = Clear::string_without_quotes($request->request->get('position'));
-            $authority = Clear::string_without_quotes($request->request->get('authority'));
-            $details = Clear::string_without_quotes($request->request->get('details'));
-            $notificationEmail = Clear::string_without_quotes($request->request->get('notification_email'));
-            $senderName = Clear::string_without_quotes($request->request->get('sender_name'));
-            $senderEmail = Clear::string_without_quotes($request->request->get('sender_email'));
-            $csvSeparator = Clear::string_without_quotes($request->request->get('csv_separator'));
+            $generalCustomerSettingsBucket = array();
+
+            $generalCustomerSettingsBucket['company_name'] = $companyName = Clear::removeCRLF($request->request->get('company_name'));
+            $generalCustomerSettingsBucket['director_name'] = $directorName = Clear::string_without_quotes($request->request->get('director_name'));
+            $generalCustomerSettingsBucket['position'] = $position = Clear::string_without_quotes($request->request->get('position'));
+            $generalCustomerSettingsBucket['authority'] = $authority = Clear::string_without_quotes($request->request->get('authority'));
+            $generalCustomerSettingsBucket['details'] = $details = Clear::string_without_quotes($request->request->get('details'));
+            $generalCustomerSettingsBucket['notification_email'] = $notificationEmail = Clear::string_without_quotes($request->request->get('notification_email'));
+            $generalCustomerSettingsBucket['sender_name'] = $senderName = Clear::string_without_quotes($request->request->get('sender_name'));
+            $generalCustomerSettingsBucket['sender_email'] = $senderEmail = Clear::string_without_quotes($request->request->get('sender_email'));
+            $generalCustomerSettingsBucket['csv_separator'] = $csvSeparator = Clear::string_without_quotes($request->request->get('csv_separator'));
 
             $notificationEmailConstraint = new Email();
             $notificationEmailConstraint->message = "The email " . $notificationEmail . ' is not a valid email';
@@ -137,7 +147,7 @@ class SettingsController extends Controller
             $companyNameErrorList = $this->get('validator')->validateValue($companyName, $companyNameConstraint);
 
             $directorNameConstraint = new Length(array('min' => 3, 'max' => 255));
-            $directorNameErrorList = $this->get('validator')->validateValue($director_name, $directorNameConstraint);
+            $directorNameErrorList = $this->get('validator')->validateValue($directorName, $directorNameConstraint);
 
             $positionConstraint = new Length(array('min' => 3, 'max' => 512));
             $positionErrorList = $this->get('validator')->validateValue($position, $positionConstraint);
@@ -180,7 +190,7 @@ class SettingsController extends Controller
 
                 $userSettings->setCompanyName($companyName);
                 $userSettings->setDetails($details);
-                $userSettings->setDirectorName($director_name);
+                $userSettings->setDirectorName($directorName);
                 $userSettings->setPosition($position);
                 $userSettings->setAuthority($authority);
                 $userSettings->setNotificationEmail($notificationEmail);
@@ -191,9 +201,9 @@ class SettingsController extends Controller
                 $em->persist($userSettings);
                 $em->flush();
 
-                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $authorizedUser = $this->get('security.context')->getToken()->getUser();
                 $sysEvent = new SysEvent();
-                $sysEvent->setUserId($userEvent->getId());
+                $sysEvent->setUserId($authorizedUser->getId());
                 $sysEvent->setEvent(SysEvent::UPDATE_EMAIL_SETTINGS . " of user " . $userId);
                 $sysEvent->setIp($this->container->get('request')->getClientIp());
                 $eventTracker = $this->get('sys_event_tracker');
@@ -219,7 +229,10 @@ class SettingsController extends Controller
                 $errorList .= !in_array($csvSeparator, $availableSeparators) ? "<li>Separator, you have choosen is forbidden.</li>" : "";
                 $errorList .= "</ul>";
 
-                $this->get('session')->getFlashBag()->add('email_setting_errors', $errorList);
+                $session = $this->get('session');
+                $session->getFlashBag()->add(self::EMAIL_SETTING_ERRORS, $errorList);
+                $session->set(self::RECENT_CUSTOMER_SETTINGS, $generalCustomerSettingsBucket);
+
 
                 $redirectUri = $this->generateUrl('customer_settings');
 
@@ -504,5 +517,22 @@ class SettingsController extends Controller
 
         return $this->redirect($redirectUri);
 
+    }
+
+    /**
+     * @param $userSettings
+     * @param $recentCustomerSetting
+     */
+    public function reinitializeUserSettings(&$userSettings, $recentCustomerSetting)
+    {
+        $userSettings->setCompanyName($recentCustomerSetting['company_name']);
+        $userSettings->setDetails($recentCustomerSetting['details']);
+        $userSettings->setDirectorName($recentCustomerSetting['director_name']);
+        $userSettings->setPosition($recentCustomerSetting['position']);
+        $userSettings->setAuthority($recentCustomerSetting['authority']);
+        $userSettings->setNotificationEmail($recentCustomerSetting['notification_email']);
+        $userSettings->setSenderName($recentCustomerSetting['sender_name']);
+        $userSettings->setSenderEmail($recentCustomerSetting['sender_email']);
+        $userSettings->setCsvColumnSeparator($recentCustomerSetting['csv_separator']);
     }
 }
