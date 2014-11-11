@@ -100,7 +100,7 @@ class Donor
      */
     public function getChanged()
     {
-        return $this->changed;
+        return $this->updated;
     }
 
     /**
@@ -108,7 +108,7 @@ class Donor
      */
     public function setChanged()
     {
-        $this->changed = time();
+        $this->updated = time();
     }
 
     /**

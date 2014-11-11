@@ -77,6 +77,8 @@ class TransactionController extends Controller
 
                 $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
 
+                $amount = Clear::number($request->request->get('orderSumAmount'));
+
                 $donor = new Donor();
                 $donor->setName(
                     Clear::string_without_quotes(
@@ -84,9 +86,12 @@ class TransactionController extends Controller
                     )
                 );
                 $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
+                $donor->setCampaignId($campaignId);
                 $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
                 $donor->setCurrency("RUB");
                 $donor->setStatus($status);
+                $donor->setAmount($amount);
+                $donor->setDates();
 
                 $em->persist($donor);
 
@@ -94,7 +99,7 @@ class TransactionController extends Controller
                 $transaction->setCampaign($campaign);
                 $transaction->setDonor($donor);
                 $transaction->setInvoiceId(Clear::string_without_quotes($request->request->get('invoiceId')));
-                $transaction->setGross(Clear::number($request->request->get('orderSumAmount')));
+                $transaction->setGross($amount);
                 $transaction->setCurrency("RUB");
                 $transaction->setPaymentStatus($paymentStatus);
                 $transaction->setTransactionType("YMKassa: donate");
@@ -180,6 +185,10 @@ class TransactionController extends Controller
                         $em->persist($donor);
                         $em->flush();
 
+                        $userSettingsArray = $transaction->getCampaign()->getUser()->getSettings();
+                        $settings = $userSettingsArray[0];
+                        $emailFrom = $settings->getSenderEmail();
+
                         /**
                          *  Rebilling
                          */
@@ -209,6 +218,7 @@ class TransactionController extends Controller
                             $recurrent->setInvoiceId($invoiceId);
                             $recurrent->setLastOperationTime($time);
                             $recurrent->setLastStatus(0);
+                            $recurrent->setLastError(0);
                             $recurrent->setLastTechmessage('');
                             $recurrent->setOrderNumber($campaignId . '-' . $time);
                             $recurrent->setStatus($status);
@@ -235,17 +245,13 @@ class TransactionController extends Controller
                                     'context_mailer' => $this->get('mailer'))
                             );
                             $rebilling->recurrent->email = $payer_email;
+                            $rebilling->recurrent->emailFrom = $emailFrom;
                             $rebilling->recurrent->fond = $settings->getCompanyName();
                             $rebilling->recurrent->sum = $amount;
                             $rebilling->recurrent->id = $recurrent->getId();
                             $rebilling->recurrent->invoice = $invoiceId;
                             $rebilling->notify_about_subscription();
                         } else {
-
-                            $userSettingsArray = $transaction->getCampaign()->getUser()->getSettings();
-                            $settings = $userSettingsArray[0];
-                            $emailFrom = $settings->getSenderEmail();
-
                             $message = \Swift_Message::newInstance()
                                 ->setSubject('Спасибо за помощь!')
                                 ->setFrom($emailFrom)
