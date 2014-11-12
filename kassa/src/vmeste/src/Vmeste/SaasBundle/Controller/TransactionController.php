@@ -60,7 +60,7 @@ class TransactionController extends Controller
 
             $paymentStatus = self::PAYMENT_PENDING;
 
-            if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
+            if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
                 $paymentStatus = self::PAYMENT_WRONG_HASH;
                 $code = 1;
                 $message = 'Bad md5';
@@ -159,17 +159,12 @@ class TransactionController extends Controller
 
             if ($ykShopPassword) {
 
-                $md5 = md5(
-                    $request->request->get('action') . ';' .
-                    $request->request->get('orderSumAmount') . ';' .
-                    $request->request->get('orderSumCurrencyPaycash') . ';' .
-                    $request->request->get('orderSumBankPaycash') . ';' .
-                    $request->request->get('shopId') . ';' .
-                    $request->request->get('invoiceId') . ';' .
-                    $request->request->get('customerNumber') . ';' .
-                    $ykShopPassword . ';');
+                $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
+                    . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
+                    . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
+                    . $request->request->get('customerNumber') . ';' . $ykShopPassword);
 
-                if (strcmp(strtolower($md5), strtolower($request->request->get('md5'))) === 0) {
+                if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) == 0) {
 
                     $invoiceId = $request->request->get('invoiceId');
                     $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
