@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vmeste\SaasBundle\Controller\TransactionController;
 
 /**
  * @ORM\Entity(repositoryClass="Vmeste\SaasBundle\Entity\CampaignRepository")
@@ -455,5 +456,21 @@ class Campaign
     public function getUrl()
     {
         return $this->url;
+    }
+
+    /**
+     * Get sum
+     *
+     * @return float
+     */
+    public function getSum()
+    {
+        $tr = $this->getTransactions();
+        $sum = 0;
+        foreach($tr as $transaction) {
+            if($transaction->getPaymentStatus() == TransactionController::PAYMENT_COMPLETED)
+            $sum += $transaction->getGross();
+        }
+        return $sum;
     }
 }

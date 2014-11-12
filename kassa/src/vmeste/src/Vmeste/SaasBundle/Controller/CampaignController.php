@@ -653,10 +653,10 @@ class CampaignController extends Controller
         if ($separator == 'tab') $separator = "\t";
 
         $output = chr(0xEF) . chr(0xBB) . chr(0xBF) .
-            '"Project"' . $separator
-            . '"FIO"' . $separator
-            . '"E-Mail"' . $separator
-            . '"Recurrent"' . "\r\n";
+            '"Проект"' . $separator
+            . '"ФИО"' . $separator
+            . '"Email"' . $separator
+            . '"Признак подписчика"' . "\r\n";
 
         foreach ($report as $transaction) {
             $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'

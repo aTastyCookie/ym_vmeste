@@ -36,7 +36,7 @@
                 <td style="text-align: right;">
                     <a href="{{ path('campaign_report', { 'campaignId' : campaign.id }) }}">Отчет</a>
                 </td>
-                <td style="text-align: right;">0.00 {{ campaign.currency }}</td>
+                <td style="text-align: right;">{{ campaign.sum }} {{ campaign.currency }}</td>
                 <td>{{ campaign.changed | date("d/m/Y") }}</td>
                 <td>{{ campaign.status.name }}</td>
                 <td>

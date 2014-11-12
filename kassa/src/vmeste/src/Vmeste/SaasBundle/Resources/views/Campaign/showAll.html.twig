@@ -27,8 +27,8 @@
         <tr>
             <th>Название</th>
             <th>Ссылка и код</th>
-            <th style="width: 100px; text-align: right;">ФИО</th>
-            <th style="width: 100px; text-align: right;">Пожертвовано</th>
+            <th style="width: 100px;">ФИО</th>
+            <th style="width: 100px;">Пожертвовано</th>
             <th style="width: 120px;">Дата создания</th>
             <th>Статус</th>
             <th style="width: 80px;">Действия</th>
@@ -38,10 +38,10 @@
             <tr>
                 <td>{{ campaign.title }}</td>
                 <td><a href="{{ campaign_url }}{{ campaign.url }}" target="_blank">{{ campaign_url }}{{ campaign.url }}</a></td>
-                <td style="text-align: right;">
+                <td>
                     {{ campaign.user.username }}
                 </td>
-                <td style="text-align: right;">0.00 {{ campaign.currency }}</td>
+                <td>{{ campaign.sum }} {{ campaign.currency }}</td>
                 <td>{{ campaign.changed|date("d/m/Y") }}</td>
                 <td>{{ campaign.status.name }}</td>
                 <td>

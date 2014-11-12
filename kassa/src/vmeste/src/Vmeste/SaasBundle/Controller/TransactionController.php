@@ -57,7 +57,7 @@ class TransactionController extends Controller
                 . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
                 . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
                 . $request->request->get('customerNumber') . ';' . $ykShopPassword);
-
+echo $hash;
             $paymentStatus = self::PAYMENT_PENDING;
 
             if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
@@ -101,7 +101,7 @@ class TransactionController extends Controller
                     $transaction->setGross($amount);
                     $transaction->setCurrency("RUB");
                     $transaction->setPaymentStatus($paymentStatus);
-                    $transaction->setTransactionType("YMKassa: donate");
+                    $transaction->setTransactionType(Clear::string_without_quotes($request->request->get('paymentType')));
                     $transaction->setDetails($requestDetails);
 
                     $em->persist($transaction);
@@ -188,8 +188,9 @@ class TransactionController extends Controller
                          *  Rebilling
                          */
                         $rb = $request->request->get('rebillingOn', false);
-                        if ($rb) {
+                        if($rb === 'false') $rb = false;
 
+                        if ($rb) {
                             $payer_email = $donor->getEmail();
 
                             $campaignId = Clear::integer($this->getCampaignId($request->request->get('orderNumber')));
@@ -247,7 +248,7 @@ class TransactionController extends Controller
                             $rebilling->recurrent->invoice = $invoiceId;
                             $rebilling->notify_about_subscription();
                         } else {
-                            $message = \Swift_Message::newInstance()
+                            $mailMessage = \Swift_Message::newInstance()
                                 ->setSubject('Спасибо за помощь!')
                                 ->setFrom($emailFrom)
                                 ->setTo($donor->getEmail())
@@ -256,14 +257,15 @@ class TransactionController extends Controller
                                         'VmesteSaasBundle:Email:successfullPayment.html.twig',
                                         array(
                                             'name' => $donor->getName(),
-                                            'amount' => $transaction->getAmount(),
+                                            'amount' => $transaction->getGross(),
+                                            'fond' => $settings->getCompanyName(),
                                             'yandexMoneyPage' =>
                                                 $this->getRequest()->getHost() . "/"
                                                 . $this->generateUrl('payment_page')
                                                 . "/" . $transaction->getCampaign()->getUrl())
                                     )
                                 );
-                            $this->get('mailer')->send($message);
+                            $this->get('mailer')->send($mailMessage);
                         }
                     } else {
                         $logger = $this->get('logger');
@@ -622,22 +624,24 @@ class TransactionController extends Controller
         if ($separator == 'tab') $separator = "\t";
 
         $output = chr(0xEF) . chr(0xBB) . chr(0xBF) . '"Проект"' . $separator
-            . '"Дата платежа"' . $separator
             . '"ФИО"' . $separator
             . '"Email"' . $separator
-            . '"Способ оплаты"' . $separator
             . '"Сумма"' . $separator
+            . '"Дата платежа"' . $separator
+            . '"Способ оплаты"' . $separator
+            . '"Статус"' . $separator
             . '"Признак подписчика"' . $separator
             . '"Комментарии"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
             $output .= '"'
                 . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
-                . str_replace('"', '', date("Y-m-d H:i:s", $transaction->getCreated())) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getGross()) . '"' . $separator . '"'
+                . str_replace('"', '', date("Y-m-d H:i:s", $transaction->getCreated())) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getTransactionType()) . '"' . $separator . '"'
-                . str_replace('"', "", $transaction->getGross()) . '"' . $separator . '"';
+                . str_replace('"', "", $transaction->getPaymentStatus()) . '"' . $separator . '"';
             $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
             $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }

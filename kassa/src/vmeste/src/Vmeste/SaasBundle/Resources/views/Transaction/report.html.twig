@@ -11,12 +11,14 @@
 
     <table class="table table-striped">
         <tr>
-            <th>Название компании</th>
+            <th>Название кампании</th>
             <th>Имя</th>
-            <th style="width: 100px; text-align: right;">Email</th>
-            <th style="width: 100px; text-align: right;">Пожертвовано</th>
-            <th style="width: 120px;">Дата создания</th>
-            <th style="width: 80px;">Действия</th>
+            <th>Email</th>
+            <th style="width: 100px;">Пожертвовано</th>
+            <th style="width: 140px;">Дата платежа</th>
+            <th>Платежный метод</th>
+            <th>Статус</th>
+            <th>Признак подписчика</th>
         </tr>
 
         {% for transaction in transactions %}
@@ -25,8 +27,10 @@
                 <td>{{ transaction.donor.name }}</td>
                 <td>{{ transaction.donor.email }}</td>
                 <td>{{ transaction.gross }} {{ transaction.currency }}</td>
-                <td>{{ transaction.changed | date("d/m/Y") }}</td>
-                <td></td>
+                <td>{{ transaction.changed | date("d/m/Y H:i:s") }}</td>
+                <td>{{ transaction.transactionType }}</td>
+                <td>{{ transaction.paymentStatus }}</td>
+                <td>{% if transaction.donor.recurrent %}1{% else %}0{% endif %}</td>
             </tr>
         {% endfor %}
     </table>
