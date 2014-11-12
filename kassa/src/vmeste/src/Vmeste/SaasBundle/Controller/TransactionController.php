@@ -60,59 +60,58 @@ class TransactionController extends Controller
 
             $paymentStatus = self::PAYMENT_PENDING;
 
-            if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
-                $paymentStatus = self::PAYMENT_WRONG_HASH;
+            if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
+                //$paymentStatus = self::PAYMENT_WRONG_HASH;
                 $code = 1;
                 $message = 'Bad md5';
-            }
-
-            $campaignId = $this->getCampaignId(Clear::string_without_quotes($request->request->get('orderNumber')));
-
-            $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
-
-            if ($campaign != null) {
-                $postParamsArray = $this->get('request')->request->all();
-
-                $requestDetails = $this->createRequestString($postParamsArray);
-
-                $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
-
-                $amount = Clear::number($request->request->get('orderSumAmount'));
-
-                $donor = new Donor();
-                $donor->setName(
-                    Clear::string_without_quotes(
-                        $request->request->get('customerName', $request->request->get('orderNumber'))
-                    )
-                );
-                $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
-                $donor->setCampaignId($campaignId);
-                $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
-                $donor->setCurrency("RUB");
-                $donor->setStatus($status);
-                $donor->setAmount($amount);
-                $donor->setDates();
-
-                $em->persist($donor);
-
-                $transaction = new Transaction();
-                $transaction->setCampaign($campaign);
-                $transaction->setDonor($donor);
-                $transaction->setInvoiceId(Clear::string_without_quotes($request->request->get('invoiceId')));
-                $transaction->setGross($amount);
-                $transaction->setCurrency("RUB");
-                $transaction->setPaymentStatus($paymentStatus);
-                $transaction->setTransactionType("YMKassa: donate");
-                $transaction->setDetails($requestDetails);
-
-                $em->persist($transaction);
-
-                $em->flush();
             } else {
-                $code = 200;
-                $message = "Incorrect campaing";
-            }
+                $campaignId = $this->getCampaignId(Clear::string_without_quotes($request->request->get('orderNumber')));
 
+                $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+                if ($campaign != null) {
+                    $postParamsArray = $this->get('request')->request->all();
+
+                    $requestDetails = $this->createRequestString($postParamsArray);
+
+                    $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'PENDING'));
+
+                    $amount = Clear::number($request->request->get('orderSumAmount'));
+
+                    $donor = new Donor();
+                    $donor->setName(
+                        Clear::string_without_quotes(
+                            $request->request->get('customerName', $request->request->get('orderNumber'))
+                        )
+                    );
+                    $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
+                    $donor->setCampaignId($campaignId);
+                    $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
+                    $donor->setCurrency("RUB");
+                    $donor->setStatus($status);
+                    $donor->setAmount($amount);
+                    $donor->setDates();
+
+                    $em->persist($donor);
+
+                    $transaction = new Transaction();
+                    $transaction->setCampaign($campaign);
+                    $transaction->setDonor($donor);
+                    $transaction->setInvoiceId(Clear::string_without_quotes($request->request->get('invoiceId')));
+                    $transaction->setGross($amount);
+                    $transaction->setCurrency("RUB");
+                    $transaction->setPaymentStatus($paymentStatus);
+                    $transaction->setTransactionType("YMKassa: donate");
+                    $transaction->setDetails($requestDetails);
+
+                    $em->persist($transaction);
+
+                    $em->flush();
+                } else {
+                    $code = 200;
+                    $message = "Incorrect campaing";
+                }
+            }
         }
 
         $xml = new \DOMDocument('1.0', 'utf-8');
@@ -164,10 +163,11 @@ class TransactionController extends Controller
                     . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
                     . $request->request->get('customerNumber') . ';' . $ykShopPassword);
 
-                if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) == 0) {
+                if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
 
                     $invoiceId = $request->request->get('invoiceId');
-                    $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
+                    $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
+                        array('invoiceId' => $invoiceId, 'paymentStatus' => self::PAYMENT_PENDING));
 
                     if ($transaction != null) {
                         $transaction->setPaymentStatus($paymentStatus);
