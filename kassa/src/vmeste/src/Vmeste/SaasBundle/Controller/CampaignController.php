@@ -618,7 +618,7 @@ class CampaignController extends Controller
 
         if (Clear::integer($this->getRequest()->query->get("recurrent", 0), 0) == 1) {
             $queryBuilder
-                ->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign_id = c.id')
+                ->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign = c')
                 ->where('c.user = ?1')
                 ->andWhere('r.id is not null');
             $recurrent = '-recurrent';
