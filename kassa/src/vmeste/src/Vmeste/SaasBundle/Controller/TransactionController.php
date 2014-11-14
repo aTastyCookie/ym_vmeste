@@ -57,7 +57,7 @@ class TransactionController extends Controller
                 . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
                 . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
                 . $request->request->get('customerNumber') . ';' . $ykShopPassword);
-echo $hash;
+
             $paymentStatus = self::PAYMENT_PENDING;
 
             if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
