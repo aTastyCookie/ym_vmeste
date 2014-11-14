@@ -78,6 +78,17 @@ class TransactionController extends Controller
 
                     $amount = Clear::number($request->request->get('orderSumAmount'));
 
+                    $invoiceId = Clear::string_without_quotes($request->request->get('invoiceId'));
+
+                    $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(array('invoiceId' => $invoiceId));
+
+                    if($transaction) {
+                        $donor = $transaction->getDonor();
+                        $em->remove($transaction);
+                        $em->remove($donor);
+                        $em->flush();
+                    }
+
                     $donor = new Donor();
                     $donor->setName(
                         Clear::string_without_quotes(
@@ -97,7 +108,7 @@ class TransactionController extends Controller
                     $transaction = new Transaction();
                     $transaction->setCampaign($campaign);
                     $transaction->setDonor($donor);
-                    $transaction->setInvoiceId(Clear::string_without_quotes($request->request->get('invoiceId')));
+                    $transaction->setInvoiceId($invoiceId);
                     $transaction->setGross($amount);
                     $transaction->setCurrency("RUB");
                     $transaction->setPaymentStatus($paymentStatus);

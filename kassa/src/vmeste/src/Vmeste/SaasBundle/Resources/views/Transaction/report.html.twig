@@ -8,7 +8,9 @@
         <input type="text" name="searchRequest" value="">
         <input type="submit" class="btn" value="Search">
     </form>
-
+<style>
+    .table-striped {font-size: 13px;}
+</style>
     <table class="table table-striped">
         <tr>
             <th>Название кампании</th>
@@ -30,7 +32,12 @@
                 <td>{{ transaction.changed | date("d/m/Y H:i:s") }}</td>
                 <td>{{ transaction.transactionType }}</td>
                 <td>{{ transaction.paymentStatus }}</td>
-                <td>{% if transaction.donor.recurrent %}1{% else %}0{% endif %}</td>
+                <td>{% if transaction.donor.recurrent and transaction.paymentStatus == 'COMPLETED' %}
+                        <span style="cursor: help" title="Следующее списание: {{ transaction.donor.recurrent.nextDate  | date("d/m/Y H:i:s")}}
+Предыдущее списание: {{ transaction.donor.recurrent.successDate  | date("d/m/Y H:i:s")}}
+Последний статус: {{ transaction.donor.recurrent.lastStatus }}
+Последняя ошибка: {{ transaction.donor.recurrent.lastError }}">1</span> {% else %}0{% endif %}
+                </td>
             </tr>
         {% endfor %}
     </table>
