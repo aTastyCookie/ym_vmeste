@@ -38,7 +38,7 @@ class Recurrent
 
     
     /**
-     * @ORM\Column(name="clientOrderId", type="integer", options={"unsigned"=true})
+     * @ORM\Column(name="clientOrderId", type="string", length=24)
      */
     private $client_order_id;
     

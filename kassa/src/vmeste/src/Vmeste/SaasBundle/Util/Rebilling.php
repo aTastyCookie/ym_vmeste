@@ -86,10 +86,10 @@ class Rebilling
 
     private function send_money(Recurrent $recur)
     {
-        $orderId = time();
+        $orderId = time() . rand(1, 1000);
         $amount = $recur->getAmount();
         $campaign = $recur->getCampaign();
-        $orderNumber = $campaign->getId() . '-' . $orderId . rand(1, 1000);
+        $orderNumber = $campaign->getId() . '-' . $orderId;
         $output_array = array('clientOrderId' => $orderId,
             'invoiceId' => $recur->getInvoiceId(),
             'amount' => $amount,
