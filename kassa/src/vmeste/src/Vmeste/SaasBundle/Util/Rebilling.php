@@ -120,7 +120,7 @@ class Rebilling
             '?recurrent=' . $recur->getId() .
             '&invoice=' . $recur->getInvoiceId();
 
-        echo "Send " . $amount . " to " . $orderNumber . "\n";
+        echo "Sending " . $amount . " to " . $orderNumber . "\n";
 
         $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
@@ -128,7 +128,7 @@ class Rebilling
         if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
 
-        $xml = new \DOMDocument();
+        /*$xml = new \DOMDocument();
         $element = $xml->createElement('repeatCardPaymentRequest');
         $clientOrderId = $xml->createAttribute('clientOrderId');
         $clientOrderId->value = $output_array['clientOrderId'];
@@ -147,7 +147,7 @@ class Rebilling
             $cvv->value = $output_array['cvv'];
             $element->appendChild($cvv);
         }
-        $xml->appendChild($element);
+        $xml->appendChild($element);*/
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->ymurl);
@@ -164,9 +164,9 @@ class Rebilling
         curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
         curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
-        //curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $xml->saveXML());
-        echo  "Request: " . $xml->saveXML() . "\n";
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
+        //curl_setopt($ch, CURLOPT_POSTFIELDS, $xml->saveXML());
+        echo  "Request: " . http_build_query($output_array) . "\n";
         $result = curl_exec($ch);
         curl_close($ch);
 
