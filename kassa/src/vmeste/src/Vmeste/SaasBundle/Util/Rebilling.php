@@ -120,13 +120,34 @@ class Rebilling
             '?recurrent=' . $recur->getId() .
             '&invoice=' . $recur->getInvoiceId();
 
-        echo "Send " . $amount . " to " . $orderNumber . ". Result: ";
+        echo "Send " . $amount . " to " . $orderNumber . "\n";
 
         $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
 
         if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
+
+        $xml = new \DOMDocument();
+        $element = $xml->createElement('repeatCardPaymentRequest');
+        $clientOrderId = $xml->createAttribute('clientOrderId');
+        $clientOrderId->value = $output_array['clientOrderId'];
+        $invoiceId = $xml->createAttribute('invoiceId');
+        $invoiceId->value = $output_array['invoiceId'];
+        $amount = $xml->createAttribute('amount');
+        $amount->value = $output_array['amount'];
+        $orderNumber = $xml->createAttribute('orderNumber');
+        $orderNumber->value = $output_array['orderNumber'];
+        $element->appendChild($clientOrderId);
+        $element->appendChild($invoiceId);
+        $element->appendChild($amount);
+        $element->appendChild($orderNumber);
+        if(isset($output_array['cvv'])) {
+            $cvv =  $xml->createAttribute('cvv');
+            $cvv->value = $output_array['cvv'];
+            $element->appendChild($cvv);
+        }
+        $xml->appendChild($element);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->ymurl);
@@ -143,14 +164,16 @@ class Rebilling
         curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
         curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
+        //curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $xml->saveXML());
+        echo  "Request: " . $xml->saveXML() . "\n";
         $result = curl_exec($ch);
         curl_close($ch);
 
-        echo ($result) . "\n";
+        echo  "Result: " . $result . "\n";
 
         if (!empty($result) && $result != false) {
-            $xml = new \DOMDocument();
+
             $xml->loadXML($result);
             $result = array();
             $responses = $xml->getElementsByTagName('repeatCardPaymentResponse');
