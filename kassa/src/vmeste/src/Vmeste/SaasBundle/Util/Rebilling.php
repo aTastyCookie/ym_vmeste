@@ -128,8 +128,8 @@ class Rebilling
         if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
 
-        /*$xml = new \DOMDocument();
-        $element = $xml->createElement('repeatCardPaymentRequest');
+        $xml = new \DOMDocument();
+        /*$element = $xml->createElement('repeatCardPaymentRequest');
         $clientOrderId = $xml->createAttribute('clientOrderId');
         $clientOrderId->value = $output_array['clientOrderId'];
         $invoiceId = $xml->createAttribute('invoiceId');
