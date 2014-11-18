@@ -121,7 +121,6 @@ class Rebilling
             '&invoice=' . $recur->getInvoiceId();
 
         echo "Sending " . $amount . " to " . $orderNumber . "\n";
-
         $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
 
@@ -186,6 +185,8 @@ class Rebilling
             $result['techMessage'] = 'no connection';
             $result['error'] = 1000;
         }
+
+
 
         if ($result['error'] == 0) {
             // Insert transaction
@@ -277,7 +278,7 @@ class Rebilling
                     ->setFrom($emailFrom)
                     ->setTo($emailTo)
                     ->setBody(
-                        $this->context->renderView(
+                        $this->context_adapter->renderView(
                             'VmesteSaasBundle:Email:notifyaboutPayment.html.twig',
                             array(
                                 'amount' => $recur->getAmount(),
@@ -302,7 +303,7 @@ class Rebilling
             ->setFrom($this->recurrent->emailFrom)
             ->setTo($this->recurrent->email)
             ->setBody(
-                $this->context->renderView(
+                $this->context_adapter->renderView(
                     'VmesteSaasBundle:Email:successfullSubscription.html.twig',
                     array(
                         'amount' => $this->recurrent->sum,
@@ -322,7 +323,7 @@ class Rebilling
             ->setFrom($emailFrom)
             ->setTo($emailTo)
             ->setBody(
-                $this->context->renderView(
+                $this->context_adapter->renderView(
                     'VmesteSaasBundle:Email:successfullPaymentMonthly.html.twig',
                     array(
                         'amount' => $amount,

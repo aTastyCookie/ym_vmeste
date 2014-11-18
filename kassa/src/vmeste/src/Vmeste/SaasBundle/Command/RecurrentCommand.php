@@ -37,6 +37,7 @@ class RecurrentCommand extends ContainerAwareCommand
             'icpdo' => $em,
             'apphost' =>  $this->getContainer()->getParameter('recurrent.apphost'),
             'context' => $this->getContainer(),
+            'context_adapter' => $container,
             'context_mailer' => $context_mailer
         );
         $recurrent = new Rebilling($params);
