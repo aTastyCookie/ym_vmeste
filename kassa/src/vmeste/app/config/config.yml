@@ -20,7 +20,7 @@ framework:
 
     session:
         cookie_httponly: true
-        cookie_secure: true
+        #cookie_secure: true
 
     fragments:       ~
     http_method_override: true
