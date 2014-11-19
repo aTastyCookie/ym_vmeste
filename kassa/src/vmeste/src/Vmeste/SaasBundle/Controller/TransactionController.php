@@ -38,7 +38,9 @@ class TransactionController extends Controller
     public function yandexCheckAction(Request $request)
     {
 
-        if (!$request->isMethod('POST')) return;
+        if (!$request->isMethod('POST'))  {
+            throw $this->createNotFoundException();
+        }
 
         $code = 0;
         $message = "Ok";
@@ -150,12 +152,12 @@ class TransactionController extends Controller
     public function yandexPaymentAvisoAction(Request $request)
     {
 
-        if (!$request->isMethod('POST')) return;
+        if (!$request->isMethod('POST')) {
+            throw $this->createNotFoundException();
+        }
 
         $code = 0;
         $message = "Ok";
-
-        $paymentStatus = self::PAYMENT_COMPLETED;
         $em = $this->getDoctrine()->getManager();
 
         $ykShopId = Clear::integer($request->request->get('shopId'));
@@ -178,10 +180,10 @@ class TransactionController extends Controller
 
                     $invoiceId = $request->request->get('invoiceId');
                     $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
-                        array('invoiceId' => $invoiceId, 'paymentStatus' => self::PAYMENT_PENDING));
+                        array('invoiceId' => $invoiceId, 'paymentStatus'=>self::PAYMENT_PENDING));
 
                     if ($transaction != null) {
-                        $transaction->setPaymentStatus($paymentStatus);
+                        $transaction->setPaymentStatus(self::PAYMENT_COMPLETED);
 
                         $donor = $transaction->getDonor();
                         $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
