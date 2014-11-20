@@ -8,3 +8,5 @@
 /composer.phar
 /.idea/
 /vendor/*
+parameters.yml
+config.yml
