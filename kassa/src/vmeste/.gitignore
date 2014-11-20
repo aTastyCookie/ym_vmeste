@@ -10,3 +10,5 @@
 /vendor/*
 parameters.yml
 config.yml
+app/config/parameters.yml
+app/config/config.yml
