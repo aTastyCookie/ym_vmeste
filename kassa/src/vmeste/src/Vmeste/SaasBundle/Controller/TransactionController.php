@@ -276,9 +276,8 @@ class TransactionController extends Controller
                                             'amount' => $transaction->getGross(),
                                             'fond' => $settings->getCompanyName(),
                                             'yandexMoneyPage' =>
-                                                $this->getRequest()->getHost() . "/"
-                                                . $this->generateUrl('payment_page')
-                                                . "/" . $transaction->getCampaign()->getUrl())
+                                                $this->container->getParameter('recurrent.apphost')
+                                                . $transaction->getCampaign()->getUrl())
                                     )
                                 );
                             $this->get('mailer')->send($mailMessage);
