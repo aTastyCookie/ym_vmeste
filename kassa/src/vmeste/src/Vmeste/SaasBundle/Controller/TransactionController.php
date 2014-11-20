@@ -151,10 +151,13 @@ class TransactionController extends Controller
 
     public function yandexPaymentAvisoAction(Request $request)
     {
-
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
         if (!$request->isMethod('POST')) {
             throw $this->createNotFoundException();
         }
+
+        $paymentStatus = null;
 
         $code = 0;
         $message = "Ok";
@@ -280,19 +283,34 @@ class TransactionController extends Controller
                                 );
                             $this->get('mailer')->send($mailMessage);
                         }
+
+                        $paymentStatus = $transaction->getPaymentStatus();
+
                     } else {
                         $logger = $this->get('logger');
                         $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
+                        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
                         $code = 200;
                         $message = "Unknown transaction";
                     }
                 } else {
                     $code = 1;
                     $message = 'Bad md5';
+                    $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' ' . $message);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
                 }
             } else {
                 $code = 200;
                 $message = 'Bad shopPassword';
+                $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' ' . $message);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
             }
         }
 
@@ -307,9 +325,8 @@ class TransactionController extends Controller
         $xml->appendChild($paymentAvisoResponse);
         $output = $xml->saveXML();
 
-        $sysEvent = new SysEvent();
-        $sysEvent->setUserId(0);
-        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' ' . $output);
+
+        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso status '. $paymentStatus . '; output: ' . $output);
         $sysEvent->setIp($this->container->get('request')->getClientIp());
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
