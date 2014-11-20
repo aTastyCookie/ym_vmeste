@@ -7,3 +7,4 @@
 /bin/*
 /composer.phar
 /.idea/
+/vendor/*
