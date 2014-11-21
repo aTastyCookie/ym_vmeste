@@ -412,7 +412,8 @@ class Rebilling
         $result = curl_exec($ch);
         curl_close($ch);
 
-        echo  "Result: " . $result . "\n";
+        echo "Result: " . $result . "\n";
+        echo "Error: " . curl_error($ch) . "\n";
     }
 }
 
