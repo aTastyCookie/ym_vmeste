@@ -180,10 +180,12 @@ class TransactionController extends Controller
 
             if ($ykShopPassword) {
 
-                $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
+                $requestString = $request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
                     . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
                     . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
-                    . $request->request->get('customerNumber') . ';' . $ykShopPassword);
+                    . $request->request->get('customerNumber') . ';' . $ykShopPassword;
+
+                $hash = md5($requestString);
 
                 if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
 
@@ -191,11 +193,15 @@ class TransactionController extends Controller
                     $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
                         array('invoiceId' => $invoiceId, 'paymentStatus'=>self::PAYMENT_PENDING));
 
+
+                    $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso request. InvoiceId: ' . $invoiceId . ". Request: $requestString");
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
+
                     if ($transaction != null) {
                         $transaction->setPaymentStatus(self::PAYMENT_COMPLETED);
 
-                        $sysEvent = new SysEvent();
-                        $sysEvent->setUserId(0);
                         $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '. $transaction->getInvoiceId() . ' ' . self::PAYMENT_COMPLETED);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
