@@ -225,14 +225,6 @@ class Transaction
     public function setPaymentStatus($paymentStatus)
     {
         $this->paymentStatus = $paymentStatus;
-
-        $sysEvent = new SysEvent();
-        $sysEvent->setUserId(0);
-        $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '. $this->getInvoiceId() . ' ' . $paymentStatus);
-        $sysEvent->setIp(0);
-        $eventTracker = $this->get('sys_event_tracker');
-        $eventTracker->track($sysEvent);
-
         return $this;
     }
 
