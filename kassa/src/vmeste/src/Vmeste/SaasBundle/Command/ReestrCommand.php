@@ -15,7 +15,7 @@ use Doctrine\ORM\Query;
  */
 class ReestrCommand extends ContainerAwareCommand
 {
-    const DAY = 150000;//86400;
+    const DAY = 86400;
 
     protected function configure()
     {
@@ -125,9 +125,9 @@ class ReestrCommand extends ContainerAwareCommand
             $message->setBody("Сегодня платежей не было");
         }
         $mailer->send($message);
-        echo "\n"."count data: ".count($data)."\n";
-        echo "sending..."."\n";
-        echo $message->getBody()."\n";
+        //echo "\n"."count data: ".count($data)."\n";
+        //echo "sending..."."\n";
+        //echo $message->getBody()."\n";
 
         exit;
     }
