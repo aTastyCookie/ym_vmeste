@@ -410,11 +410,12 @@ class Rebilling
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
         echo  "Request: " . http_build_query($output_array) . "\n";
         $result = curl_exec($ch);
-        curl_close($ch);
-
         echo "Result: \n";
         print_r(curl_getinfo($ch));
         echo "\n";
+        curl_close($ch);
+
+
     }
 }
 
