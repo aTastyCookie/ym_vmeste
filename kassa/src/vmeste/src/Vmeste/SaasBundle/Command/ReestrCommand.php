@@ -125,9 +125,9 @@ class ReestrCommand extends ContainerAwareCommand
             $message->setBody("Сегодня платежей не было");
         }
         $mailer->send($message);
-        //echo "\n"."count data: ".count($data)."\n";
-        //echo "sending..."."\n";
-        //echo $message->getBody()."\n";
+        echo "\n"."count data: ".count($data)."\n";
+        echo "sending..."."\n";
+        echo $message->getBody()."\n";
     }
 
     protected function getReestrPath($date_file)
