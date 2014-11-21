@@ -20,9 +20,9 @@ class RecurrentCommand extends ContainerAwareCommand
     {
         $this
             ->setName('vmeste:recurrent')
-            ->setDescription('Notify and run recurrents');
-        /*->addArgument('name', InputArgument::OPTIONAL, 'Who do you want to greet?')
-        ->addOption('yell', null, InputOption::VALUE_NONE, 'If set, the task will yell in uppercase letters');*/
+            ->setDescription('Notify and run recurrents')
+            ->addArgument('test', InputArgument::OPTIONAL);
+        /*->addOption('yell', null, InputOption::VALUE_NONE, 'If set, the task will yell in uppercase letters');*/
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -41,9 +41,17 @@ class RecurrentCommand extends ContainerAwareCommand
             'context_mailer' => $context_mailer
         );
         $recurrent = new Rebilling($params);
-        $recurrent->notify();
-        $recurrent->run();
-        echo("Finished" . "\n\n");
+
+        $test = $input->getArgument('test');
+        if($test && $test == 'testrun') {
+            $recurrent->run(true);
+        } else {
+            $recurrent->notify();
+            $recurrent->run();
+        }
+
+        //echo("Finished" . "\n\n");
+        exit;
     }
 }
 

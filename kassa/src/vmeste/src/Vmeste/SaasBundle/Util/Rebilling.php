@@ -72,7 +72,10 @@ class Rebilling
         return true;
     }
 
-    public function run()
+    /*
+     * @param  boolean $test
+     */
+    public function run($test = false)
     {
         $today_d = date("j");
         $today_m = date("n");
@@ -80,7 +83,12 @@ class Rebilling
         $today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y);
         $today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y);
 
-        $this->attempt_send($today_start, $today_end);
+        if($test) {
+            $this->recurrent_test();
+        } else {
+            $this->attempt_send($today_start, $today_end);
+        }
+
         return true;
     }
 
@@ -379,6 +387,32 @@ class Rebilling
         $query = $queryBuilder->getQuery();
         $this->data = $query->getResult();
 
+    }
+
+    private function recurrent_test()
+    {
+        $output_array = array('clientOrderId' => 132465,
+            'invoiceId' => '321321321321',
+            'amount' => 100,
+            'orderNumber' => '1232466287');
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->ymurl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
+        curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
+        curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
+        echo  "Request: " . http_build_query($output_array) . "\n";
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        echo  "Result: " . $result . "\n";
     }
 }
 
