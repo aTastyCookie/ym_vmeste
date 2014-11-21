@@ -400,7 +400,7 @@ class Rebilling
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -412,8 +412,9 @@ class Rebilling
         $result = curl_exec($ch);
         curl_close($ch);
 
-        echo "Result: " . $result . "\n";
-        echo "Error: " . curl_error($ch) . "\n";
+        echo "Result: \n";
+        print_r(curl_getinfo($ch));
+        echo "\n";
     }
 }
 
