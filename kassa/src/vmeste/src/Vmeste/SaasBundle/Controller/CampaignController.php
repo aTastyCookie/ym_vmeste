@@ -700,7 +700,7 @@ class CampaignController extends Controller
         if ($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $paymentHost = $this->container->getParameter('sandbox.payment.host');
 
-        $paymentPage = "https://" . $this->getRequest()->getHost() . "/" . $campaign->getUrl();
+        $paymentPage = $this->container->getParameter('recurrent.apphost') . $campaign->getUrl();
 
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
 
