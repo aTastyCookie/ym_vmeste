@@ -198,7 +198,7 @@ class Rebilling
 
         if ($result['error'] == 0) {
             // Insert transaction
-            $transaction = new Transaction();
+            /*$transaction = new Transaction();
             $transaction->setDates();
             $transaction->setCurrency("RUB");
             $transaction->setDetails(json_encode($result));
@@ -209,7 +209,7 @@ class Rebilling
             $transaction->setCampaign($campaign);
             $transaction->setInvoiceId($recur->getInvoiceId());
             $this->icpdo->persist($transaction);
-            $this->icpdo->flush();
+            $this->icpdo->flush();*/
 
             $day = date('j');
             $month = date('n') + 1;
