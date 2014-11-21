@@ -116,10 +116,16 @@ class TransactionController extends Controller
                     $transaction->setPaymentStatus($paymentStatus);
                     $transaction->setTransactionType(Clear::string_without_quotes($request->request->get('paymentType')));
                     $transaction->setDetails($requestDetails);
-
                     $em->persist($transaction);
-
                     $em->flush();
+
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId(0);
+                    $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '. $transaction->getInvoiceId() . ' ' . $paymentStatus);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
+
                 } else {
                     $code = 200;
                     $message = "Incorrect campaing";
@@ -187,6 +193,13 @@ class TransactionController extends Controller
 
                     if ($transaction != null) {
                         $transaction->setPaymentStatus(self::PAYMENT_COMPLETED);
+
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId(0);
+                        $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '. $transaction->getInvoiceId() . ' ' . self::PAYMENT_COMPLETED);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
 
                         $donor = $transaction->getDonor();
                         $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
