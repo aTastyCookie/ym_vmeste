@@ -15,7 +15,7 @@ use Doctrine\ORM\Query;
  */
 class ReestrCommand extends ContainerAwareCommand
 {
-    const DAY = 86400;
+    const DAY = 150000;//86400;
 
     protected function configure()
     {
@@ -128,6 +128,8 @@ class ReestrCommand extends ContainerAwareCommand
         echo "\n"."count data: ".count($data)."\n";
         echo "sending..."."\n";
         echo $message->getBody()."\n";
+
+        exit;
     }
 
     protected function getReestrPath($date_file)
