@@ -328,6 +328,7 @@ class Rebilling
 
     public function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
     {
+        echo "Sending successfull message from $emailFrom to $emailTo...\n";
         $message = \Swift_Message::newInstance()
             ->setSubject('Спасибо за помощь!')
             ->setFrom($emailFrom)
