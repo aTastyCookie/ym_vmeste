@@ -189,7 +189,7 @@ class TransactionController extends Controller
                     . $request->request->get('customerNumber') . ';' . $ykShopPassword;
 
                 $hash = md5($requestString);
-
+echo $hash;
                 if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
 
                     $invoiceId = $request->request->get('invoiceId');
