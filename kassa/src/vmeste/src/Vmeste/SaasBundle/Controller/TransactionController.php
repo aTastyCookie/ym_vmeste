@@ -251,7 +251,7 @@ class TransactionController extends Controller
                             array('donor' => $donor));
                         if($existingRecurrent) {
                             $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
-                            $existingRecurrent->setInvoiceId($transaction->getInvoiceId());
+                            //$existingRecurrent->setInvoiceId($transaction->getInvoiceId());
                             $existingRecurrent->setOrderNumber($orderNumber);
                             $existingRecurrent->setSuccessDate($time);
                             $em->persist($existingRecurrent);
@@ -368,7 +368,7 @@ class TransactionController extends Controller
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
-                        
+
                         $paymentStatus = $transaction->getPaymentStatus();
 
                     } else {
