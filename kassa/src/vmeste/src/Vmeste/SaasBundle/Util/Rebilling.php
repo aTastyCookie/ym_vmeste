@@ -17,22 +17,22 @@ class Rebilling
     const NO_ERROR = 0;
     const LIMIT_ROWS = 100;
 
-    private $ymurl;
-    private $path_to_cert;
-    private $path_to_key;
-    private $cert_pass;
-    private $icpdo;
-    private $url_unsubcribe;
-    private $url_subcribe;
+    public $ymurl;
+    public $path_to_cert;
+    public $path_to_key;
+    public $cert_pass;
+    public $icpdo;
+    public $url_unsubcribe;
+    public $url_subcribe;
     public $recurrent;
     public $data;
-    private $status_blocked;
-    private $status_id_blocked;
-    private $status_id_deleted;
-    private $status_id_active;
-    private $context;
-    private $context_mailer;
-    private $apphost;
+    public $status_blocked;
+    public $status_id_blocked;
+    public $status_id_deleted;
+    public $status_id_active;
+    public $context;
+    public $context_mailer;
+    public $apphost;
 
     public function __construct($params = array())
     {
@@ -92,17 +92,11 @@ class Rebilling
         return true;
     }
 
-    private function send_money(Recurrent $recur)
+    public function send_money(Recurrent $recur)
     {
         $orderId = time() . rand(1, 1000);
         $amount = $recur->getAmount();
         $campaign = $recur->getCampaign();
-        $orderNumber = $campaign->getId() . '-' . $orderId;
-        $output_array = array('clientOrderId' => $orderId,
-            'invoiceId' => $recur->getInvoiceId(),
-            'amount' => $amount,
-            'orderNumber' => $orderNumber);
-        if ($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
 
         $donor = $recur->getDonor(true);
         if (!$donor) {
@@ -118,6 +112,14 @@ class Rebilling
             $this->icpdo->flush();
             return false;
         }
+
+        $orderNumber = $campaign->getId() . '-' . $donor->getId() . '-' . $orderId;
+        $output_array = array('clientOrderId' => $orderId,
+            'invoiceId' => $recur->getInvoiceId(),
+            'amount' => $amount,
+            'orderNumber' => $orderNumber);
+        if ($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
+
 
         $emailTo = $donor->getEmail();
         $settings = $campaign->getUser()->getSettings();
@@ -220,7 +222,7 @@ class Rebilling
             }
             if ($day > 28) $day = 28;
             $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));
-            $recur->setSuccessDate(time());
+            //$recur->setSuccessDate(time());
             $recur->setClientOrderId($orderId);
             $recur->setOrderNumber($orderNumber);
             $recur->setLastOperationTime(time());
@@ -254,7 +256,7 @@ class Rebilling
         }
     }
 
-    private function attempt_send($today_start, $today_end)
+    public function attempt_send($today_start, $today_end)
     {
         $offset = 0;
         $this->_next_send_data($offset, $today_start, $today_end);
@@ -268,7 +270,7 @@ class Rebilling
         }
     }
 
-    private function attempt_notify($today_start, $today_end)
+    public function attempt_notify($today_start, $today_end)
     {
         $offset = 0;
         $this->_next_send_data($offset, $today_start, $today_end);
@@ -300,7 +302,7 @@ class Rebilling
                 $this->context_mailer->send($message);
             }
             $offset += self::LIMIT_ROWS;
-            $this->_next_data($offset, $monthdays, $today_start, $today_end);
+            $this->_next_data($offset, $today_start, $today_end);
         }
     }
 
@@ -324,7 +326,7 @@ class Rebilling
         $this->context_mailer->send($message);
     }
 
-    private function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
+    public function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
     {
         $message = \Swift_Message::newInstance()
             ->setSubject('Спасибо за помощь!')
@@ -342,7 +344,7 @@ class Rebilling
         $this->context_mailer->send($message);
     }
 
-    private function _next_data($offset, $today_start, $today_end)
+    public function _next_data($offset, $today_start, $today_end)
     {
 
         $queryBuilder = $this->icpdo->createQueryBuilder();
@@ -366,7 +368,7 @@ class Rebilling
 
     }
 
-    private function _next_send_data($offset, $today_start, $today_end)
+    public function _next_send_data($offset, $today_start, $today_end)
     {
         $queryBuilder = $this->icpdo->createQueryBuilder();
 
@@ -389,7 +391,7 @@ class Rebilling
 
     }
 
-    private function recurrent_test()
+    public function recurrent_test()
     {
         $output_array = array('clientOrderId' => 132465,
             'invoiceId' => '321321321321',
