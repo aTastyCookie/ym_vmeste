@@ -207,7 +207,7 @@ class TransactionController extends Controller
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
                     $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso request. Transaction: '
-                            . json_encode($transaction));
+                        . json_encode($transaction));
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker->track($sysEvent);
 
