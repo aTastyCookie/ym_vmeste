@@ -66,7 +66,7 @@ class ReestrCommand extends ContainerAwareCommand
 
             $path = $this->getReestrPath($date_file);
             $reestrDir = $this->getReestrDir();
-echo $reestrDir;
+
 
             if(!file_exists ($reestrDir)) {
                 // Try to create the directory
