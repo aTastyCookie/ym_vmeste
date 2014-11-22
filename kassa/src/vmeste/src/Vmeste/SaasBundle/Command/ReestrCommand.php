@@ -15,7 +15,7 @@ use Doctrine\ORM\Query;
  */
 class ReestrCommand extends ContainerAwareCommand
 {
-    const DAY = 86400;
+    const DAY = 864000;
 
     protected function configure()
     {
