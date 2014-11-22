@@ -195,7 +195,7 @@ class TransactionController extends Controller
 
                     $invoiceId = $request->request->get('invoiceId');
                     $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
-                        array('invoiceId' => $invoiceId, 'paymentStatus'=>self::PAYMENT_PENDING));
+                        array('invoiceId' => $invoiceId));
 
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
