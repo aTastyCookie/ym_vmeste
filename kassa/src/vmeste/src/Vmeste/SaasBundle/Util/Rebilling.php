@@ -420,7 +420,7 @@ class Rebilling
 
         echo "Search transaction \n";
         $transaction = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
-            array('invoiceId' => 2000000298154));
+            array('invoiceId' => '2000000298154'));
         print_r($transaction);
         echo "End \n";
     }
