@@ -194,12 +194,20 @@ class TransactionController extends Controller
                 if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
 
                     $invoiceId = $request->request->get('invoiceId');
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId(0);
+                    $sysEvent->setEvent('Searching transaction by InvoiceId: ' . $invoiceId);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
+
                     $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
                         array('invoiceId' => $invoiceId));
 
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
-                    $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso request. InvoiceId: ' . $invoiceId . ". Request: $requestString");
+                    $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso request. Transaction: '
+                            . json_encode($transaction));
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker->track($sysEvent);
 
