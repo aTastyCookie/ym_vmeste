@@ -266,6 +266,13 @@ class TransactionController extends Controller
                         }
 
                         if ($rb) {
+                            $sysEvent = new SysEvent();
+                            $sysEvent->setUserId(0);
+                            $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                            $sysEvent->setIp($this->container->get('request')->getClientIp());
+                            $eventTracker = $this->get('sys_event_tracker');
+                            $eventTracker->track($sysEvent);
+
                             $campaignId = Clear::integer($this->getCampaignId($request->request->get('orderNumber')));
                             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
                             $userSettingsArray = $campaign->getUser()->getSettings();
@@ -329,7 +336,6 @@ class TransactionController extends Controller
                             $eventTracker->track($sysEvent);
 
                         } else {
-
                             $sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
@@ -356,6 +362,13 @@ class TransactionController extends Controller
                             $this->get('mailer')->send($mailMessage);
                         }
 
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId(0);
+                        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
+                        
                         $paymentStatus = $transaction->getPaymentStatus();
 
                     } else {
