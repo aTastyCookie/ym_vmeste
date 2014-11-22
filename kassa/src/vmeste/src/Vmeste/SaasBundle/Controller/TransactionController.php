@@ -268,7 +268,7 @@ class TransactionController extends Controller
                         if ($rb) {
                             $sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
-                            $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                            $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' : ' . $requestString);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
                             $eventTracker->track($sysEvent);
