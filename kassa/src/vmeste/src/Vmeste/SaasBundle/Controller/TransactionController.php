@@ -161,7 +161,6 @@ class TransactionController extends Controller
 
     public function yandexPaymentAvisoAction(Request $request)
     {
-        $eventTracker = $this->get('sys_event_tracker');
 
         if (!$request->isMethod('POST')) {
             throw $this->createNotFoundException();
@@ -206,8 +205,7 @@ class TransactionController extends Controller
 
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
-                    $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' paymentAviso request. Transaction: '
-                        . json_encode($transaction));
+                    $sysEvent->setEvent('Transaction: ' . gettype($transaction));
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker->track($sysEvent);
 
@@ -234,12 +232,12 @@ class TransactionController extends Controller
                         $settings = $userSettingsArray[0];
                         $emailFrom = $settings->getSenderEmail();
 
-                        $sysEvent = new SysEvent();
+                        /*$sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
                         $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);
+                        $eventTracker->track($sysEvent);*/
 
                         /**
                          *  Rebilling
@@ -259,12 +257,12 @@ class TransactionController extends Controller
                             $em->persist($existingRecurrent);
                             $em->flush();
 
-                            $sysEvent = new SysEvent();
+                            /*$sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);
+                            $eventTracker->track($sysEvent);*/
                         }
 
                         if ($rb) {
@@ -323,12 +321,12 @@ class TransactionController extends Controller
                             $rebilling->recurrent->invoice = $invoiceId;
                             $rebilling->notify_about_subscription();
 
-                            $sysEvent = new SysEvent();
+                            /*$sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);
+                            $eventTracker->track($sysEvent);*/
 
                         } else {
 
