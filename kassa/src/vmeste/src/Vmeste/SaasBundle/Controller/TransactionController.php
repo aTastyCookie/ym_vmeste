@@ -62,13 +62,13 @@ class TransactionController extends Controller
 
             $paymentStatus = self::PAYMENT_PENDING;
 
+            $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
+
             if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) !== 0) {
-                //$paymentStatus = self::PAYMENT_WRONG_HASH;
                 $code = 1;
                 $message = 'Bad md5';
             } else {
-                $campaignId = $this->getCampaignId(Clear::string_without_quotes($request->request->get('orderNumber')));
-
+                $campaignId = $this->getCampaignId($orderNumber);
                 $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
 
                 if ($campaign != null) {
@@ -91,21 +91,25 @@ class TransactionController extends Controller
                         $em->flush();
                     }
 
-                    $donor = new Donor();
-                    $donor->setName(
-                        Clear::string_without_quotes(
-                            $request->request->get('customerName', $request->request->get('orderNumber'))
-                        )
-                    );
-                    $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
-                    $donor->setCampaignId($campaignId);
-                    $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
-                    $donor->setCurrency("RUB");
-                    $donor->setStatus($status);
-                    $donor->setAmount($amount);
-                    $donor->setDates();
-
-                    $em->persist($donor);
+                    $donorId = $this->getDonorId($orderNumber);
+                    if($donorId) {
+                        $donor = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $donorId));
+                    } else {
+                        $donor = new Donor();
+                        $donor->setName(
+                            Clear::string_without_quotes(
+                                $request->request->get('customerName', $request->request->get('orderNumber'))
+                            )
+                        );
+                        $donor->setEmail(Clear::string_without_quotes($request->request->get('customerEmail', "")));
+                        $donor->setCampaignId($campaignId);
+                        $donor->setDetails(Clear::string_without_quotes($request->request->get('customerComment', "")));
+                        $donor->setCurrency("RUB");
+                        $donor->setStatus($status);
+                        $donor->setAmount($amount);
+                        $donor->setDates();
+                        $em->persist($donor);
+                    }
 
                     $transaction = new Transaction();
                     $transaction->setCampaign($campaign);
@@ -221,6 +225,13 @@ class TransactionController extends Controller
                         $settings = $userSettingsArray[0];
                         $emailFrom = $settings->getSenderEmail();
 
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId(0);
+                        $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
+
                         /**
                          *  Rebilling
                          */
@@ -228,63 +239,97 @@ class TransactionController extends Controller
                         if($rb === 'false') $rb = false;
 
                         if ($rb) {
-                            $payer_email = $donor->getEmail();
-
+                            $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
                             $campaignId = Clear::integer($this->getCampaignId($request->request->get('orderNumber')));
                             $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
                             $userSettingsArray = $campaign->getUser()->getSettings();
                             $settings = $userSettingsArray[0];
 
-                            $amount = Clear::string_without_quotes(
-                                number_format((float)stripslashes($request->request->get('orderSumAmount')), 2)
-                            );
-                            $pan = $request->request->get('cdd_pan_mask');
+                            // Search for existing recurrent
+                            $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
+                                array('donor_id' => $donor->getId()));
 
                             $time = time();
-                            $recurrent = new Recurrent();
-                            $recurrent->setAmount($amount);
-                            $recurrent->setCampaign($campaign);
-                            $recurrent->setClientOrderId(0);
-                            $recurrent->setCvv('');
-                            $recurrent->setPan($pan);
-                            $recurrent->setDonor($donor);
-                            $recurrent->setInvoiceId($invoiceId);
-                            $recurrent->setLastOperationTime($time);
-                            $recurrent->setLastStatus(0);
-                            $recurrent->setLastError(0);
-                            $recurrent->setLastTechmessage('');
-                            $recurrent->setOrderNumber($campaignId . '-' . $time);
-                            $recurrent->setStatus($status);
-                            $recurrent->setSubscriptionDate($time);
-                            $recurrent->setSuccessDate($time);
-                            $day = date('j');
-                            $month = date('n') + 1;
-                            $year = date('Y');
-                            if($month > 12) {
-                                $month = 1;
-                                $year += 1;
-                            }
-                            if($day>28) $day = 28;
-                            $recurrent->setNextDate(mktime(12, 0, 0, $month, $day, $year));
-                            $em->persist($recurrent);
-                            $em->flush();
+                            if($existingRecurrent) {
+                                $existingRecurrent->setInvoiceId($transaction->getInvoiceId());
+                                $existingRecurrent->setOrderNumber($orderNumber);
+                                $existingRecurrent->setSuccessDate($time);
+                                $em->persist($existingRecurrent);
+                                $em->flush();
 
-                            // Send the first notification email
-                            $rebilling = new Rebilling(
-                                array('icpdo' => $em,
-                                    'url_unsubcribe'=>"https://" . $this->getRequest()->getHost() ."/" ,
-                                    'url_subcribe'=>"https://" . $this->getRequest()->getHost() ."/",
-                                    'context' => $this,
-                                    'context_mailer' => $this->get('mailer'))
-                            );
-                            $rebilling->recurrent->email = $payer_email;
-                            $rebilling->recurrent->emailFrom = $emailFrom;
-                            $rebilling->recurrent->fond = $settings->getCompanyName();
-                            $rebilling->recurrent->sum = $amount;
-                            $rebilling->recurrent->id = $recurrent->getId();
-                            $rebilling->recurrent->invoice = $invoiceId;
-                            $rebilling->notify_about_subscription();
+                                $sysEvent = new SysEvent();
+                                $sysEvent->setUserId(0);
+                                $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                                $eventTracker = $this->get('sys_event_tracker');
+                                $eventTracker->track($sysEvent);
+                            } else {
+                                $amount = Clear::string_without_quotes(
+                                    number_format((float)stripslashes($request->request->get('orderSumAmount')), 2)
+                                );
+                                $pan = $request->request->get('cdd_pan_mask');
+
+                                $recurrent = new Recurrent();
+                                $recurrent->setAmount($amount);
+                                $recurrent->setCampaign($campaign);
+                                $recurrent->setClientOrderId(0);
+                                $recurrent->setCvv('');
+                                $recurrent->setPan($pan);
+                                $recurrent->setDonor($donor);
+                                $recurrent->setInvoiceId($invoiceId);
+                                $recurrent->setLastOperationTime($time);
+                                $recurrent->setLastStatus(0);
+                                $recurrent->setLastError(0);
+                                $recurrent->setLastTechmessage('');
+                                $recurrent->setOrderNumber($campaignId . '-' . $time);
+                                $recurrent->setStatus($status);
+                                $recurrent->setSubscriptionDate($time);
+                                $recurrent->setSuccessDate($time);
+                                $day = date('j');
+                                $month = date('n') + 1;
+                                $year = date('Y');
+                                if($month > 12) {
+                                    $month = 1;
+                                    $year += 1;
+                                }
+                                if($day>28) $day = 28;
+                                $recurrent->setNextDate(mktime(12, 0, 0, $month, $day, $year));
+                                $em->persist($recurrent);
+                                $em->flush();
+
+                                // Send the first notification email
+                                $rebilling = new Rebilling(
+                                    array('icpdo' => $em,
+                                        'url_unsubcribe'=> $this->container->getParameter('recurrent.apphost') ,
+                                        'url_subcribe'=> $this->container->getParameter('recurrent.apphost'),
+                                        'context' => $this,
+                                        'context_mailer' => $this->get('mailer'))
+                                );
+                                $payer_email = $donor->getEmail();
+                                $rebilling->recurrent->email = $payer_email;
+                                $rebilling->recurrent->emailFrom = $emailFrom;
+                                $rebilling->recurrent->fond = $settings->getCompanyName();
+                                $rebilling->recurrent->sum = $amount;
+                                $rebilling->recurrent->id = $recurrent->getId();
+                                $rebilling->recurrent->invoice = $invoiceId;
+                                $rebilling->notify_about_subscription();
+
+                                $sysEvent = new SysEvent();
+                                $sysEvent->setUserId(0);
+                                $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                                $eventTracker = $this->get('sys_event_tracker');
+                                $eventTracker->track($sysEvent);
+                            }
                         } else {
+
+                            $sysEvent = new SysEvent();
+                            $sysEvent->setUserId(0);
+                            $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' LINE: ' . __LINE__);
+                            $sysEvent->setIp($this->container->get('request')->getClientIp());
+                            $eventTracker = $this->get('sys_event_tracker');
+                            $eventTracker->track($sysEvent);
+                            
                             $mailMessage = \Swift_Message::newInstance()
                                 ->setSubject('Спасибо за помощь!')
                                 ->setFrom($emailFrom)
@@ -376,8 +421,8 @@ class TransactionController extends Controller
      */
     public function unsubscribeAction()
     {
-        $recurrent_id = $this->getRequest()->query->get("recurrent");
-        $invoice_id = $this->getRequest()->query->get("invoice");
+        $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
+        $invoice_id = Clear::integer($this->getRequest()->query->get("invoice"));
         $response = array('error' => false,
             'recurrent' => $recurrent_id,
             'invoice' => $invoice_id,
@@ -451,8 +496,8 @@ class TransactionController extends Controller
      */
     public function subscribeAction()
     {
-        $recurrent_id = $this->getRequest()->query->get("recurrent");
-        $invoice_id = $this->getRequest()->query->get("invoice");
+        $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
+        $invoice_id = Clear::integer($this->getRequest()->query->get("invoice"));
         $response = array('error' => false,
             'recurrent' => $recurrent_id,
             'invoice' => $invoice_id,
@@ -728,9 +773,23 @@ class TransactionController extends Controller
      */
     private function getCampaignId($orderNumber)
     {
+        $campaignId = false;
         $orderNumberExploded = explode("-", $orderNumber);
-        $campaignId = $orderNumberExploded[0];
+        if(is_array($orderNumberExploded) && isset($orderNumberExploded[0])) $campaignId = $orderNumberExploded[0];
         return $campaignId;
+    }
+
+    /**
+     * @param $orderNumber
+     * @return mixed
+     */
+    private function getDonorId($orderNumber)
+    {
+        $donorId = false;
+        $orderNumberExploded = explode("-", $orderNumber);
+        if(is_array($orderNumberExploded) && count($orderNumberExploded) == 3 && isset($orderNumberExploded[1]))
+            $donorId = $orderNumberExploded[1];
+        return $donorId;
     }
 
     /**
