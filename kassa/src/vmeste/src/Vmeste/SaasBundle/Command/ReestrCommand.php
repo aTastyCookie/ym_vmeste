@@ -15,7 +15,7 @@ use Doctrine\ORM\Query;
  */
 class ReestrCommand extends ContainerAwareCommand
 {
-    const DAY = 864000;
+    const DAY = 0;//86400;
 
     protected function configure()
     {
@@ -66,7 +66,7 @@ class ReestrCommand extends ContainerAwareCommand
 
             $path = $this->getReestrPath($date_file);
             $reestrDir = $this->getReestrDir();
-            echo $reestrDir;
+echo $reestrDir;
 
             if(!file_exists ($reestrDir)) {
                 // Try to create the directory
@@ -77,7 +77,7 @@ class ReestrCommand extends ContainerAwareCommand
                     $can_send = true;
                 }
             } elseif(!is_writable($reestrDir)) {
-                $message->setBody("Yевозможно сохранить файл в директорию $reestrDir");
+                $message->setBody("Невозможно сохранить файл в директорию $reestrDir");
             } else {
                 $can_send = true;
             }
