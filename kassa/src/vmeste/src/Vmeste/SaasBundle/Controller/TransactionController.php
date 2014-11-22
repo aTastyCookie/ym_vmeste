@@ -208,7 +208,8 @@ class TransactionController extends Controller
 
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
-                        $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '. $transaction->getInvoiceId() . ' ' . self::PAYMENT_COMPLETED);
+                        $sysEvent->setEvent(SysEvent::CHANGE_TRANSACTION_PAYMENT_STATUS . ' InvoiceId: '.
+                            $transaction->getInvoiceId() . ' ' . self::PAYMENT_COMPLETED);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
@@ -241,7 +242,7 @@ class TransactionController extends Controller
 
                         // Search for existing recurrent
                         $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
-                            array('donor_id' => $donor->getId()));
+                            array('donor' => $donor));
                         if($existingRecurrent) {
                             $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
                             $existingRecurrent->setInvoiceId($transaction->getInvoiceId());
@@ -352,9 +353,6 @@ class TransactionController extends Controller
                         $paymentStatus = $transaction->getPaymentStatus();
 
                     } else {
-                        $logger = $this->get('logger');
-                        $logger->error('Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
-
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
                         $sysEvent->setEvent(SysEvent::UPDATE_TRANSACTION . ' Transaction with invoice id ' . $invoiceId . ' doesn\'t exist in Vmeste database');
