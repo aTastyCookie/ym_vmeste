@@ -86,7 +86,7 @@ services:
 parameters:
 
     pass.recover.url: recover_pass
-    pass.recover.email.from: no-reply@vmeste.ru
+    pass.recover.email.from: paction@bk.ru
 
     paginator.page.items: 20
 
@@ -94,17 +94,17 @@ parameters:
 
     recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
     sandbox.recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
-    recurrent.cert_path: /srv/www/certificates/123.cer
-    recurrent.key_path: /srv/www/certificates/123.key
+    recurrent.cert_path: /srv/www/certificates/robimgut.cer
+    recurrent.key_path: /srv/www/certificates/private.key
     recurrent.cert_pass: 123456
 
-    recurrent.apphost: https://109.235.163.7/
+    recurrent.apphost: http://94.249.207.184/
 
     production.payment.host: https://money.yandex.ru/eshop.xml
     sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml
 
-    reestr.email.to: iaaman@yamoney.ru
-    reestr.email.from: no-reply@vmeste.ru
+    reestr.email.to: robimgut@gmail.com
+    reestr.email.from: paction@bk.ru
 
     security.login.attempts: 5
     security.login.ip_block_time_sec: 30

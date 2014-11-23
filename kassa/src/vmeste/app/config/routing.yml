@@ -158,7 +158,7 @@ yandex_check:
     defaults: { _controller: VmesteSaasBundle:Transaction:yandexCheck}
 
 yandex_payment_aviso:
-    path: /yandex/payment-aviso
+    path: /yandex/paymentAviso
     defaults: { _controller: VmesteSaasBundle:Transaction:yandexPaymentAviso}
 
 payment_oferta:
