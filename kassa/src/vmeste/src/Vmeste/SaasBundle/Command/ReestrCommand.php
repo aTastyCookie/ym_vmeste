@@ -126,10 +126,10 @@ class ReestrCommand extends ContainerAwareCommand
             $message->setBody("Сегодня платежей не было");
         }
         $mailer->send($message);
-        mail($emailTo, "Смотрите вложение", "dfdf gf", "From: $emailFrom\r\n");
-        echo "\n"."count data (".date('Y-m-d H:i:s', $yesterday_start).' - '.date('Y-m-d H:i:s', $yesterday_end)."): ".count($data)."\n";
-        echo "sending..."."\n";
-        echo $message->getBody()."\n";
+        //mail($emailTo, "Смотрите вложение", "dfdf gf", "From: $emailFrom\r\n");
+        //echo "\n"."count data (".date('Y-m-d H:i:s', $yesterday_start).' - '.date('Y-m-d H:i:s', $yesterday_end)."): ".count($data)."\n";
+        //echo "sending..."."\n";
+        //echo $message->getBody()."\n";
 
         exit;
     }
