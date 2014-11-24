@@ -425,8 +425,8 @@ class Rebilling
 
         $message = \Swift_Message::newInstance()
             ->setSubject('Спасибо за помощь!')
-            ->setFrom('paction@bk.ru')
-            ->setTo('paction@bk.ru')
+            ->setFrom('robimgut@gmail.com')
+            ->setTo('robimgut@gmail.com')
             ->setBody('test message'
                 /*$this->context_adapter->renderView(
                     'VmesteSaasBundle:Email:successfullPaymentMonthly.html.twig',
@@ -436,7 +436,7 @@ class Rebilling
                         'fond' => 'my')
                 )*/
             );
-        $this->context_mailer->send($message);
+        echo $this->context_mailer->send($message)."\n";
         echo "End \n";
     }
 }
