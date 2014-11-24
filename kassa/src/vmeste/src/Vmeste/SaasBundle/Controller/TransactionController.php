@@ -124,14 +124,6 @@ class TransactionController extends Controller
                 $hash = md5($requestString);
                 if (strcmp(strtolower($hash), strtolower($request->request->get('md5'))) === 0) {
 
-                    $invoiceId = $request->request->get('invoiceId');
-                    $sysEvent = new SysEvent();
-                    $sysEvent->setUserId(0);
-                    $sysEvent->setEvent('Searching transaction by InvoiceId: ' . $invoiceId);
-                    $sysEvent->setIp($this->container->get('request')->getClientIp());
-                    $eventTracker = $this->get('sys_event_tracker');
-                    $eventTracker->track($sysEvent);
-
                     $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
 
                     $postParamsArray = $this->get('request')->request->all();
@@ -147,14 +139,18 @@ class TransactionController extends Controller
                     $campaignId = $this->getCampaignId($orderNumber);
                     $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
 
-                    $transaction = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
-                        array('invoiceId' => $invoiceId));
-
                     $rb = $request->request->get('rebillingOn', false);
                     if($rb === 'false') $rb = false;
-                    $donor = false;
+                    $donor = $existingRecurrent = false;
 
                     if($rb) {
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId(0);
+                        $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
+
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
@@ -164,6 +160,13 @@ class TransactionController extends Controller
                     }
 
                     if(!$donor) {
+                        $sysEvent = new SysEvent();
+                        $sysEvent->setUserId(0);
+                        $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                        $sysEvent->setIp($this->container->get('request')->getClientIp());
+                        $eventTracker = $this->get('sys_event_tracker');
+                        $eventTracker->track($sysEvent);
+
                         $donorId = $this->getDonorId($orderNumber);
                         if($donorId) {
                             $donor = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findOneBy(array('id' => $donorId));
@@ -236,6 +239,14 @@ class TransactionController extends Controller
                             $eventTracker = $this->get('sys_event_tracker');
                             $eventTracker->track($sysEvent);
                         } else {
+
+                            $sysEvent = new SysEvent();
+                            $sysEvent->setUserId(0);
+                            $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                            $sysEvent->setIp($this->container->get('request')->getClientIp());
+                            $eventTracker = $this->get('sys_event_tracker');
+                            $eventTracker->track($sysEvent);
+
                             $pan = $request->request->get('cdd_pan_mask');
                             $recurrent = new Recurrent();
                             $recurrent->setAmount($amount);
