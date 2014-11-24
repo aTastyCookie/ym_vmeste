@@ -418,10 +418,25 @@ class Rebilling
         echo "\n";
         curl_close($ch);
 
-        echo "Search transaction \n";
-        $transaction = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
-            array('invoiceId' => '2000000298154'));
-        print_r($transaction);
+        //echo "Search transaction \n";
+        //$transaction = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
+        //    array('invoiceId' => '2000000298154'));
+        //print_r($transaction);
+
+        $message = \Swift_Message::newInstance()
+            ->setSubject('Спасибо за помощь!')
+            ->setFrom('paction@bk.ru')
+            ->setTo('paction@bk.ru')
+            ->setBody(
+                $this->context_adapter->renderView(
+                    'VmesteSaasBundle:Email:successfullPaymentMonthly.html.twig',
+                    array(
+                        'amount' => 40,
+                        'unsubscribe' => 'http://unsub.ru',
+                        'fond' => 'my')
+                )
+            );
+        $this->context_mailer->send($message);
         echo "End \n";
     }
 }
