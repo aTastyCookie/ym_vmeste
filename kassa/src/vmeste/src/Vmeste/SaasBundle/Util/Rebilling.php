@@ -427,14 +427,14 @@ class Rebilling
             ->setSubject('Спасибо за помощь!')
             ->setFrom('paction@bk.ru')
             ->setTo('paction@bk.ru')
-            ->setBody(
-                $this->context_adapter->renderView(
+            ->setBody('test message'
+                /*$this->context_adapter->renderView(
                     'VmesteSaasBundle:Email:successfullPaymentMonthly.html.twig',
                     array(
                         'amount' => 40,
                         'unsubscribe' => 'http://unsub.ru',
                         'fond' => 'my')
-                )
+                )*/
             );
         $this->context_mailer->send($message);
         echo "End \n";
