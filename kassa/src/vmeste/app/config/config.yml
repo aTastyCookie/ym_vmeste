@@ -104,7 +104,7 @@ parameters:
     sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml
 
     reestr.email.to: robimgut@gmail.com
-    reestr.email.from: paction@bk.ru
+    reestr.email.from: robimgut@gmail.com
 
     security.login.attempts: 5
     security.login.ip_block_time_sec: 30

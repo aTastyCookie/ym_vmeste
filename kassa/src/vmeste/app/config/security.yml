@@ -47,7 +47,7 @@ security:
          - { path: ^/forgot_pass, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/payment, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/yandex/check, role: IS_AUTHENTICATED_ANONYMOUSLY }
-         - { path: ^/yandex/payment-aviso, role: IS_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/yandex/paymentAviso, role: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/logout, roles: { ROLE_USER, ROLE_ADMIN } }
          - { path: ^/customer, role: ROLE_USER }
          - { path: ^/campaign, role: ROLE_ADMIN }
