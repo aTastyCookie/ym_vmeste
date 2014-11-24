@@ -436,7 +436,7 @@ class Rebilling
                         'fond' => 'my')
                 )*/
             );
-        echo $this->context_mailer->getLocalDomain()."\n";
+        //echo $this->context_mailer->getLocalDomain()."\n";
         echo $this->context_mailer->send($message)."\n";
         echo "End \n";
         //echo __FILE__.": ".__LINE__."\n";
