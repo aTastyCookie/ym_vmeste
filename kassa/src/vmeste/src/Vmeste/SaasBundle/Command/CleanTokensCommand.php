@@ -59,7 +59,7 @@ class CleanTokensCommand extends ContainerAwareCommand
 
         $em->flush();
 
-        echo("\n\nRecover tokens affected: " . count($tokens) . "\n");
-        echo("Finished" . "\n\n");
+        //echo("\n\nRecover tokens affected: " . count($tokens) . "\n");
+        //echo("Finished" . "\n\n");
     }
 } 
