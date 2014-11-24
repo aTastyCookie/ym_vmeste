@@ -394,7 +394,7 @@ class Rebilling
 
     public function recurrent_test()
     {
-        $output_array = array('clientOrderId' => 132465,
+        /*$output_array = array('clientOrderId' => 132465,
             'invoiceId' => '321321321321',
             'amount' => 100,
             'orderNumber' => '1232466287');
@@ -416,7 +416,7 @@ class Rebilling
         echo "Result: \n";
         print_r(curl_getinfo($ch));
         echo "\n";
-        curl_close($ch);
+        curl_close($ch);*/
 
         //echo "Search transaction \n";
         //$transaction = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(
