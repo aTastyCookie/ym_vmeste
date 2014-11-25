@@ -125,9 +125,9 @@ class Rebilling
         $userSettings = $settings[0];
         $fond = $userSettings->getCompanyName();
         $emailFrom = $userSettings->getSenderEmail();
-        $unsubscribe = $this->url_unsubcribe .
+        $unsubscribe = $this->apphost .
             'outside/transaction/unsubscribe?recurrent=' . $recur->getId() .
-            '&invoice=' . $recur->getInvoiceId();
+            "&invoice=". $recur->getInvoiceId();
 
         echo "Sending " . $amount . " to " . $orderNumber . "\n";
         $yandexKassa = $userSettings->getYandexKassa();
@@ -291,9 +291,9 @@ class Rebilling
                             'VmesteSaasBundle:Email:notifyaboutPayment.html.twig',
                             array(
                                 'amount' => $recur->getAmount(),
-                                'unsubscribe' => $this->url_unsubcribe .
+                                'unsubscribe' => $this->apphost .
                                     'outside/transaction/unsubscribe?recurrent=' . $recur->getId() .
-                                    '&invoice=' . $recur->getInvoiceId(),
+                                    "&invoice=" . $recur->getInvoiceId(),
                                 'fond' => $settings->getCompanyName(),
                                 'pan' => $recur->getPan())
                         )
@@ -317,9 +317,9 @@ class Rebilling
                     'VmesteSaasBundle:Email:successfullSubscription.html.twig',
                     array(
                         'amount' => $this->recurrent->sum,
-                        'unsubscribe' => $this->url_unsubcribe .
+                        'unsubscribe' => $this->apphost .
                             'outside/transaction/unsubscribe?recurrent=' . $this->recurrent->id .
-                            '&invoice=' . $this->recurrent->invoice,
+                            "&invoice=" . $this->recurrent->invoice,
                         'fond' => $this->recurrent->fond)
                 )
             );
