@@ -280,8 +280,7 @@ class TransactionController extends Controller
                             // Send the first notification email
                             $rebilling = new Rebilling(
                                 array('icpdo' => $em,
-                                    'url_unsubcribe'=> $this->container->getParameter('recurrent.apphost') ,
-                                    'url_subcribe'=> $this->container->getParameter('recurrent.apphost'),
+                                    'apphost'=> $this->container->getParameter('recurrent.apphost') ,
                                     'context' => $this,
                                     'context_mailer' => $this->get('mailer'),
                                     'context_adapter' => $this)
