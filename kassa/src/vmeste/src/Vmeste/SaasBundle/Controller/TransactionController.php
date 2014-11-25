@@ -162,7 +162,7 @@ class TransactionController extends Controller
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
-                                array('invoiceId' => $baseInvoice));
+                                array('invoice_id' => $baseInvoice));
                             if($existingRecurrent) $donor = $existingRecurrent->getDonor();
                         }
                     }
