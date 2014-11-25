@@ -443,7 +443,7 @@ class TransactionController extends Controller
         $settings = $userSettingsArray[0];
         $response['title'] = $campaign->getSubTitle();
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
-        $response['img'] = $userLogoPath; //$imageStoragePath.$campaign->getBigPicPath();
+        $response['img'] = $imageStoragePath.$userLogoPath; //$imageStoragePath.$campaign->getBigPicPath();
         $response['fond'] = $settings->getCompanyName();
         $response['campaign_url'] = $this->container->getParameter('recurrent.apphost').$campaign->getUrl();
 
