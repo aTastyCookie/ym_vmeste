@@ -475,7 +475,7 @@ class TransactionController extends Controller
     public function subscribeAction()
     {
         $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
-        $invoice_id = Clear::integer($this->getRequest()->query->get("invoice"));
+        $invoice_id = Clear::number($this->getRequest()->query->get("invoice"));
         $response = array('error' => false,
             'recurrent' => $recurrent_id,
             'invoice' => $invoice_id,
@@ -517,7 +517,8 @@ class TransactionController extends Controller
         }
 
         $response['title'] = $campaign->getTitle();
-        $response['img'] = $campaign->getImage();
+        $imageStoragePath = $this->container->getParameter('image.upload.dir');
+        $response['img'] = $imageStoragePath.$campaign->getBigPicPath();
         $response['intro'] = $campaign->getFormIntro();
 
 
