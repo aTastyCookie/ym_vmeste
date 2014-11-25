@@ -237,6 +237,7 @@ class TransactionController extends Controller
                         if($existingRecurrent) {
                             $existingRecurrent->setOrderNumber($orderNumber);
                             $existingRecurrent->setSuccessDate($time);
+                            $existingRecurrent->setNextDate($this->_next_date());
                             $em->persist($existingRecurrent);
                             $em->flush();
 
@@ -247,7 +248,6 @@ class TransactionController extends Controller
                             $eventTracker = $this->get('sys_event_tracker');
                             $eventTracker->track($sysEvent);
                         } else {
-
                             $sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent('Line: ' . __LINE__ . '; ' . $invoiceId);
@@ -272,15 +272,8 @@ class TransactionController extends Controller
                             $recurrent->setStatus($statusActive);
                             $recurrent->setSubscriptionDate($time);
                             $recurrent->setSuccessDate($time);
-                            $day = date('j');
-                            $month = date('n') + 1;
-                            $year = date('Y');
-                            if($month > 12) {
-                                $month = 1;
-                                $year += 1;
-                            }
-                            if($day>28) $day = 28;
-                            $recurrent->setNextDate(mktime(12, 0, 0, $month, $day, $year));
+
+                            $recurrent->setNextDate($this->_next_date());
                             $em->persist($recurrent);
                             $em->flush();
 
@@ -377,6 +370,19 @@ class TransactionController extends Controller
 
         $response = new Response($output, 200, array('content-type' => 'text/xml; charset=utf-8'));
         return $response;
+    }
+
+    private function _next_date()
+    {
+        $day = date('j');
+        $month = date('n') + 1;
+        $year = date('Y');
+        if($month > 12) {
+            $month = 1;
+            $year += 1;
+        }
+        if($day>28) $day = 28;
+        return mktime(12, 0, 0, $month, $day, $year);
     }
 
     /**
