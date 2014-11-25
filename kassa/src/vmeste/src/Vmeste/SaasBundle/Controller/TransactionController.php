@@ -437,10 +437,13 @@ class TransactionController extends Controller
             return $response;
         }
 
+        $userSettingsArray = $campaign->getUser()->getSettings();
+        $settings = $userSettingsArray[0];
         $response['title'] = $campaign->getTitle();
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
         $response['img'] = $imageStoragePath.$campaign->getBigPicPath();
-        $response['intro'] = $campaign->getFormIntro();
+        $response['fond'] = $settings->getCompanyName();
+        $response['campaign_url'] = $this->container->getParameter('recurrent.apphost').$campaign->getUrl();
 
 
         if ($recurrent->getInvoiceId() != $invoice_id) {
