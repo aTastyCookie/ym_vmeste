@@ -437,11 +437,13 @@ class TransactionController extends Controller
             return $response;
         }
 
-        $userSettingsArray = $campaign->getUser()->getSettings();
+        $user = $campaign->getUser();
+        $userSettingsArray = $user->getSettings();
+        $userLogoPath = $user->getLogoPath();
         $settings = $userSettingsArray[0];
         $response['title'] = $campaign->getSubTitle();
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
-        $response['img'] = $imageStoragePath.$campaign->getBigPicPath();
+        $response['img'] = $userLogoPath; //$imageStoragePath.$campaign->getBigPicPath();
         $response['fond'] = $settings->getCompanyName();
         $response['campaign_url'] = $this->container->getParameter('recurrent.apphost').$campaign->getUrl();
 
