@@ -170,7 +170,7 @@ class TransactionController extends Controller
                     if(!$donor) {
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
+                        $sysEvent->setEvent('Line: ' . __LINE__. '; ' . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
@@ -250,7 +250,7 @@ class TransactionController extends Controller
 
                             $sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
-                            $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
+                            $sysEvent->setEvent('Line: ' . __LINE__ . '; ' . $invoiceId);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
                             $eventTracker->track($sysEvent);
@@ -268,7 +268,7 @@ class TransactionController extends Controller
                             $recurrent->setLastStatus(0);
                             $recurrent->setLastError(0);
                             $recurrent->setLastTechmessage('');
-                            $recurrent->setOrderNumber($donor->getId() . '-' . $campaignId . '-' . $time);
+                            $recurrent->setOrderNumber($campaignId . '-' . $donor->getId() . '-' . $time);
                             $recurrent->setStatus($statusActive);
                             $recurrent->setSubscriptionDate($time);
                             $recurrent->setSuccessDate($time);
