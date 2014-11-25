@@ -157,7 +157,7 @@ var Konstructor = (function (app, $) {
           showMaskOnHover: false,
           definitions: {
               '*': {
-                  validator: "[0-9A-Za-z_\\-]",
+                  validator: "[0-9A-Za-z_]",
                   cardinality: 1,
                   casing: "lower"
               },

@@ -32,7 +32,7 @@
                 <input type="hidden" name="formcomment" value="Форма приниматель: <?php echo htmlspecialchars($model->title); ?>">
                 <input type="hidden" name="short-dest" value="Форма приниматель: <?php echo htmlspecialchars($model->title); ?>">
                 <input type="hidden" name="quickpay-form" value="shop">
-                <input type="hidden" name="targets" value="<?php echo htmlspecialchars($model->text); ?>">
+                <input type="hidden" name="targets" value="<?php echo htmlspecialchars($model->title); ?>">
                 <input type="hidden" name="need-fio" value="<?php echo $model->field_name ? 'true' : 'false'; ?>">
                 <input type="hidden" name="need-phone" value="<?php echo $model->field_phone ? 'true' : 'false'; ?>">
                 <input type="hidden" name="need-email" value="<?php echo $model->field_email ? 'true' : 'false'; ?>">
