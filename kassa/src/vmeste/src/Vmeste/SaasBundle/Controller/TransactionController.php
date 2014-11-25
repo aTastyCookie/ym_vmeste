@@ -163,7 +163,7 @@ class TransactionController extends Controller
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
                                 array('invoiceId' => $baseInvoice));
-                            $donor = $existingRecurrent->getDonor();
+                            if($existingRecurrent) $donor = $existingRecurrent->getDonor();
                         }
                     }
 
