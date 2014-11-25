@@ -399,7 +399,7 @@ class TransactionController extends Controller
     public function unsubscribeAction()
     {
         $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
-        $invoice_id = Clear::integer($this->getRequest()->query->get("invoice"));
+        $invoice_id = Clear::number($this->getRequest()->query->get("invoice"));
         $response = array('error' => false,
             'recurrent' => $recurrent_id,
             'invoice' => $invoice_id,
