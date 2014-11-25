@@ -130,6 +130,14 @@ class TransactionController extends Controller
 
                     $requestDetails = $this->createRequestString($postParamsArray);
 
+
+                    $sysEvent = new SysEvent();
+                    $sysEvent->setUserId(0);
+                    $sysEvent->setEvent('Request: ' . $requestDetails);
+                    $sysEvent->setIp($this->container->get('request')->getClientIp());
+                    $eventTracker = $this->get('sys_event_tracker');
+                    $eventTracker->track($sysEvent);
+
                     $statusActive = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
 
                     $amount = Clear::number(number_format((float)stripslashes($request->request->get('orderSumAmount')), 2));
@@ -146,7 +154,7 @@ class TransactionController extends Controller
                     if($rb) {
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
+                        $sysEvent->setEvent('Line: ' . __LINE__ . ', Invoice: ' . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
