@@ -63,7 +63,6 @@ class Rebilling
         $today_d = date("j");
         $today_m = date("n");
         $today_y = date("Y");
-        $today_t = date("t");
         $today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y) + 259200;
         $today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y) + 259200;
 
@@ -300,6 +299,7 @@ class Rebilling
                         )
                     );
                 $this->context_mailer->send($message);
+                echo "Sending notification message from $emailFrom to $emailTo...\n";
             }
             $offset += self::LIMIT_ROWS;
             $this->_next_data($offset, $today_start, $today_end);
@@ -328,7 +328,7 @@ class Rebilling
 
     public function notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe)
     {
-        echo "Sending successfull message from $emailFrom to $emailTo...\n";
+        //echo "Sending successfull message from $emailFrom to $emailTo...\n";
         $message = \Swift_Message::newInstance()
             ->setSubject('Спасибо за помощь!')
             ->setFrom($emailFrom)
