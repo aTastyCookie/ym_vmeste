@@ -440,7 +440,8 @@ class TransactionController extends Controller
         }
 
         $response['title'] = $campaign->getTitle();
-        $response['img'] = $campaign->getBigPic();
+        $imageStoragePath = $this->container->getParameter('image.upload.dir');
+        $response['img'] = $imageStoragePath.$campaign->getBigPicPath();
         $response['intro'] = $campaign->getFormIntro();
 
 
