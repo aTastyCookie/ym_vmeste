@@ -439,7 +439,7 @@ class TransactionController extends Controller
 
         $userSettingsArray = $campaign->getUser()->getSettings();
         $settings = $userSettingsArray[0];
-        $response['title'] = $campaign->getTitle();
+        $response['title'] = $campaign->getSubTitle();
         $imageStoragePath = $this->container->getParameter('image.upload.dir');
         $response['img'] = $imageStoragePath.$campaign->getBigPicPath();
         $response['fond'] = $settings->getCompanyName();
