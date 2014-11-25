@@ -119,12 +119,8 @@ var Konstructor = (function (app, $) {
         .on('submit', '#main_form', function (e) {
           var valid = true;
           $(this).find('.input_field').removeClass('error');
-          $(this).find('.input_field input, .input_field textarea').each(function (i, item) {
-						var $item = $(item);
-
-						// #amount field can be empty
-						if ($item[0].id === 'amount') return true;
-
+          $(this).find('.input_field input, .input_field textarea').not('#amount').each(function (i, item) {
+            var $item = $(item);
             if (!$item.val().replace(/\s/g, '').length) {
               $item.closest('.input_field').addClass('error');
               valid = false;
@@ -132,7 +128,7 @@ var Konstructor = (function (app, $) {
           });
 
           // amount validations
-					var $amount = $(this).find('#amount');
+          var $amount = $(this).find('#amount');
           if (+$amount.val() > 15000) {
             $amount.closest('.input_field').addClass('error');
             valid = false;
