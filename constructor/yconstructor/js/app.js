@@ -120,11 +120,23 @@ var Konstructor = (function (app, $) {
           var valid = true;
           $(this).find('.input_field').removeClass('error');
           $(this).find('.input_field input, .input_field textarea').each(function (i, item) {
-            if ($(item).val().replace(/\s/g, '').length == 0) {
-              $(item).closest('.input_field').addClass('error');
+						var $item = $(item);
+
+						// #amount field can be empty
+						if ($item[0].id === 'amount') return true;
+
+            if (!$item.val().replace(/\s/g, '').length) {
+              $item.closest('.input_field').addClass('error');
               valid = false;
             }
           });
+
+          // amount validations
+					var $amount = $(this).find('#amount');
+          if (+$amount.val() > 15000) {
+            $amount.closest('.input_field').addClass('error');
+            valid = false;
+          }
 
           // theme validations
           if (!$_page_theme.find('input:checked').length) {

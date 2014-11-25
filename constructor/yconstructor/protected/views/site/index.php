@@ -136,9 +136,12 @@
                     <div class="amount_box">
                         <label>Сумма по умолчанию</label>
 
-                        <div class="input">
+                        <div class="input_field">
                             <?php echo $form->textField($model,'default_amount', array('id' =>'amount')); ?>
                             <span class="rouble">a</span>
+														<div class="error_box">
+																<span>Сумма не должна превышать 15 000</span>
+														</div>
                         </div>
                         <div class="payment_icons">
                             <span class="master"> </span>
