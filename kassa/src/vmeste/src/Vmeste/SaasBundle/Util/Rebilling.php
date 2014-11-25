@@ -127,7 +127,7 @@ class Rebilling
         $fond = $userSettings->getCompanyName();
         $emailFrom = $userSettings->getSenderEmail();
         $unsubscribe = $this->url_unsubcribe .
-            '?recurrent=' . $recur->getId() .
+            'outside/transaction/unsubscribe?recurrent=' . $recur->getId() .
             '&invoice=' . $recur->getInvoiceId();
 
         echo "Sending " . $amount . " to " . $orderNumber . "\n";
@@ -213,7 +213,7 @@ class Rebilling
             $this->icpdo->persist($transaction);
             $this->icpdo->flush();*/
 
-            $day = date('j');
+            /*$day = date('j');
             $month = date('n') + 1;
             $year = date('Y');
             if ($month > 12) {
@@ -221,7 +221,7 @@ class Rebilling
                 $year += 1;
             }
             if ($day > 28) $day = 28;
-            $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));
+            $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));*/
             //$recur->setSuccessDate(time());
             $recur->setClientOrderId($orderId);
             $recur->setOrderNumber($orderNumber);
@@ -293,7 +293,7 @@ class Rebilling
                             array(
                                 'amount' => $recur->getAmount(),
                                 'unsubscribe' => $this->url_unsubcribe .
-                                    '?recurrent=' . $recur->getId() .
+                                    'outside/transaction/unsubscribe?recurrent=' . $recur->getId() .
                                     '&invoice=' . $recur->getInvoiceId(),
                                 'fond' => $settings->getCompanyName(),
                                 'pan' => $recur->getPan())
@@ -318,7 +318,7 @@ class Rebilling
                     array(
                         'amount' => $this->recurrent->sum,
                         'unsubscribe' => $this->url_unsubcribe .
-                            '?recurrent=' . $this->recurrent->id .
+                            'outside/transaction/unsubscribe?recurrent=' . $this->recurrent->id .
                             '&invoice=' . $this->recurrent->invoice,
                         'fond' => $this->recurrent->fond)
                 )
