@@ -146,7 +146,7 @@ class TransactionController extends Controller
                     if($rb) {
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                        $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
@@ -162,7 +162,7 @@ class TransactionController extends Controller
                     if(!$donor) {
                         $sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                        $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
                         $eventTracker->track($sysEvent);
@@ -242,7 +242,7 @@ class TransactionController extends Controller
 
                             $sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
-                            $sysEvent->setEvent('Line: ' . __LINE___ . $invoiceId);
+                            $sysEvent->setEvent('Line: ' . __LINE__ . $invoiceId);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
                             $eventTracker->track($sysEvent);
