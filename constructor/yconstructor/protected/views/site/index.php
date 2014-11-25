@@ -136,9 +136,12 @@
                     <div class="amount_box">
                         <label>Сумма по умолчанию</label>
 
-                        <div class="input">
+                        <div class="input_field">
                             <?php echo $form->textField($model,'default_amount', array('id' =>'amount')); ?>
                             <span class="rouble">a</span>
+														<div class="error_box">
+																<span>Сумма не должна превышать 15 000</span>
+														</div>
                         </div>
                         <div class="payment_icons">
                             <span class="master"> </span>
@@ -211,10 +214,10 @@
                     <div class="input_field">
                         <?php echo $form->textField($model,'page_address', array('placeholder'=>'yasobe.ru/na/', 'id'=>'page_url')); ?>
                         <div class="tooltip">
-                            <span>Используйте цифры, латинские буквы, дефисы и подчеркивания — без пробелов.</span>
+                            <span>Используйте латинские буквы, цифры и подчеркивания — без пробелов.</span>
                         </div>
                         <div class="error_box">
-                            <span>Пожалуйста, напишите адрес страницы латинскими буквами без пробелов. Можно использовать цифры, дефисы и подчеркивания.</span>
+                            <span>Пожалуйста, напишите адрес страницы латинскими буквами без пробелов. Можно использовать цифры и подчеркивания.</span>
                         </div>
                     </div>
                 </div>
