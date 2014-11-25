@@ -133,7 +133,7 @@ class SettingsController extends Controller
             $generalCustomerSettingsBucket['director_name'] = $directorName = Clear::string_without_quotes($request->request->get('director_name'));
             $generalCustomerSettingsBucket['position'] = $position = Clear::string_without_quotes($request->request->get('position'));
             $generalCustomerSettingsBucket['authority'] = $authority = Clear::string_without_quotes($request->request->get('authority'));
-            $generalCustomerSettingsBucket['details'] = $details = Clear::string_without_quotes($request->request->get('details'));
+            $generalCustomerSettingsBucket['details'] = $details = htmlspecialchars(strip_tags($request->request->get('details')), ENT_QUOTES);
             $generalCustomerSettingsBucket['notification_email'] = $notificationEmail = Clear::string_without_quotes($request->request->get('notification_email'));
             $generalCustomerSettingsBucket['sender_name'] = $senderName = Clear::string_without_quotes($request->request->get('sender_name'));
             $generalCustomerSettingsBucket['sender_email'] = $senderEmail = Clear::string_without_quotes($request->request->get('sender_email'));
