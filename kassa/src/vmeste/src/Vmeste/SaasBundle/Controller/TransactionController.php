@@ -282,7 +282,8 @@ class TransactionController extends Controller
                                     'url_unsubcribe'=> $this->container->getParameter('recurrent.apphost') ,
                                     'url_subcribe'=> $this->container->getParameter('recurrent.apphost'),
                                     'context' => $this,
-                                    'context_mailer' => $this->get('mailer'))
+                                    'context_mailer' => $this->get('mailer'),
+                                    'context_adapter' => $this)
                             );
                             $payer_email = $donor->getEmail();
                             $rebilling->recurrent->email = $payer_email;
