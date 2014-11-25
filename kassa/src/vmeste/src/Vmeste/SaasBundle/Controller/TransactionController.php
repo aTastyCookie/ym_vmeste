@@ -440,7 +440,7 @@ class TransactionController extends Controller
         }
 
         $response['title'] = $campaign->getTitle();
-        $response['img'] = $campaign->getImage();
+        $response['img'] = $campaign->getBigPic();
         $response['intro'] = $campaign->getFormIntro();
 
 
