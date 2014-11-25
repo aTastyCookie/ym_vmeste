@@ -130,10 +130,9 @@ class TransactionController extends Controller
 
                     $requestDetails = $this->createRequestString($postParamsArray);
 
-
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
-                    $sysEvent->setEvent('Request: ' . $requestDetails);
+                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . 'Request: ' . $requestDetails);
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker = $this->get('sys_event_tracker');
                     $eventTracker->track($sysEvent);
@@ -152,12 +151,12 @@ class TransactionController extends Controller
                     $donor = $existingRecurrent = false;
 
                     if($rb) {
-                        $sysEvent = new SysEvent();
+                        /*$sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
                         $sysEvent->setEvent('Line: ' . __LINE__ . ', Invoice: ' . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);
+                        $eventTracker->track($sysEvent);*/
 
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
@@ -168,12 +167,12 @@ class TransactionController extends Controller
                     }
 
                     if(!$donor) {
-                        $sysEvent = new SysEvent();
+                        /*$sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
                         $sysEvent->setEvent('Line: ' . __LINE__. '; ' . $invoiceId);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);
+                        $eventTracker->track($sysEvent);*/
 
                         $donorId = $this->getDonorId($orderNumber);
                         if($donorId) {
@@ -209,12 +208,12 @@ class TransactionController extends Controller
                     $em->persist($transaction);
                     $em->flush();
 
-                    $sysEvent = new SysEvent();
+                    /*$sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
-                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' ' . $requestDetails);
+                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' Request ' . $requestDetails);
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker = $this->get('sys_event_tracker');
-                    $eventTracker->track($sysEvent);
+                    $eventTracker->track($sysEvent);*/
 
                     $userSettingsArray = $transaction->getCampaign()->getUser()->getSettings();
                     $settings = $userSettingsArray[0];
@@ -241,19 +240,19 @@ class TransactionController extends Controller
                             $em->persist($existingRecurrent);
                             $em->flush();
 
-                            $sysEvent = new SysEvent();
+                            /*$sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' LINE: ' . __LINE__);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);
+                            $eventTracker->track($sysEvent);*/
                         } else {
-                            $sysEvent = new SysEvent();
+                            /*$sysEvent = new SysEvent();
                             $sysEvent->setUserId(0);
                             $sysEvent->setEvent('Line: ' . __LINE__ . '; ' . $invoiceId);
                             $sysEvent->setIp($this->container->get('request')->getClientIp());
                             $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);
+                            $eventTracker->track($sysEvent);*/
 
                             $pan = $request->request->get('cdd_pan_mask');
                             $recurrent = new Recurrent();
@@ -295,12 +294,12 @@ class TransactionController extends Controller
                             $rebilling->notify_about_subscription();
                         }
                     } else {
-                        $sysEvent = new SysEvent();
+                        /*$sysEvent = new SysEvent();
                         $sysEvent->setUserId(0);
                         $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' LINE: ' . __LINE__);
                         $sysEvent->setIp($this->container->get('request')->getClientIp());
                         $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);
+                        $eventTracker->track($sysEvent);*/
 
                         $mailMessage = \Swift_Message::newInstance()
                             ->setSubject('Спасибо за помощь!')
@@ -321,32 +320,32 @@ class TransactionController extends Controller
                         $this->get('mailer')->send($mailMessage);
                     }
 
-                    $sysEvent = new SysEvent();
+                    /*$sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
                     $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' LINE: ' . __LINE__);
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker = $this->get('sys_event_tracker');
-                    $eventTracker->track($sysEvent);
+                    $eventTracker->track($sysEvent);*/
 
                 } else {
                     $code = 1;
                     $message = 'Bad md5';
-                    $sysEvent = new SysEvent();
+                    /*$sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
                     $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' ' . $message);
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker = $this->get('sys_event_tracker');
-                    $eventTracker->track($sysEvent);
+                    $eventTracker->track($sysEvent);*/
                 }
             } else {
                 $code = 200;
                 $message = 'Bad shopPassword';
-                $sysEvent = new SysEvent();
+                /*$sysEvent = new SysEvent();
                 $sysEvent->setUserId(0);
                 $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' ' . $message);
                 $sysEvent->setIp($this->container->get('request')->getClientIp());
                 $eventTracker = $this->get('sys_event_tracker');
-                $eventTracker->track($sysEvent);
+                $eventTracker->track($sysEvent);*/
             }
         }
 
@@ -362,7 +361,7 @@ class TransactionController extends Controller
 
         $sysEvent = new SysEvent();
         $sysEvent->setUserId(0);
-        $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' paymentAviso ; output: ' . $output);
+        $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' paymentAviso output: ' . $output);
         $sysEvent->setIp($this->container->get('request')->getClientIp());
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);

@@ -22,8 +22,6 @@ class Rebilling
     public $path_to_key;
     public $cert_pass;
     public $icpdo;
-    public $url_unsubcribe;
-    public $url_subcribe;
     public $recurrent;
     public $data;
     public $status_blocked;
@@ -129,7 +127,7 @@ class Rebilling
             'outside/transaction/unsubscribe?recurrent=' . $recur->getId() .
             "&invoice=". $recur->getInvoiceId();
 
-        echo "Sending " . $amount . " to " . $orderNumber . "\n";
+        //echo "Sending " . $amount . " to " . $orderNumber . "\n";
         $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
 
@@ -174,11 +172,11 @@ class Rebilling
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
         //curl_setopt($ch, CURLOPT_POSTFIELDS, $xml->saveXML());
-        echo  "Request: " . http_build_query($output_array) . "\n";
+        //echo  "Request: " . http_build_query($output_array) . "\n";
         $result = curl_exec($ch);
         curl_close($ch);
 
-        echo  "Result: " . $result . "\n";
+        //echo  "Result: " . $result . "\n";
 
         if (!empty($result) && $result != false) {
 
@@ -299,7 +297,7 @@ class Rebilling
                         )
                     );
                 $this->context_mailer->send($message);
-                echo "Sending notification message from $emailFrom to $emailTo...\n";
+                //echo "Sending notification message from $emailFrom to $emailTo...\n";
             }
             $offset += self::LIMIT_ROWS;
             $this->_next_data($offset, $today_start, $today_end);
