@@ -42,11 +42,15 @@ class Pages extends CActiveRecord
 			array('title, text, default_amount, account, page_address, email, hash, password', 'required'),
 			array('page_address, hash', 'unique'),
 			array('default_amount, account, field_name, field_phone, field_email, status', 'numerical', 'integerOnly'=>true),
-			array('title, page_address, background, email, hash, password', 'length', 'max'=>255),
+			array('background, email, hash, password', 'length', 'max'=>255),
 			array('email, hash, password', 'length', 'min'=>5),
 			array('page_address', 'length', 'min'=>1),
-            array('photo', 'safe'),
-            //array('photo', 'file', 'types'=>'jpg, gif, png','allowEmpty'=>true),
+			array('title, page_address', 'length', 'max'=>150),
+			array('text', 'length', 'max'=>1500),
+			array('default_amount', 'numerical', 'max'=>15000),
+			array('photo', 'safe'),
+			//array('photo', 'file', 'types'=>'jpg, gif, png','allowEmpty'=>true),
+
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
 			array('id, title, text, default_amount, account, page_address, field_name, field_phone, field_email, background, photo, email, createtime, status, hash, password', 'safe', 'on'=>'search'),

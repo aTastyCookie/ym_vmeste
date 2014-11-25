@@ -119,12 +119,20 @@ var Konstructor = (function (app, $) {
         .on('submit', '#main_form', function (e) {
           var valid = true;
           $(this).find('.input_field').removeClass('error');
-          $(this).find('.input_field input, .input_field textarea').each(function (i, item) {
-            if ($(item).val().replace(/\s/g, '').length == 0) {
-              $(item).closest('.input_field').addClass('error');
+          $(this).find('.input_field input, .input_field textarea').not('#amount').each(function (i, item) {
+            var $item = $(item);
+            if (!$item.val().replace(/\s/g, '').length) {
+              $item.closest('.input_field').addClass('error');
               valid = false;
             }
           });
+
+          // amount validations
+          var $amount = $(this).find('#amount');
+          if (+$amount.val() > 15000) {
+            $amount.closest('.input_field').addClass('error');
+            valid = false;
+          }
 
           // theme validations
           if (!$_page_theme.find('input:checked').length) {
@@ -157,7 +165,7 @@ var Konstructor = (function (app, $) {
           showMaskOnHover: false,
           definitions: {
               '*': {
-                  validator: "[0-9A-Za-z_\\-]",
+                  validator: "[0-9A-Za-z_]",
                   cardinality: 1,
                   casing: "lower"
               },
