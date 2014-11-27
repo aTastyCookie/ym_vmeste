@@ -37,6 +37,12 @@ class TransactionController extends Controller
 
     public function yandexCheckAction(Request $request)
     {
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(' yandex/check: ' . $request->getMethod());
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if (!$request->isMethod('POST'))  {
             throw $this->createNotFoundException();
@@ -97,6 +103,13 @@ class TransactionController extends Controller
     public function yandexPaymentAvisoAction(Request $request)
     {
 
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent(' yandex/payment-aviso: ' . $request->getMethod());
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+
         if (!$request->isMethod('POST')) {
             throw $this->createNotFoundException();
         }
@@ -132,7 +145,7 @@ class TransactionController extends Controller
 
                     $sysEvent = new SysEvent();
                     $sysEvent->setUserId(0);
-                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . 'Request: ' . $requestDetails);
+                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' Request: ' . $requestDetails);
                     $sysEvent->setIp($this->container->get('request')->getClientIp());
                     $eventTracker = $this->get('sys_event_tracker');
                     $eventTracker->track($sysEvent);
