@@ -20,6 +20,7 @@ use Vmeste\SaasBundle\Entity\Role;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 
 class AuthController extends Controller
@@ -95,9 +96,10 @@ class AuthController extends Controller
         $errorMessage = NULL;
 
         if ($request->isMethod('POST')) {
-echo $_SESSION['token']; echo '-'.$request->request->get('token');
-            if($_SESSION['token'] == $request->request->get('token')) {
-                $_SESSION['token'] = '';
+            $session = $request->getSession();
+            echo $session->get('token'); echo '-'.$request->request->get('token');
+            if($session->get('token') == $request->request->get('token')) {
+                $session->set('token', '');
             } else {
                 die("404 Not Found!");
             }
@@ -179,16 +181,18 @@ echo $_SESSION['token']; echo '-'.$request->request->get('token');
                 } else {
                     $errorMessage = 'User with email ' . $email . ' doesn\'t exists!';
                     $token = md5(uniqid(mt_rand() . microtime()));
-                    $_SESSION['token'] = $token;
+                    $session->set('token', $token);
                 }
             } else {
                 $errorMessage = $errorList[0]->getMessage();
                 $token = md5(uniqid(mt_rand() . microtime()));
-                $_SESSION['token'] = $token;
+                $session->set('token', $token);
             }
         } else {
+            $session = new Session();
+            $session->start();
             $token = md5(uniqid(mt_rand() . microtime()));
-            $_SESSION['token'] = $token;
+            $session->set('token', $token);
         }
 
         return array(
