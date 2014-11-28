@@ -152,7 +152,7 @@ class AuthController extends Controller
                     $emailFrom = $this->container->getParameter('pass.recover.email.from');
                     $route = $this->container->getParameter('pass.recover.url');
 
-                    $recoverUri = $this->generateUrl($route);
+                    $recoverUri = ltrim($this->generateUrl($route), '/');
                     $recoverUriWithToken = $this->container->getParameter('recurrent.apphost') . $recoverUri . "/" . $recoverTokenHash;
 
 //                    $logger->info('[RECOVER_EMAIL] From:' . $emailFrom . ' To: ' . $user->getEmail() . ' Recover url: ' . $recoverUriWithToken);
