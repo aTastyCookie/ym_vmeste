@@ -96,6 +96,12 @@ class AuthController extends Controller
 
         if ($request->isMethod('POST')) {
 
+            if($_SESSION['token'] == $request->request->get('token')) {
+                $_SESSION['token'] = '';
+            } else {
+                die("404 Not Found!");
+            }
+
             $email = $request->request->get('email');
             $emailConstraint = new Email();
 
@@ -172,15 +178,23 @@ class AuthController extends Controller
 
                 } else {
                     $errorMessage = 'User with email ' . $email . ' doesn\'t exists!';
+                    $token = md5(uniqid(mt_rand() . microtime()));
+                    $_SESSION['token'] = $token;
                 }
             } else {
                 $errorMessage = $errorList[0]->getMessage();
+                $token = md5(uniqid(mt_rand() . microtime()));
+                $_SESSION['token'] = $token;
             }
+        } else {
+            $token = md5(uniqid(mt_rand() . microtime()));
+            $_SESSION['token'] = $token;
         }
 
         return array(
             'error' => $errorMessage,
-            'success' => $successMessage
+            'success' => $successMessage,
+            'token' => $token
         );
     }
 
