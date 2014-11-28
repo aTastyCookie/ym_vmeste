@@ -95,8 +95,9 @@ class AuthController extends Controller
         $successMessage = NULL;
         $errorMessage = NULL;
 
+        $session = $request->getSession();
+
         if ($request->isMethod('POST')) {
-            $session = $request->getSession();
             if($session->get('token') == $request->request->get('token')) {
                 $session->set('token', '');
             } else {
@@ -188,8 +189,6 @@ class AuthController extends Controller
                 $session->set('token', $token);
             }
         } else {
-            $session = new Session();
-            $session->start();
             $token = md5(uniqid(mt_rand() . microtime()));
             $session->set('token', $token);
         }
