@@ -97,7 +97,6 @@ class AuthController extends Controller
 
         if ($request->isMethod('POST')) {
             $session = $request->getSession();
-            echo $session->get('token'); echo '-'.$request->request->get('token');
             if($session->get('token') == $request->request->get('token')) {
                 $session->set('token', '');
             } else {
@@ -153,7 +152,7 @@ class AuthController extends Controller
                     $route = $this->container->getParameter('pass.recover.url');
 
                     $recoverUri = $this->generateUrl($route);
-                    $recoverUriWithToken = $this->getRequest()->getHost() . $recoverUri . "/" . $recoverTokenHash;
+                    $recoverUriWithToken = $this->container->getParameter('recurrent.apphost') . $recoverUri . "/" . $recoverTokenHash;
 
 //                    $logger->info('[RECOVER_EMAIL] From:' . $emailFrom . ' To: ' . $user->getEmail() . ' Recover url: ' . $recoverUriWithToken);
 
