@@ -95,7 +95,7 @@ class AuthController extends Controller
         $errorMessage = NULL;
 
         if ($request->isMethod('POST')) {
-
+echo $_SESSION['token']; echo '-'.$request->request->get('token');
             if($_SESSION['token'] == $request->request->get('token')) {
                 $_SESSION['token'] = '';
             } else {
