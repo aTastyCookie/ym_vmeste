@@ -129,7 +129,7 @@ class SettingsController extends Controller
 
             $generalCustomerSettingsBucket = array();
 
-            $generalCustomerSettingsBucket['company_name'] = $companyName = Clear::removeCRLF($request->request->get('company_name'));
+            $generalCustomerSettingsBucket['company_name'] = $companyName = Clear::removeCRLF($request->request->get('company_name'), false);
             $generalCustomerSettingsBucket['director_name'] = $directorName = Clear::string_without_quotes($request->request->get('director_name'));
             $generalCustomerSettingsBucket['position'] = $position = Clear::string_without_quotes($request->request->get('position'));
             $generalCustomerSettingsBucket['authority'] = $authority = Clear::string_without_quotes($request->request->get('authority'));

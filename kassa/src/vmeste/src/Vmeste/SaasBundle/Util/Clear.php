@@ -31,20 +31,25 @@ class Clear
 
     /**
      * @param  string $input
+     * @param  boolean $htmlchars
      * @return string
      */
-    public static function string_without_quotes($input)
+    public static function string_without_quotes($input, $htmlchars = true)
     {
-        return str_replace("'", '', str_replace('"', '', self::removeCRLF($input)));
+        return str_replace("'", '', str_replace('"', '', self::removeCRLF($input, $htmlchars)));
     }
 
     /**
      * @param  string $input
+     * @param  boolean $htmlchars
      * @return string
      */
-    public static function removeCRLF($input) {
+    public static function removeCRLF($input, $htmlchars = true) {
         $newString = '';
-        $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
+        if($htmlchars)
+            $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
+        else
+            $input = strip_tags($input);
         for ($i = 0; $i < strlen($input); $i++) {
             if (ord($input{$i}) != 10 && ord($input{$i}) != 13) {
                 $newString .= $input{$i};
