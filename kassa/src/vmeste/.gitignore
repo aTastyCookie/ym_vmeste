@@ -13,3 +13,8 @@ config.yml
 /app/config/parameters.yml
 /app/config/config.yml
 /src/Vmeste/SaasBundle/Entity/*~
+config/config.php
+web/kassa/config/config.php
+app/config/parameters.yml
+app/config/config.yml
+

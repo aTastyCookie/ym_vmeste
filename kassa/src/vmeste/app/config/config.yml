@@ -20,7 +20,7 @@ framework:
 
     session:
         cookie_httponly: true
-        #cookie_secure: true
+#        cookie_secure: true
 
     fragments:       ~
     http_method_override: true
@@ -68,7 +68,7 @@ swiftmailer:
     host:      "%mailer_host%"
     username:  "%mailer_user%"
     password:  "%mailer_password%"
-    #spool:     { type: memory }
+#    spool:     { type: memory }
 
 services:
     authentication_handler:
@@ -103,7 +103,7 @@ parameters:
     production.payment.host: https://money.yandex.ru/eshop.xml
     sandbox.payment.host: https://demomoney.yandex.ru/eshop.xml
 
-    reestr.email.to: iaaman@yamoney.ru
+    reestr.email.to: robimgut@gmail.com
     reestr.email.from: robimgut@gmail.com
 
     security.login.attempts: 5
