@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Vmeste\SaasBundle\Entity\Settings;
 use Vmeste\SaasBundle\Entity\User;
 use Vmeste\SaasBundle\Entity\SysEvent;
+use Vmeste\SaasBundle\Entity\YandexKassa;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\Clear;
 
@@ -86,7 +87,7 @@ class SettingsController extends Controller
                 $settings->setYandexKassa($yandexKassa);
                 $user->addSetting($settings);
             }
-echo __LINE__.$add; exit;
+
             $settingsCollection = $user->getSettings();
             $userSettings = $settingsCollection[0];
             $yandexKassa = $userSettings->getYandexKassa();
