@@ -294,7 +294,7 @@ class UserController extends Controller
                 if($data['role'] == 'ROLE_USER') {
                     $add = true;
                     $settingsCollection = $user->getSettings();
-                    if(is_array($settingsCollection) && isset($settingsCollection[0])) {
+                    if(isset($settingsCollection[0])) {
                         $userSettings = $settingsCollection[0];
                         if($userSettings) {
                             $yandexKassa = $userSettings->getYandexKassa();

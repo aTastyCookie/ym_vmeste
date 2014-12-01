@@ -78,7 +78,7 @@ class SettingsController extends Controller
                     }
                 }
             }
-var_dump($add); exit;
+
             if($add) {
                 $settings = new Settings();
                 $yandexKassa = new YandexKassa();
