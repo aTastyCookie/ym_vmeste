@@ -66,6 +66,28 @@ class SettingsController extends Controller
         if ($user == null) {
             return $this->redirect($this->generateUrl("vmeste_saas"));
         } else {
+
+            $add = true;
+            $settingsCollection = $user->getSettings();
+            if(is_array($settingsCollection) && isset($settingsCollection[0])) {
+                $userSettings = $settingsCollection[0];
+                if($userSettings) {
+                    $yandexKassa = $userSettings->getYandexKassa();
+                    if($yandexKassa) {
+                        $add = false;
+                    }
+                }
+            }
+
+            if($add) {
+                $settings = new Settings();
+                $yandexKassa = new YandexKassa();
+                $em->persist($yandexKassa);
+                $em->persist($settings);
+                $settings->setYandexKassa($yandexKassa);
+                $user->addSetting($settings);
+            }
+
             $settingsCollection = $user->getSettings();
             $userSettings = $settingsCollection[0];
             $yandexKassa = $userSettings->getYandexKassa();
@@ -129,7 +151,7 @@ class SettingsController extends Controller
 
             $generalCustomerSettingsBucket = array();
 
-            $generalCustomerSettingsBucket['company_name'] = $companyName = Clear::removeCRLF($request->request->get('company_name'), false);
+            $generalCustomerSettingsBucket['company_name'] = $companyName = Clear::removeCRLF($request->request->get('company_name'));
             $generalCustomerSettingsBucket['director_name'] = $directorName = Clear::string_without_quotes($request->request->get('director_name'));
             $generalCustomerSettingsBucket['position'] = $position = Clear::string_without_quotes($request->request->get('position'));
             $generalCustomerSettingsBucket['authority'] = $authority = Clear::string_without_quotes($request->request->get('authority'));
