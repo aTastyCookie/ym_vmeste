@@ -69,7 +69,7 @@ class SettingsController extends Controller
         } else {
             $add = true;
             $settingsCollection = $user->getSettings();
-            if(isset($settingsCollection[0]) {
+            if(isset($settingsCollection[0])) {
                 $userSettings = $settingsCollection[0];
                 if($userSettings) {
                     $yandexKassa = $userSettings->getYandexKassa();
