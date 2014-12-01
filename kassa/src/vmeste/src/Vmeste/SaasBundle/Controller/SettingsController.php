@@ -66,7 +66,6 @@ class SettingsController extends Controller
         if ($user == null) {
             return $this->redirect($this->generateUrl("vmeste_saas"));
         } else {
-
             $add = true;
             $settingsCollection = $user->getSettings();
             if(is_array($settingsCollection) && isset($settingsCollection[0])) {
@@ -87,7 +86,7 @@ class SettingsController extends Controller
                 $settings->setYandexKassa($yandexKassa);
                 $user->addSetting($settings);
             }
-
+echo __LINE__.$add; exit;
             $settingsCollection = $user->getSettings();
             $userSettings = $settingsCollection[0];
             $yandexKassa = $userSettings->getYandexKassa();
