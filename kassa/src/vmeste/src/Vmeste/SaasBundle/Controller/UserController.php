@@ -290,6 +290,29 @@ class UserController extends Controller
                 $newRole = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
                 $user->addRole($newRole);
                 $newRole->addUser($user);
+
+                if($data['role'] == 'ROLE_USER') {
+                    $add = true;
+                    $settingsCollection = $user->getSettings();
+                    if(is_array($settingsCollection) && isset($settingsCollection[0])) {
+                        $userSettings = $settingsCollection[0];
+                        if($userSettings) {
+                            $yandexKassa = $userSettings->getYandexKassa();
+                            if($yandexKassa) {
+                                $add = false;
+                            }
+                        }
+                    }
+
+                    if($add) {
+                        $settings = new Settings();
+                        $yandexKassa = new YandexKassa();
+                        $em->persist($yandexKassa);
+                        $em->persist($settings);
+                        $settings->setYandexKassa($yandexKassa);
+                        $user->addSetting($settings);
+                    }
+                }
             }
 
             $em->persist($user);
