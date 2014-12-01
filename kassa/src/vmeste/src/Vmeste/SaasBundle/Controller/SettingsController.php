@@ -86,6 +86,8 @@ class SettingsController extends Controller
                 $em->persist($settings);
                 $settings->setYandexKassa($yandexKassa);
                 $user->addSetting($settings);
+                $em->persist($user);
+                $em->flush();
             }
 
             $settingsCollection = $user->getSettings();
