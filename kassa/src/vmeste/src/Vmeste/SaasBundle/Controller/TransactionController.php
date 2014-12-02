@@ -68,7 +68,22 @@ class TransactionController extends Controller
 
             $sysEvent = new SysEvent();
             $sysEvent->setUserId(0);
-            $sysEvent->setEvent(' yandex/check MD5: ' . $stringToCalc);
+            $sysEvent->setEvent(' yandex/check MD5 string: ' . $stringToCalc);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
+
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId(0);
+            $sysEvent->setEvent(' yandex/check MD5 value: ' . $hash);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
+
+
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId(0);
+            $sysEvent->setEvent(' yandex/check MD5 requested value: ' . strtolower($request->request->get('md5')));
             $sysEvent->setIp($this->container->get('request')->getClientIp());
             $eventTracker = $this->get('sys_event_tracker');
             $eventTracker->track($sysEvent);
