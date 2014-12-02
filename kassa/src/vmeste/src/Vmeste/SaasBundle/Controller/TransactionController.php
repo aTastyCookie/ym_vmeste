@@ -60,11 +60,18 @@ class TransactionController extends Controller
             $message = "Incorrect shopId";
         } else {
             $ykShopPassword = $yandexKassa->getShoppw();
-
-            $hash = md5($request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
+            $stringToCalc = $request->request->get('action') . ';' . $request->request->get('orderSumAmount') . ';'
                 . $request->request->get('orderSumCurrencyPaycash') . ';' . $request->request->get('orderSumBankPaycash') . ';'
                 . $request->request->get('shopId') . ';' . $request->request->get('invoiceId') . ';'
-                . $request->request->get('customerNumber') . ';' . $ykShopPassword);
+                . $request->request->get('customerNumber') . ';' . $ykShopPassword;
+            $hash = md5($stringToCalc);
+
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId(0);
+            $sysEvent->setEvent(' yandex/check MD5: ' . $stringToCalc);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
 
             $orderNumber = Clear::string_without_quotes($request->request->get('orderNumber'));
 
