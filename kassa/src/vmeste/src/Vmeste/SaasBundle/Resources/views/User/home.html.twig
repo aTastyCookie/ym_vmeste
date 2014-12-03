@@ -62,9 +62,9 @@
                                         alt="Заблокировать" border="0"></a>
                         {% endif %}
                     {% endfor %}
-                    {#<a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
+                    <a href="{{ path('admin_user_delete', { 'id':user.id, 'page': page  }) }}">
                         <img src="{{ asset('bundles/saasbundle/img/delete.png') }}" title="Удалить" alt="Удалить" border="0">
-                    </a>#}
+                    </a>
                     {% if user.role == 'ROLE_USER' %}
                         &nbsp;<a href="{{ path('admin_customer_settings', { 'userId' : user.id }) }}">Настройки</a>
                     {% endif %}

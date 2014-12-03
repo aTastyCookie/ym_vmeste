@@ -428,7 +428,31 @@ class UserController extends Controller
      */
     public function deleteAction()
     {
+        $id = Clear::integer($this->getRequest()->query->get("id"));
+
+        if($id<1) {
+            throw $this->createNotFoundException();
+        }
+
         $page = Clear::integer($this->getRequest()->query->get("page"));
+
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $id));
+
+        if(!$user) {
+            throw $this->createNotFoundException();
+        }
+
+        $em->remove($user);
+        $em->flush();
+
+        $userEvent = $this->get('security.context')->getToken()->getUser();
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId($userEvent->getId());
+        $sysEvent->setEvent('DELETE USER '.$id);
+        $sysEvent->setIp($this->container->get('request')->getClientIp());
+        $eventTracker = $this->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
         return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
     }
 
