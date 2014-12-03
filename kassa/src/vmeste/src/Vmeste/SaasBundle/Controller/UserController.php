@@ -442,8 +442,13 @@ class UserController extends Controller
         if(!$user) {
             throw $this->createNotFoundException();
         }
+        $settingsCollection = $user->getSettings();
+        $userSettings = $settingsCollection[0];
+        $yandexKassa = $userSettings->getYandexKassa();
 
         $em->remove($user);
+        $em->remove($userSettings);
+        $em->remove($yandexKassa);
         $em->flush();
 
         $userEvent = $this->get('security.context')->getToken()->getUser();
