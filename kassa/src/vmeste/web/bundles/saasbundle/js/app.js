@@ -1,60 +1,88 @@
-var Donation = (function (app, $) {
-
+var Promo = (function (app, $) {
 
   function visual() {
+    var $root = $('html, body'),
+        sticky_navigation_offset_top = $('#menu_block').offset().top + 185;
 
     $(document)
-        .on('click', '#add_comment', function (e) {
+        .on('click', '.menu_block a, .get_kassa a, a.down_arrow', function (e) {
           e.preventDefault();
-          $('.user_form .fields.comment').show(400);
-          $(this).hide('80');
-          $('#remove_comment').show('80');
+          var href = $.attr(this, 'href');
+          $root.animate({
+            scrollTop: $(href).offset().top
+          }, 500, function () {
+            window.location.hash = href;
+          });
         })
-        .on('click', '#remove_comment', function (e) {
+        .on('click', '.info_tip .info_icon', function () {
+          $(this).siblings('.tip_box').show();
+        })
+        .on('click', '.info_tip .close', function (e) {
           e.preventDefault();
-          $('.user_form .fields.comment').hide(400);
-          $(this).hide('80');
-          $('#add_comment').show('80');
+          $(this).closest('.tip_box').hide();
         })
-        .on('change', '#payment_options input', function () {
-          if ($('#payment_options input:checked').length) {
-            $('#payment_options').addClass('has_value');
-            $('#payment_options input').next().children('label').attr('style', 'background-color:#fff');
-            $('#payment_options input:checked').next().children('label').attr('style', 'background-color:#ffeba0');
+        .on('click', function (e) {
+          if ($(e.target).closest('.info_tip').length == 0) {
+            $('.info_tip .tip_box').hide();
           }
-
         })
-        .on('change', '#times', function () {
-          check_payment_options.call(this);
-        })
+        .on('submit', '#form', function (e) {
 
-        .on('click', 'a.delete_user', function(e) {
-          e.preventDefault();
-          if(confirm('Все транзакции, рекурренты, кампании, доноры и настройки, связанные с этим пользователем, будут удалены!')) {
-            window.location = $(this).attr('href');
+          var error = false;
+          var r = /^[\w\.\d-_]+@[\w\.\d-_]+\.\w{2,4}$/i;
+          if (!r.test($('#email').val())) {
+            $('#email_error').show();
+            error = true;
           } else {
-            return false;
+            $('#email_error').hide();
           }
 
+          r = /^[\d\+\-\(\)]+$/i;
+          if (!r.test($('#phone').val())) {
+            $('#phone_error').show();
+            error = true;
+          } else {
+            $('#phone_error').hide();
+          }
+
+          if (error) return false;
+
+        })
+        .on("keydown", '#email', function (e) {
+          $('#email_error').hide();
+        })
+        .on("keydown", '#phone', function (e) {
+          $('#phone_error').hide();
+        })
+        .on('focus', '#form input, #form select', function(){
+          $('.submit_box.done').removeClass('done');
         });
 
-
-    check_payment_options.call($('#times'));
-  }
-
-  function check_payment_options() {
-    var $self = $(this), po = $('#payment_options');
-    po.removeClass('fixed_options has_value');
-    po.find('input').each(function(){
-       $(this).prop('checked', false)
+    $(window).on('scroll', function () {
+      var scroll_top = $(this).scrollTop();
+      sticky_navigation(scroll_top);
+      hide_menu_btn(scroll_top);
     });
-    if ($self.val() == '1') {
-      $('#bc_option').trigger('click');
-      po.addClass('fixed_options');
+
+    function sticky_navigation(scroll_top) {
+      $('#menu_block').toggleClass('stick', scroll_top > sticky_navigation_offset_top)
     }
 
+    function hide_menu_btn(scroll_top) {
+      if (scroll_top >= $("#kassa_section").offset().top || scroll_top + $(window).height() == $(document).height()) {
+        $('#get_kassa_btn').hide();
+      }
+      else {
+        $('#get_kassa_btn').show();
+      }
+    }
+
+    sticky_navigation($(window).scrollTop());
+    hide_menu_btn($(window).scrollTop());
+
   }
 
+  // run our function on load
 
   app.init = function () {
     visual();
@@ -65,4 +93,4 @@ var Donation = (function (app, $) {
   });
 
   return app;
-}(Donation || {}, jQuery));
+}(Promo || {}, $));
