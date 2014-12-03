@@ -21,6 +21,7 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Entity\YandexKassa;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\Clear;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 class SettingsController extends Controller
