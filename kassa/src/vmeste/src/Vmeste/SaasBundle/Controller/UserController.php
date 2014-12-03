@@ -157,7 +157,7 @@ class UserController extends Controller
 
                 $settings = new Settings();
                 $yandexKassa = new YandexKassa();
-
+                $yandexKassa->setShopId(time().rand(1, 100));
                 $em->persist($yandexKassa);
                 $em->persist($settings);
 

@@ -82,6 +82,7 @@ class SettingsController extends Controller
             if($add) {
                 $settings = new Settings();
                 $yandexKassa = new YandexKassa();
+                $yandexKassa->setShopId(time().rand(1, 100));
                 $em->persist($yandexKassa);
                 $em->persist($settings);
                 $settings->setYandexKassa($yandexKassa);
