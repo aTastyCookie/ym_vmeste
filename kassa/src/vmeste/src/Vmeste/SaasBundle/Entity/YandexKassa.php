@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @ORM\Entity(repositoryClass="Vmeste\SaasBundle\Entity\YandexKassaRepository")
- * @ORM\Table(name="yandex_kassa")
+ * @ORM\Table(name="yandex_kassa", uniqueConstraints={@ORM\UniqueConstraint(name="shopId",columns={"shopId"})})
  */
 class YandexKassa
 {
