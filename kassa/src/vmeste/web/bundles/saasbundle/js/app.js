@@ -26,7 +26,7 @@ var Donation = (function (app, $) {
         })
         .on('change', '#times', function () {
           check_payment_options.call(this);
-        });
+        })
 
         .on('click', 'a.delete_user', function(e) {
           e.preventDefault();
