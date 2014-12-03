@@ -450,8 +450,8 @@ class UserController extends Controller
         $em->flush();
         $em->remove($userSettings);
         $em->flush();
-        $em->remove($yandexKassa);
-        $em->flush();
+        /*$em->remove($yandexKassa);
+        $em->flush();*/
 
         $userEvent = $this->get('security.context')->getToken()->getUser();
         $sysEvent = new SysEvent();
