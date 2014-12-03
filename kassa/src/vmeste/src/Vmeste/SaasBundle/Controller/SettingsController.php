@@ -21,8 +21,6 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Entity\YandexKassa;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\Clear;
-use Symfony\Component\Validator\Mapping\ClassMetadata;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 class SettingsController extends Controller
 {
@@ -292,10 +290,10 @@ class SettingsController extends Controller
             $sandbox = $this->convertCheckboxDataToInt($request->get('yandex_sandbox'));
 
             $shopIdConstraintErrorList = NULL;
-            if($shopid != NULL) {
-                $shoIdConstraint = new UniqueEntity(array('fields'  => 'shopid'));
+            /*if($shopid != NULL) {
+                $shoIdConstraint = new ShopIdConstraint(array('fields'  => 'shopid'));
                 $shopIdConstraintErrorList = $this->get('validator')->validateValue($shopid, $shoIdConstraint);
-            }
+            }*/
 
 
             $certFile = $request->files->get('cert_file', NULL);
