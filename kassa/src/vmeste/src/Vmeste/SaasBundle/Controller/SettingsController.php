@@ -56,6 +56,12 @@ class SettingsController extends Controller
             $fileErrors = $fileErrorsArray[0];
         }
 
+        $shopErrors = null;
+        if (count($this->get('session')->getFlashBag()->peek('shop_errors')) > 0) {
+            $shopErrorsArray = $this->get('session')->getFlashBag()->get('shop_errors');
+            $shopErrors = $shopErrorsArray[0];
+        }
+
         if ($userId == null) {
             $authorizedUser = $this->get('security.context')->getToken()->getUser();
             $userId = $authorizedUser->getId();
@@ -140,7 +146,8 @@ class SettingsController extends Controller
             'updateYKSettingsRoute' => $updateYKSettingsRoute,
             'updatePasswordRoute' => $updatePasswordRoute,
             'userIdForEdit' => $userIdForEdit,
-            'fileErrors' => $fileErrors
+            'fileErrors' => $fileErrors,
+            'shopErrors' => $shopErrors
         );
     }
 
@@ -313,7 +320,6 @@ class SettingsController extends Controller
                 }
 
             }
-
 
             $certFile = $request->files->get('cert_file', NULL);
             $certKeyFile = $request->files->get('cert_key_file', NULL);
