@@ -84,6 +84,8 @@
         </p>
 
         <form action="{{ updateYKSettingsRoute }}" method="post" enctype="multipart/form-data">
+            {{ shopErrors | raw }}
+
             <p><label><sup class="reg-sup">*</sup>shopId:
                     <input type="text" name="yandex_shopid" value="{{ shopid }}">
                 </label></p>
