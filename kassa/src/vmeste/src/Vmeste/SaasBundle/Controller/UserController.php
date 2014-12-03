@@ -447,7 +447,9 @@ class UserController extends Controller
         $yandexKassa = $userSettings->getYandexKassa();
 
         $em->remove($user);
+        $em->flush();
         $em->remove($userSettings);
+        $em->flush();
         $em->remove($yandexKassa);
         $em->flush();
 
