@@ -679,8 +679,12 @@ class CampaignController extends Controller
     public function paymentPageAction($campaignUrl)
     {
         $em = $this->getDoctrine()->getManager();
+
+        $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
+
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
-            ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl)));
+            ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl), 'status'=>$status));
+
 
         if (!$campaign) {
             throw $this->createNotFoundException();
