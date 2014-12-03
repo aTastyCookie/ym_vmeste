@@ -28,6 +28,16 @@ var Donation = (function (app, $) {
           check_payment_options.call(this);
         });
 
+        .on('click', 'a.delete_user', function(e) {
+          e.preventDefault();
+          if(confirm('Все транзакции, рекурренты, кампании, доноры и настройки, связанные с этим пользователем, будут удалены!')) {
+            window.location = $(this).attr('href');
+          } else {
+            return false;
+          }
+
+        });
+
 
     check_payment_options.call($('#times'));
   }
