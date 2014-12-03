@@ -685,9 +685,10 @@ class CampaignController extends Controller
         $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')
             ->findOneBy(array('url' => Clear::string_without_quotes($campaignUrl), 'status'=>$status));
 
-
         if (!$campaign) {
-            throw $this->createNotFoundException();
+            echo "Запрошенная кампания удалена либо не существует";
+            exit;
+            //throw $this->createNotFoundException();
         }
 
         $user = $campaign->getUser();
