@@ -61,8 +61,8 @@ class Rebilling
         $today_d = date("j");
         $today_m = date("n");
         $today_y = date("Y");
-        $today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y) + 259200;
-        $today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y) + 259200;
+        $today_start = mktime(0, 0, 0, $today_m, $today_d, $today_y) + 172800;
+        $today_end = mktime(23, 59, 59, $today_m, $today_d, $today_y) + 172800;
 
         $this->attempt_notify($today_start, $today_end);
 
