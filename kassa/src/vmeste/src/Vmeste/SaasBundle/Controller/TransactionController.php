@@ -51,10 +51,12 @@ class TransactionController extends Controller
         $code = 0;
         $message = "Ok";
 
-        $ykShopId = Clear::integer($request->request->get('shopId'));
-
         $em = $this->getDoctrine()->getManager();
-        $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
+        $ykShopId = Clear::integer($request->request->get('shopId'));
+        $ykScId = Clear::integer($request->request->get('scid'));
+        $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(
+            array('shopId' => $ykShopId, 'scid' => $ykScId)
+        );
         if (!$yandexKassa) {
             $code = 100;
             $message = "Incorrect shopId";
@@ -141,7 +143,10 @@ class TransactionController extends Controller
         $em = $this->getDoctrine()->getManager();
 
         $ykShopId = Clear::integer($request->request->get('shopId'));
-        $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $ykShopId));
+        $ykScId = Clear::integer($request->request->get('scid'));
+        $yandexKassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(
+            array('shopId' => $ykShopId, 'scid' => $ykScId)
+        );
 
         if (!$yandexKassa) {
             $code = 200;

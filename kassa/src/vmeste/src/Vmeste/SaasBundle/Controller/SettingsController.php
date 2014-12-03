@@ -289,6 +289,13 @@ class SettingsController extends Controller
             $gp = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_gp'));
             $sandbox = $this->convertCheckboxDataToInt($request->get('yandex_sandbox'));
 
+            $shopIdConstraintErrorList = NULL;
+            if($shopid != NULL) {
+                $shoIdConstraint = new UniqueEntity(array('fields'  => 'shopid'));
+                $shopIdConstraintErrorList = $this->get('validator')->validateValue($shopid, $shoIdConstraint);
+            }
+
+
             $certFile = $request->files->get('cert_file', NULL);
             $certKeyFile = $request->files->get('cert_key_file', NULL);
             $certPass = $request->request->get('cert_pass', NULL);
@@ -331,7 +338,6 @@ class SettingsController extends Controller
                         $fileErrors .= '<li>' . $message . '</li>';
                 }
 
-
                 foreach ($certKeyFileConstraintErrorList as $certKeyFileError) {
                     $message = $certKeyFileError->getMessage();
                     if (!empty($message))
@@ -355,6 +361,29 @@ class SettingsController extends Controller
                     $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
                 }
 
+            } elseif(count($shopIdConstraintErrorList) != 0) {
+                $shopErrors = '<ul>';
+                foreach ($shopIdConstraintErrorList as $shopIdError) {
+                    $message = $shopIdError->getMessage();
+                    if (!empty($message))
+                        $shopErrors .= '<li>' . $message . '</li>';
+                }
+                $shopErrors .= '</ul>';
+
+                $this->get('session')->getFlashBag()->add('shop_errors', $shopErrors);
+
+                $currentUser = $this->get('security.context')->getToken()->getUser();
+                $userId = $currentUser->getId();
+
+                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $userId = $this->getRequest()->get('userId', null);
+                }
+
+                $redirectUri = $this->generateUrl('customer_settings');
+
+                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                    $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
+                }
             } else { // if no file errors founded
 
                 $em = $this->getDoctrine()->getManager();
@@ -416,7 +445,6 @@ class SettingsController extends Controller
                     $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
                 }
             }
-
         }
 
         return $this->redirect($redirectUri);
