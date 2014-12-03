@@ -278,7 +278,7 @@ class SettingsController extends Controller
         $redirectUri = $this->generateUrl('vmeste_saas');
 
         if ($request->isMethod('POST')) {
-
+            $em = $this->getDoctrine()->getManager();
             $shopid = Clear::integer($request->request->get('yandex_shopid', NULL), null);
             $scid = Clear::integer($request->request->get('yandex_scid', NULL), null);
             $shoppw = Clear::removeCRLF($request->request->get('yandex_shoppw', NULL));
@@ -290,11 +290,29 @@ class SettingsController extends Controller
             $gp = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_gp'));
             $sandbox = $this->convertCheckboxDataToInt($request->get('yandex_sandbox'));
 
+            $currentUser = $this->get('security.context')->getToken()->getUser();
+            $userId = $currentUser->getId();
+            if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
+                $userId = $this->getRequest()->get('userId', null);
+            }
+
+            $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
+
+            $settingsCollection = $user->getSettings();
+            $userSettings = $settingsCollection[0];
+
+            $yandexKassa = $userSettings->getYandexKassa();
+
             $shopIdConstraintErrorList = NULL;
-            /*if($shopid != NULL) {
-                $shoIdConstraint = new ShopIdConstraint(array('fields'  => 'shopid'));
-                $shopIdConstraintErrorList = $this->get('validator')->validateValue($shopid, $shoIdConstraint);
-            }*/
+            if($shopid != NULL) {
+                $yk = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')->findOneBy(array('shopId' => $shopid));
+                if($yk != NULL) {
+                    if($yk->getId() != $yandexKassa->getId()) {
+                        $shopIdConstraintErrorList = array('Этот shopId уже используется');
+                    }
+                }
+
+            }
 
 
             $certFile = $request->files->get('cert_file', NULL);
@@ -349,13 +367,6 @@ class SettingsController extends Controller
 
                 $this->get('session')->getFlashBag()->add('file_errors', $fileErrors);
 
-                $currentUser = $this->get('security.context')->getToken()->getUser();
-                $userId = $currentUser->getId();
-
-                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
-                    $userId = $this->getRequest()->get('userId', null);
-                }
-
                 $redirectUri = $this->generateUrl('customer_settings');
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
@@ -364,21 +375,13 @@ class SettingsController extends Controller
 
             } elseif(count($shopIdConstraintErrorList) != 0) {
                 $shopErrors = '<ul>';
-                foreach ($shopIdConstraintErrorList as $shopIdError) {
-                    $message = $shopIdError->getMessage();
-                    if (!empty($message))
-                        $shopErrors .= '<li>' . $message . '</li>';
+                foreach ($shopIdConstraintErrorList as $shopIdError) {;
+                    if (!empty($shopIdError))
+                        $shopErrors .= '<li>' . $shopIdError . '</li>';
                 }
                 $shopErrors .= '</ul>';
 
                 $this->get('session')->getFlashBag()->add('shop_errors', $shopErrors);
-
-                $currentUser = $this->get('security.context')->getToken()->getUser();
-                $userId = $currentUser->getId();
-
-                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
-                    $userId = $this->getRequest()->get('userId', null);
-                }
 
                 $redirectUri = $this->generateUrl('customer_settings');
 
@@ -386,21 +389,6 @@ class SettingsController extends Controller
                     $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
                 }
             } else { // if no file errors founded
-
-                $em = $this->getDoctrine()->getManager();
-
-                $currentUser = $this->get('security.context')->getToken()->getUser();
-                $userId = $currentUser->getId();
-                if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
-                    $userId = $this->getRequest()->get('userId', null);
-                }
-
-                $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
-
-                $settingsCollection = $user->getSettings();
-                $userSettings = $settingsCollection[0];
-
-                $yandexKassa = $userSettings->getYandexKassa();
 
                 $yandexKassa->setShopId($shopid);
                 $yandexKassa->setScid($scid);
