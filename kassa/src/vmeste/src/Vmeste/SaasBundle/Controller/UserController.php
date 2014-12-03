@@ -446,12 +446,28 @@ class UserController extends Controller
         $userSettings = $settingsCollection[0];
         $yandexKassa = $userSettings->getYandexKassa();
 
+        $campaigns = $user->getCampaigns();
+        foreach($campaigns as $campaign) {
+            $donors = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findBy(array('campaign' => $campaign));
+            foreach($donors as $donor) {
+                $transactions = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findBy(array('donor' => $donor));
+                foreach($transactions as $transaction) {
+                    $em->remove($transaction);
+                }
+                $recurrents = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findBy(array('donor' => $donor));
+                foreach($recurrents as $recurrent) {
+                    $em->remove($recurrent);
+                }
+                $em->remove($donor);
+            }
+            $em->remove($campaign);
+        }
+
         $em->remove($user);
-        $em->flush();
-        /*$em->remove($userSettings);
-        $em->flush();
+        $em->remove($userSettings);
         $em->remove($yandexKassa);
-        $em->flush();*/
+
+        $em->flush();
 
         $userEvent = $this->get('security.context')->getToken()->getUser();
         $sysEvent = new SysEvent();
