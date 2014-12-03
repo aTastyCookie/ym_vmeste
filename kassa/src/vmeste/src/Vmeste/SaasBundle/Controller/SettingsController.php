@@ -362,7 +362,7 @@ class SettingsController extends Controller
                 }
 
             } elseif(count($shopIdConstraintErrorList) != 0) {
-                $shopErrors = '<ul>';
+                /*$shopErrors = '<ul>';
                 foreach ($shopIdConstraintErrorList as $shopIdError) {
                     $message = $shopIdError->getMessage();
                     if (!empty($message))
@@ -383,7 +383,7 @@ class SettingsController extends Controller
 
                 if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
                     $redirectUri = $this->generateUrl('admin_customer_settings', array('userId' => $userId));
-                }
+                }*/
             } else { // if no file errors founded
 
                 $em = $this->getDoctrine()->getManager();
