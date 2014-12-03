@@ -448,7 +448,7 @@ class UserController extends Controller
 
         $campaigns = $user->getCampaigns();
         foreach($campaigns as $campaign) {
-            $donors = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findBy(array('campaign' => $campaign));
+            $donors = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findBy(array('campaign_id' => $campaign->getId()));
             foreach($donors as $donor) {
                 $transactions = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findBy(array('donor' => $donor));
                 foreach($transactions as $transaction) {
