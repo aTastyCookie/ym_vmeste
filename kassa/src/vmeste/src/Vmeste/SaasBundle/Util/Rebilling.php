@@ -297,7 +297,7 @@ class Rebilling
                         )
                     );
                 $this->context_mailer->send($message);
-                //echo "Sending notification message from $emailFrom to $emailTo...\n";
+                echo "Sending notification message from $emailFrom to $emailTo...\n";
             }
             $offset += self::LIMIT_ROWS;
             $this->_next_data($offset, $today_start, $today_end);
