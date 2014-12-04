@@ -296,10 +296,10 @@ class UserController extends Controller
             $sysEvent = new SysEvent();
             $sysEvent->setUserId($userEvent->getId());
 
-            if($data['role'] == 'ROLE_USER') {
-                $sysEvent->setEvent(SysEvent::UPDATE_ADMIN);
+            if($user->getRole() == 'ROLE_USER') {
+                $sysEvent->setEvent(SysEvent::UPDATE_USER . ' ' . $user->getId());
             } else {
-                $sysEvent->setEvent(SysEvent::UPDATE_USER);
+                $sysEvent->setEvent(SysEvent::UPDATE_ADMIN . ' ' . $user->getId());
             }
 
             $sysEvent->setIp($this->container->get('request')->getClientIp());
