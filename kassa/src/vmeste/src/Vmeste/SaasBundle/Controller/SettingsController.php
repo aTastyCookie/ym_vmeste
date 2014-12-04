@@ -332,7 +332,6 @@ class SettingsController extends Controller
                         $shopIdConstraintErrorList = array('Этот shopId уже используется');
                     }
                 }
-
             }
 
             $certFile = $request->files->get('cert_file', NULL);

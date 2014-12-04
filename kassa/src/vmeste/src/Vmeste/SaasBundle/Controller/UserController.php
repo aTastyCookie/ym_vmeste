@@ -128,63 +128,55 @@ class UserController extends Controller
 
             $em = $this->getDoctrine()->getManager();
 
-            $user = new User();
+            if($this->checkEmail($em, $data['email'])) {
+                $user = new User();
 
-            $user->setUploadDir($this->container->getParameter('image.upload.dir'));
+                $user->setUploadDir($this->container->getParameter('image.upload.dir'));
 
-            $user->setUsername($data['username']);
-            $user->setEmail($data['email']);
+                $user->setUsername($data['username']);
+                $user->setEmail($data['email']);
 
-            if(!empty($data['logo'])) {
-                $user->setLogo($data['logo']);
-                $user->upload();
-            }
+                if(!empty($data['logo'])) {
+                    $user->setLogo($data['logo']);
+                    $user->upload();
+                }
 
-            $factory = $this->get('security.encoder_factory');
-            $encoder = $factory->getEncoder($user);
-            $password = $encoder->encodePassword($data['password'], $user->getSalt());
-            $user->setPassword($password);
+                $factory = $this->get('security.encoder_factory');
+                $encoder = $factory->getEncoder($user);
+                $password = $encoder->encodePassword($data['password'], $user->getSalt());
+                $user->setPassword($password);
 
-            $role = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
-            $user->addRole($role);
+                $role = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
+                $user->addRole($role);
 
-            $userEvent = $this->get('security.context')->getToken()->getUser();
-            $sysEvent = new SysEvent();
-            $sysEvent->setUserId($userEvent->getId());
+                $userEvent = $this->get('security.context')->getToken()->getUser();
+                $sysEvent = new SysEvent();
+                $sysEvent->setUserId($userEvent->getId());
 
-            if($data['role'] == 'ROLE_USER') {
+                if($data['role'] == 'ROLE_USER') {
+                    $sysEvent->setEvent(SysEvent::CREATE_USER);
+                } else {
+                    $sysEvent->setEvent(SysEvent::CREATE_ADMIN);
+                }
 
-                /*$settings = new Settings();
-                $yandexKassa = new YandexKassa();
-                $yandexKassa->setShopId(time().rand(1, 100));
-                $em->persist($yandexKassa);
-                $em->persist($settings);
+                $role->addUser($user);
+                $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
+                $user->addStatus($status);
+                $status->addUser($user);
+                $user->setCreatedBy($currentUser->getId());
 
-                $settings->setYandexKassa($yandexKassa);
-                $user->addSetting($settings);*/
+                $em->persist($user);
+                $em->flush();
 
-                $sysEvent->setEvent(SysEvent::CREATE_USER);
+                $sysEvent->setIp($this->container->get('request')->getClientIp());
+                $eventTracker = $this->get('sys_event_tracker');
+                $eventTracker->track($sysEvent);
+
+                return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
             } else {
-                $sysEvent->setEvent(SysEvent::CREATE_ADMIN);
+                $form->get('email')->addError(new FormError('Такой email уже занят'));
             }
-
-            $role->addUser($user);
-            $status = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
-            $user->addStatus($status);
-            $status->addUser($user);
-            $user->setCreatedBy($currentUser->getId());
-
-            $em->persist($user);
-            $em->flush();
-
-            $sysEvent->setIp($this->container->get('request')->getClientIp());
-            $eventTracker = $this->get('sys_event_tracker');
-            $eventTracker->track($sysEvent);
-
-            return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
         }
-
-
         return array(
             'form' => $form->createView(),
         );
@@ -468,4 +460,9 @@ class UserController extends Controller
         return $this->redirect($this->generateUrl('admin_user', array('page' => $page)));
     }
 
+    public function checkEmail($em, $email) {
+        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('email' => $email));
+        if($user != NULL) return false;
+        return true;
+    }
 } 
