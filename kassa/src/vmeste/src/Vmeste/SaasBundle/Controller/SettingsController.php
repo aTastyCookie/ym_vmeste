@@ -74,6 +74,7 @@ class SettingsController extends Controller
             return $this->redirect($this->generateUrl("vmeste_saas"));
         } else {
             $settingsCollection = $user->getSettings();
+            $userSettings = $yandexKassa = false;
             if(isset($settingsCollection[0])) {
                 $userSettings = $settingsCollection[0];
                 if($userSettings) {
