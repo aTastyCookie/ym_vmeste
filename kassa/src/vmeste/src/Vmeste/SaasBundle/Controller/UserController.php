@@ -25,7 +25,7 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\Clear;
 use Vmeste\SaasBundle\Util\PaginationUtils;
-use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormError;
 
 class UserController extends Controller
 {
