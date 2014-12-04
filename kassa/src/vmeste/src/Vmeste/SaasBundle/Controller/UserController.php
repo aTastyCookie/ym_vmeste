@@ -175,7 +175,7 @@ class UserController extends Controller
 
                 return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
             } else {
-                echo gettype($form->get('email'));
+                echo gettype(new FormError('Такой email уже занят'));
                 exit;
                     //->addError(new FormError('Такой email уже занят'));
             }
