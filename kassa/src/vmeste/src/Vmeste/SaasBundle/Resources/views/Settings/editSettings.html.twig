@@ -76,7 +76,7 @@
             </p>
         </form>
     </div>
-
+{% if updateYKSettingsRoute %}
     <h3>Настройки Кассы от Яндекс.Деньги</h3>
     <div>
         <p>Укажите, пожалуйста, shopId, scid и shoppassword, выданные вам при заключении договора с Яндекс.Деньги.
@@ -145,7 +145,7 @@
             </p>
         </form>
     </div>
-
+{% endif %}
     <h3>Настройки доступа</h3>
     <div>
         <form action="{{ updatePasswordRoute }}" method="post">

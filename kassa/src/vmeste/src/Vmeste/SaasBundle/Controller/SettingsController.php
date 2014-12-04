@@ -75,6 +75,7 @@ class SettingsController extends Controller
         } else {
             $add = true;
             $settingsCollection = $user->getSettings();
+            $userSettings = false;
             if(isset($settingsCollection[0])) {
                 $userSettings = $settingsCollection[0];
                 if($userSettings) {
@@ -127,7 +128,7 @@ class SettingsController extends Controller
 
         if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
             $updateEmailSettingsRoute = $this->generateUrl('admin_update_email_settings');
-            $updateYKSettingsRoute = $this->generateUrl('admin_update_yk_settings');
+            $updateYKSettingsRoute = $userSettings ? $this->generateUrl('admin_update_yk_settings') : false;
             $updatePasswordRoute = $this->generateUrl('admin_update_customer_password');
             $userIdForEdit = $userId;
         }
@@ -231,8 +232,20 @@ class SettingsController extends Controller
 
                 $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
 
+                $add = true;
                 $settingsCollection = $user->getSettings();
-                $userSettings = $settingsCollection[0];
+                if(isset($settingsCollection[0])) {
+                    $userSettings = $settingsCollection[0];
+                    if($userSettings) {
+                        $add = false;
+                    }
+                }
+
+                if($add) {
+                    $userSettings = new Settings();
+                    $user->addSetting($userSettings);
+                    $em->persist($user);
+                }
 
                 $userSettings->setCompanyName($companyName);
                 $userSettings->setDetails($details);
@@ -319,10 +332,25 @@ class SettingsController extends Controller
 
             $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $userId));
 
+            $add = true;
             $settingsCollection = $user->getSettings();
-            $userSettings = $settingsCollection[0];
+            if(isset($settingsCollection[0])) {
+                $userSettings = $settingsCollection[0];
+                if($userSettings) {
+                    $yandexKassa = $userSettings->getYandexKassa();
+                    if($yandexKassa) {
+                        $add = false;
+                    }
+                }
+            }
 
-            $yandexKassa = $userSettings->getYandexKassa();
+            if($add) {
+                $yandexKassa = new YandexKassa();
+                $userSettings->setYandexKassa($yandexKassa);
+                $user->addSetting($userSettings);
+                $em->persist($userSettings);
+                $em->persist($user);
+            }
 
             $shopIdConstraintErrorList = NULL;
             if($shopid != NULL) {
