@@ -86,22 +86,36 @@ class SettingsController extends Controller
             }
 
             if($add) {
-                $settings = new Settings();
-                $yandexKassa = new YandexKassa();
-                $yandexKassa->setShopId(time().rand(1, 100));
-                $em->persist($yandexKassa);
-                $em->persist($settings);
-                $settings->setYandexKassa($yandexKassa);
-                $user->addSetting($settings);
-                $em->persist($user);
-                $em->flush();
-            }
-
-            $settingsCollection = $user->getSettings();
-            $userSettings = $settingsCollection[0];
-            $yandexKassa = $userSettings->getYandexKassa();
-            if(!is_null($recentCustomerSetting)) {
-                $this->reinitializeUserSettings($userSettings, $recentCustomerSetting);
+                $notificationEmail = $companyName = $directorName = $position = $authority = $details =
+                $senderName = $senderEmail = $shopId = $scid = $shoppw = '';
+                $columnSeparator = ';';
+                $pc = $ac = $wm = $mc = $gp = 0;
+                $sandbox = 1;
+            } else {
+                $settingsCollection = $user->getSettings();
+                $userSettings = $settingsCollection[0];
+                $yandexKassa = $userSettings->getYandexKassa();
+                if(!is_null($recentCustomerSetting)) {
+                    $this->reinitializeUserSettings($userSettings, $recentCustomerSetting);
+                }
+                $notificationEmail = $userSettings->getNotificationEmail();
+                $companyName = $userSettings->getCompanyName();
+                $directorName = $userSettings->getDirectorName();
+                $position = $userSettings->getPosition();
+                $authority = $userSettings->getAuthority();
+                $details = $userSettings->getDetails();
+                $senderName = $userSettings->getSenderName();
+                $senderEmail = $userSettings->getSenderEmail();
+                $columnSeparator = $userSettings->getCsvColumnSeparator();
+                $shopId = $yandexKassa->getShopId();
+                $scid = $yandexKassa->getScid();
+                $shoppw = $yandexKassa->getShoppw();
+                $pc = $yandexKassa->getPc();
+                $ac = $yandexKassa->getAc();
+                $wm = $yandexKassa->getWm();
+                $mc = $yandexKassa->getMc();
+                $gp = $yandexKassa->getGp();
+                $sandbox = $yandexKassa->getSandbox();
             }
         }
 
@@ -120,24 +134,24 @@ class SettingsController extends Controller
 
         return array(
             self::EMAIL_SETTING_ERRORS => $emailSettingsErrors,
-            'notification_email' => $userSettings->getNotificationEmail(),
-            'company_name' => $userSettings->getCompanyName(),
-            'director_name' => $userSettings->getDirectorName(),
-            'position' => $userSettings->getPosition(),
-            'authority' => $userSettings->getAuthority(),
-            'details' => $userSettings->getDetails(),
-            'sender_name' => $userSettings->getSenderName(),
-            'sender_email' => $userSettings->getSenderEmail(),
-            'csv_separator' => $userSettings->getCsvColumnSeparator(),
-            'shopid' => $yandexKassa->getShopId(),
-            'scid' => $yandexKassa->getScid(),
-            'shoppassword' => $yandexKassa->getShoppw(),
-            'pc' => $yandexKassa->getPc(),
-            'ac' => $yandexKassa->getAc(),
-            'wm' => $yandexKassa->getWm(),
-            'mc' => $yandexKassa->getMc(),
-            'gp' => $yandexKassa->getGp(),
-            'sandbox' => $yandexKassa->getSandbox(),
+            'notification_email' => $notificationEmail,
+            'company_name' => $companyName,
+            'director_name' => $directorName,
+            'position' => $position,
+            'authority' => $authority,
+            'details' => $details,
+            'sender_name' => $senderName,
+            'sender_email' => $senderEmail,
+            'csv_separator' => $columnSeparator,
+            'shopid' => $shopId,
+            'scid' => $scid,
+            'shoppassword' => $shoppw,
+            'pc' => $pc,
+            'ac' => $ac,
+            'wm' => $wm,
+            'mc' => $mc,
+            'gp' => $gp,
+            'sandbox' => $sandbox,
             /*'certificate' => $yandexKassa->getCertFilePath(),
             'certkey' => $yandexKassa->getCertKeyFilePath(),
             'certpass' => $yandexKassa->getCertPass(),*/

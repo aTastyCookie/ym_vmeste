@@ -39,7 +39,6 @@ class UserController extends Controller
         if($this->getRequest()->query->get("user_creation") == 'success')
             $userSuccessfullyCreatedMessage = "Пользователь успешно создан!";
 
-
         $limit = $this->container->getParameter('paginator.page.items');
         $pageOnSidesLimit = 10;
 
@@ -155,18 +154,18 @@ class UserController extends Controller
 
             if($data['role'] == 'ROLE_USER') {
 
-                $settings = new Settings();
+                /*$settings = new Settings();
                 $yandexKassa = new YandexKassa();
                 $yandexKassa->setShopId(time().rand(1, 100));
                 $em->persist($yandexKassa);
                 $em->persist($settings);
 
                 $settings->setYandexKassa($yandexKassa);
-                $user->addSetting($settings);
+                $user->addSetting($settings);*/
 
-                $sysEvent->setEvent(SysEvent::CREATE_ADMIN);
-            } else {
                 $sysEvent->setEvent(SysEvent::CREATE_USER);
+            } else {
+                $sysEvent->setEvent(SysEvent::CREATE_ADMIN);
             }
 
             $role->addUser($user);
@@ -211,7 +210,9 @@ class UserController extends Controller
             throw $this->createNotFoundException();
         }
 
-        $form = $this->createFormBuilder()
+
+
+        $builder = $this->createFormBuilder()
             ->add('email', 'text', array('constraints' => array(
                 new NotBlank(),
                 new Email(),
@@ -229,8 +230,9 @@ class UserController extends Controller
                 'second_options' => array('label' => 'Повторите пароль'),
                 'constraints' => array(
                     new Length(array('min' => 6, 'max' => 64)),
-                )))
-            ->add('role', 'choice', array(
+                )));
+        if($user->getRole() != 'ROLE_ADMIN') {
+            $builder->add('role', 'choice', array(
                 'choices' => array(
                     'ROLE_USER' => 'Пользователь',
                     'ROLE_ADMIN' => 'Администратор',
@@ -243,8 +245,10 @@ class UserController extends Controller
                             'message' => 'Выберите корректную роль.',
                         )
                     )
-                )))
-            ->add('logo', 'file', array(
+                )));
+        }
+
+        $form = $builder->add('logo', 'file', array(
                     'label' => 'Логотип (рекомендации: 100х70px, горизонтальная ориентация, прозрачный фон (PNG-24))',
                     'constraints' => array(
                         new Image(
@@ -290,29 +294,6 @@ class UserController extends Controller
                 $newRole = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $data['role']));
                 $user->addRole($newRole);
                 $newRole->addUser($user);
-
-                if($data['role'] == 'ROLE_USER') {
-                    $add = true;
-                    $settingsCollection = $user->getSettings();
-                    if(isset($settingsCollection[0])) {
-                        $userSettings = $settingsCollection[0];
-                        if($userSettings) {
-                            $yandexKassa = $userSettings->getYandexKassa();
-                            if($yandexKassa) {
-                                $add = false;
-                            }
-                        }
-                    }
-
-                    if($add) {
-                        $settings = new Settings();
-                        $yandexKassa = new YandexKassa();
-                        $em->persist($yandexKassa);
-                        $em->persist($settings);
-                        $settings->setYandexKassa($yandexKassa);
-                        $user->addSetting($settings);
-                    }
-                }
             }
 
             $em->persist($user);
@@ -442,30 +423,38 @@ class UserController extends Controller
         if(!$user) {
             throw $this->createNotFoundException();
         }
-        $settingsCollection = $user->getSettings();
-        $userSettings = $settingsCollection[0];
-        $yandexKassa = $userSettings->getYandexKassa();
 
-        $campaigns = $user->getCampaigns();
-        foreach($campaigns as $campaign) {
-            $donors = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findBy(array('campaign_id' => $campaign->getId()));
-            foreach($donors as $donor) {
-                $transactions = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findBy(array('donor' => $donor));
-                foreach($transactions as $transaction) {
-                    $em->remove($transaction);
+        $settingsCollection = $user->getSettings();
+
+        if(isset($settingsCollection[0])) {
+            $userSettings = $settingsCollection[0];
+            if($userSettings) {
+                $yandexKassa = $userSettings->getYandexKassa();
+                if($yandexKassa){
+                    $campaigns = $user->getCampaigns();
+                    foreach($campaigns as $campaign) {
+                        $donors = $em->getRepository('Vmeste\SaasBundle\Entity\Donor')->findBy(array('campaign_id' => $campaign->getId()));
+                        foreach($donors as $donor) {
+                            $transactions = $em->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findBy(array('donor' => $donor));
+                            foreach($transactions as $transaction) {
+                                $em->remove($transaction);
+                            }
+                            $recurrents = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findBy(array('donor' => $donor));
+                            foreach($recurrents as $recurrent) {
+                                $em->remove($recurrent);
+                            }
+                            $em->remove($donor);
+                        }
+                        $em->remove($campaign);
+                    }
+
+                    $em->remove($userSettings);
+                    $em->remove($yandexKassa);
                 }
-                $recurrents = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findBy(array('donor' => $donor));
-                foreach($recurrents as $recurrent) {
-                    $em->remove($recurrent);
-                }
-                $em->remove($donor);
             }
-            $em->remove($campaign);
         }
 
         $em->remove($user);
-        $em->remove($userSettings);
-        $em->remove($yandexKassa);
 
         $em->flush();
 
