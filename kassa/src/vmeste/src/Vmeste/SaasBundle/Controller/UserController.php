@@ -462,7 +462,12 @@ class UserController extends Controller
 
     public function checkEmail($em, $email) {
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('email' => $email));
-        if(gettype($user) == 'object') return false;
-        return true;
+        echo (gettype($user) == 'object');
+        exit;
+        if(gettype($user) == 'object') {
+            return false;
+        } else {
+            return true;
+        }
     }
 } 
