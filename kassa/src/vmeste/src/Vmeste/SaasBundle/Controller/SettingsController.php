@@ -91,9 +91,18 @@ class SettingsController extends Controller
                 $pc = $ac = $wm = $mc = $gp = 0;
                 $sandbox = 1;
                 $allowYkSettings = false;
-            } elseif(gettype($yandexKassa) != 'object') {
-                $shopId = $scid = $shoppw = '';
                 $columnSeparator = ';';
+            } elseif(gettype($yandexKassa) != 'object') {
+                $notificationEmail = $userSettings->getNotificationEmail();
+                $companyName = $userSettings->getCompanyName();
+                $directorName = $userSettings->getDirectorName();
+                $position = $userSettings->getPosition();
+                $authority = $userSettings->getAuthority();
+                $details = $userSettings->getDetails();
+                $senderName = $userSettings->getSenderName();
+                $senderEmail = $userSettings->getSenderEmail();
+                $columnSeparator = $userSettings->getCsvColumnSeparator();
+                $shopId = $scid = $shoppw = '';
                 $pc = $ac = $wm = $mc = $gp = 0;
                 $sandbox = 1;
             } else {
