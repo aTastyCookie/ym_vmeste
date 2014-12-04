@@ -292,20 +292,6 @@ class UserController extends Controller
             $em->persist($user);
             $em->flush();
 
-            $userEvent = $this->get('security.context')->getToken()->getUser();
-            $sysEvent = new SysEvent();
-            $sysEvent->setUserId($userEvent->getId());
-
-            if($user->getRole() == 'ROLE_USER') {
-                $sysEvent->setEvent(SysEvent::UPDATE_USER . ' ' . $user->getId());
-            } else {
-                $sysEvent->setEvent(SysEvent::UPDATE_ADMIN . ' ' . $user->getId());
-            }
-
-            $sysEvent->setIp($this->container->get('request')->getClientIp());
-            $eventTracker = $this->get('sys_event_tracker');
-            $eventTracker->track($sysEvent);
-
             return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
         }
 
