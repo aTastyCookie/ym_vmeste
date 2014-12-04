@@ -25,6 +25,7 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Hash;
 use Vmeste\SaasBundle\Util\Clear;
 use Vmeste\SaasBundle\Util\PaginationUtils;
+use Symfony\Component\Form\Form;
 
 class UserController extends Controller
 {
@@ -174,7 +175,9 @@ class UserController extends Controller
 
                 return $this->redirect($this->generateUrl('admin_user', array('user_creation' => 'success')));
             } else {
-                $form->get('email')->addError(new FormError('Такой email уже занят'));
+                echo gettype($form->get('email'));
+                exit;
+                    //->addError(new FormError('Такой email уже занят'));
             }
         }
         return array(
@@ -462,12 +465,8 @@ class UserController extends Controller
 
     public function checkEmail($em, $email) {
         $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('email' => $email));
-        echo (gettype($user) == 'object');
-        exit;
-        if(gettype($user) == 'object') {
-            return false;
-        } else {
-            return true;
-        }
+        if(gettype($user) == 'object') return false;
+        return true;
+
     }
 } 
