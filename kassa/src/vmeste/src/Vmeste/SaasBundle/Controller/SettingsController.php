@@ -73,22 +73,25 @@ class SettingsController extends Controller
         if ($user == null) {
             return $this->redirect($this->generateUrl("vmeste_saas"));
         } else {
-            $add = true;
             $settingsCollection = $user->getSettings();
-            $userSettings = false;
             if(isset($settingsCollection[0])) {
                 $userSettings = $settingsCollection[0];
                 if($userSettings) {
                     $yandexKassa = $userSettings->getYandexKassa();
-                    if($yandexKassa) {
-                        $add = false;
-                    }
                 }
             }
 
-            if($add) {
+            $allowYkSettings = true;
+
+            if(gettype($userSettings) != 'object' && gettype($yandexKassa) != 'object') {
                 $notificationEmail = $companyName = $directorName = $position = $authority = $details =
                 $senderName = $senderEmail = $shopId = $scid = $shoppw = '';
+                $columnSeparator = ';';
+                $pc = $ac = $wm = $mc = $gp = 0;
+                $sandbox = 1;
+                $allowYkSettings = false;
+            } elseif(gettype($yandexKassa) != 'object') {
+                $shopId = $scid = $shoppw = '';
                 $columnSeparator = ';';
                 $pc = $ac = $wm = $mc = $gp = 0;
                 $sandbox = 1;
@@ -128,7 +131,7 @@ class SettingsController extends Controller
 
         if (($this->get('security.context')->isGranted('ROLE_ADMIN'))) {
             $updateEmailSettingsRoute = $this->generateUrl('admin_update_email_settings');
-            $updateYKSettingsRoute = $userSettings ? $this->generateUrl('admin_update_yk_settings') : false;
+            $updateYKSettingsRoute = $allowYkSettings ? $this->generateUrl('admin_update_yk_settings') : false;
             $updatePasswordRoute = $this->generateUrl('admin_update_customer_password');
             $userIdForEdit = $userId;
         }
