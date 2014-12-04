@@ -360,9 +360,7 @@ class SettingsController extends Controller
             if($add) {
                 $yandexKassa = new YandexKassa();
                 $userSettings->setYandexKassa($yandexKassa);
-                $user->addSetting($userSettings);
                 $em->persist($userSettings);
-                $em->persist($user);
             }
 
             $shopIdConstraintErrorList = NULL;
