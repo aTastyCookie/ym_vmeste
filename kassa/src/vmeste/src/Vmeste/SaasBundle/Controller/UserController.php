@@ -278,7 +278,7 @@ class UserController extends Controller
                 $user->setPassword($password);
             }
 
-            if($data['role'] != $user->getRole()) {
+            if(isset($data['role']) && $data['role'] != $user->getRole()) {
 
                 $currentRole = $em->getRepository('Vmeste\SaasBundle\Entity\Role')->findOneBy(array('role' => $user->getRole()));
                 $user->removeRole($currentRole);
