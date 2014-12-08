@@ -23,6 +23,11 @@ class Recurrent
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
+
+    /**
+     * @ORM\Column(name="hash", type="string", length=32)
+     */
+    private $hash;
     
     /**
      * @ORM\OneToOne(targetEntity="Donor", inversedBy="recurrent")
@@ -118,6 +123,27 @@ class Recurrent
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Get hash
+     *
+     * @return string
+     */
+    public function getHash()
+    {
+        return $this->hash;
+    }
+    /**
+     * Set hash
+     *
+     * @param string $hash
+     * @return Recurrent
+     */
+    public function setHash($hash)
+    {
+        $this->hash = $hash;
+        return $this;
     }
 
     /**

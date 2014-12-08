@@ -296,6 +296,7 @@ class TransactionController extends Controller
 
                             $pan = $request->request->get('cdd_pan_mask');
                             $recurrent = new Recurrent();
+                            $recurrent->setHash(md5($invoiceId));
                             $recurrent->setAmount($amount);
                             $recurrent->setCampaign($campaign);
                             $recurrent->setClientOrderId(0);
@@ -329,7 +330,7 @@ class TransactionController extends Controller
                             $rebilling->recurrent->emailFrom = $emailFrom;
                             $rebilling->recurrent->fond = $settings->getCompanyName();
                             $rebilling->recurrent->sum = $amount;
-                            $rebilling->recurrent->id = $recurrent->getId();
+                            $rebilling->recurrent->hash = $recurrent->getHash();
                             $rebilling->recurrent->invoice = $invoiceId;
                             $rebilling->notify_about_subscription();
                         }
@@ -436,29 +437,27 @@ class TransactionController extends Controller
      */
     public function unsubscribeAction()
     {
-        $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
-        $invoice_id = Clear::number($this->getRequest()->query->get("invoice"));
+        $recurrent_hash = Clear::string_without_quotes($this->getRequest()->query->get("h"));
         $response = array('error' => false,
-            'recurrent' => $recurrent_id,
-            'invoice' => $invoice_id,
+            'h' => $recurrent_hash,
             'title' => '',
             'intro' => '',
             'img' => '');
 
         $sysEvent = new SysEvent();
         $sysEvent->setUserId(0);
-        $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " request $recurrent_id $invoice_id");
+        $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " request $recurrent_hash");
         $sysEvent->setIp($this->container->get('request')->getClientIp());
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
 
-        if ($recurrent_id == null || $invoice_id == null) {
+        if ($recurrent_hash == null) {
             $response['error'] = 'Неверные параметры';
             return $response;
         }
 
         $em = $this->getDoctrine()->getManager();
-        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find(array('hash'=>$recurrent_hash));
         if ($recurrent == null) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
@@ -488,7 +487,7 @@ class TransactionController extends Controller
         $response['campaign_url'] = $this->container->getParameter('recurrent.apphost').$campaign->getUrl();
 
 
-        if ($recurrent->getInvoiceId() != $invoice_id) {
+        if (md5($recurrent->getInvoiceId()) != $recurrent_hash) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
         }
@@ -499,17 +498,14 @@ class TransactionController extends Controller
             $em->persist($recurrent);
             $em->flush();
 
-            $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " done $recurrent_id $invoice_id");
+            $sysEvent->setEvent(SysEvent::UNSUBSCRIBE_RECURRENT . " done $recurrent_hash");
             $eventTracker->track($sysEvent);
 
             return $this->render('VmesteSaasBundle:Transaction:unsubscribe_success.html.twig', $response);
         } elseif ((int)$this->getRequest()->query->get("yes") == 2) {
             return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
         }
-
         return $response;
-
-
     }
 
     /**
@@ -517,11 +513,9 @@ class TransactionController extends Controller
      */
     public function subscribeAction()
     {
-        $recurrent_id = Clear::integer($this->getRequest()->query->get("recurrent"));
-        $invoice_id = Clear::number($this->getRequest()->query->get("invoice"));
+        $recurrent_hash = Clear::string_without_quotes($this->getRequest()->query->get("h"));
         $response = array('error' => false,
-            'recurrent' => $recurrent_id,
-            'invoice' => $invoice_id,
+            'h' => $recurrent_hash,
             'title' => '',
             'intro' => '',
             'img' => '');
@@ -529,18 +523,18 @@ class TransactionController extends Controller
 
         $sysEvent = new SysEvent();
         $sysEvent->setUserId(0);
-        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " request $recurrent_id $invoice_id");
+        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " request $recurrent_hash");
         $sysEvent->setIp($this->container->get('request')->getClientIp());
         $eventTracker = $this->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
 
-        if ($recurrent_id == null || $invoice_id == null) {
+        if ($recurrent_hash == null) {
             $response['error'] = 'Неверные параметры';
             return $response;
         }
 
         $em = $this->getDoctrine()->getManager();
-        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find($recurrent_id);
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find(array('hash'=>$recurrent_hash));
         if ($recurrent == null) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
@@ -565,7 +559,7 @@ class TransactionController extends Controller
         $response['intro'] = $campaign->getFormIntro();
 
 
-        if ($recurrent->getInvoiceId() != $invoice_id) {
+        if (md5($recurrent->getInvoiceId()) != $recurrent_hash) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
         }
@@ -575,7 +569,7 @@ class TransactionController extends Controller
         $em->persist($recurrent);
         $em->flush();
 
-        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " done $recurrent_id $invoice_id");
+        $sysEvent->setEvent(SysEvent::SUBSCRIBE_RECURRENT . " done $recurrent_hash");
         $eventTracker->track($sysEvent);
 
         return $this->render('VmesteSaasBundle:Transaction:unsubscribe_decline.html.twig', $response);
