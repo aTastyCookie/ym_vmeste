@@ -457,7 +457,7 @@ class TransactionController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find(array('hash'=>$recurrent_hash));
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(array('hash'=>$recurrent_hash));
         if ($recurrent == null) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
@@ -534,7 +534,7 @@ class TransactionController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->find(array('hash'=>$recurrent_hash));
+        $recurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(array('hash'=>$recurrent_hash));
         if ($recurrent == null) {
             $response['error'] = 'Такой подписки не существует';
             return $response;
