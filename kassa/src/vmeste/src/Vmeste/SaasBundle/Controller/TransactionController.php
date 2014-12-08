@@ -191,13 +191,6 @@ class TransactionController extends Controller
                     $donor = $existingRecurrent = false;
 
                     if($rb) {
-                        /*$sysEvent = new SysEvent();
-                        $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE__ . ', Invoice: ' . $invoiceId);
-                        $sysEvent->setIp($this->container->get('request')->getClientIp());
-                        $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);*/
-
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
@@ -207,12 +200,6 @@ class TransactionController extends Controller
                     }
 
                     if(!$donor) {
-                        /*$sysEvent = new SysEvent();
-                        $sysEvent->setUserId(0);
-                        $sysEvent->setEvent('Line: ' . __LINE__. '; ' . $invoiceId);
-                        $sysEvent->setIp($this->container->get('request')->getClientIp());
-                        $eventTracker = $this->get('sys_event_tracker');
-                        $eventTracker->track($sysEvent);*/
 
                         $donorId = $this->getDonorId($orderNumber);
                         if($donorId) {
@@ -248,13 +235,6 @@ class TransactionController extends Controller
                     $em->persist($transaction);
                     $em->flush();
 
-                    /*$sysEvent = new SysEvent();
-                    $sysEvent->setUserId(0);
-                    $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' Request ' . $requestDetails);
-                    $sysEvent->setIp($this->container->get('request')->getClientIp());
-                    $eventTracker = $this->get('sys_event_tracker');
-                    $eventTracker->track($sysEvent);*/
-
                     $userSettingsArray = $transaction->getCampaign()->getUser()->getSettings();
                     $settings = $userSettingsArray[0];
                     $emailFrom = $settings->getSenderEmail();
@@ -273,6 +253,7 @@ class TransactionController extends Controller
                     }
 
                     if ($rb) {
+                        $payer_email = $donor->getEmail();
                         if($existingRecurrent) {
                             $existingRecurrent->setOrderNumber($orderNumber);
                             $existingRecurrent->setSuccessDate($time);
@@ -280,19 +261,12 @@ class TransactionController extends Controller
                             $em->persist($existingRecurrent);
                             $em->flush();
 
-                            /*$sysEvent = new SysEvent();
-                            $sysEvent->setUserId(0);
-                            $sysEvent->setEvent(SysEvent::CREATE_TRANSACTION . ' LINE: ' . __LINE__);
-                            $sysEvent->setIp($this->container->get('request')->getClientIp());
-                            $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);*/
+                            $existingRecurrent->notify_about_successfull_monthly_payment(
+                                $payer_email, $emailFrom, $settings->getCompanyName(), $amount,
+                                $this->container->getParameter('recurrent.apphost') . 'outside/transaction/unsubscribe?h='
+                                . $existingRecurrent->getHash());
+
                         } else {
-                            /*$sysEvent = new SysEvent();
-                            $sysEvent->setUserId(0);
-                            $sysEvent->setEvent('Line: ' . __LINE__ . '; ' . $invoiceId);
-                            $sysEvent->setIp($this->container->get('request')->getClientIp());
-                            $eventTracker = $this->get('sys_event_tracker');
-                            $eventTracker->track($sysEvent);*/
 
                             $pan = $request->request->get('cdd_pan_mask');
                             $recurrent = new Recurrent();
@@ -325,7 +299,6 @@ class TransactionController extends Controller
                                     'context_mailer' => $this->get('mailer'),
                                     'context_adapter' => $this)
                             );
-                            $payer_email = $donor->getEmail();
                             $rebilling->recurrent->email = $payer_email;
                             $rebilling->recurrent->emailFrom = $emailFrom;
                             $rebilling->recurrent->fond = $settings->getCompanyName();

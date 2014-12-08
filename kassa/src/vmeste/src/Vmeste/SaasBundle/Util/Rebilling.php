@@ -118,12 +118,12 @@ class Rebilling
         if ($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
 
 
-        $emailTo = $donor->getEmail();
+        //$emailTo = $donor->getEmail();
         $settings = $campaign->getUser()->getSettings();
         $userSettings = $settings[0];
-        $fond = $userSettings->getCompanyName();
+        /*$fond = $userSettings->getCompanyName();
         $emailFrom = $userSettings->getSenderEmail();
-        $unsubscribe = $this->apphost . 'outside/transaction/unsubscribe?h=' . $recur->getHash();
+        $unsubscribe = $this->apphost . 'outside/transaction/unsubscribe?h=' . $recur->getHash();*/
 
         //echo "Sending " . $amount . " to " . $orderNumber . "\n";
         $yandexKassa = $userSettings->getYandexKassa();
@@ -226,7 +226,7 @@ class Rebilling
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
 
-            $this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
+            //$this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
         } else {
             // NEW DATE = TOMORROW
             $day = date('j') + 1;
