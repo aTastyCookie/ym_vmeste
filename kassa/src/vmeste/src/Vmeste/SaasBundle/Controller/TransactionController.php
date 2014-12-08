@@ -261,7 +261,13 @@ class TransactionController extends Controller
                             $em->persist($existingRecurrent);
                             $em->flush();
 
-                            $existingRecurrent->notify_about_successfull_monthly_payment(
+                            $rebilling = new Rebilling(
+                                array('icpdo' => $em,
+                                    'context' => $this,
+                                    'context_mailer' => $this->get('mailer'),
+                                    'context_adapter' => $this)
+                            );
+                            $rebilling->notify_about_successfull_monthly_payment(
                                 $payer_email, $emailFrom, $settings->getCompanyName(), $amount,
                                 $this->container->getParameter('recurrent.apphost') . 'outside/transaction/unsubscribe?h='
                                 . $existingRecurrent->getHash());
