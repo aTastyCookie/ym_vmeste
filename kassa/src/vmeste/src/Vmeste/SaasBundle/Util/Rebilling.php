@@ -117,13 +117,8 @@ class Rebilling
             'orderNumber' => $orderNumber);
         if ($recur->getCvv()) $output_array['cvv'] = $recur->getCvv();
 
-
-        //$emailTo = $donor->getEmail();
         $settings = $campaign->getUser()->getSettings();
         $userSettings = $settings[0];
-        /*$fond = $userSettings->getCompanyName();
-        $emailFrom = $userSettings->getSenderEmail();
-        $unsubscribe = $this->apphost . 'outside/transaction/unsubscribe?h=' . $recur->getHash();*/
 
         //echo "Sending " . $amount . " to " . $orderNumber . "\n";
         $yandexKassa = $userSettings->getYandexKassa();
@@ -133,25 +128,6 @@ class Rebilling
             $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
 
         $xml = new \DOMDocument();
-        /*$element = $xml->createElement('repeatCardPaymentRequest');
-        $clientOrderId = $xml->createAttribute('clientOrderId');
-        $clientOrderId->value = $output_array['clientOrderId'];
-        $invoiceId = $xml->createAttribute('invoiceId');
-        $invoiceId->value = $output_array['invoiceId'];
-        $amount = $xml->createAttribute('amount');
-        $amount->value = $output_array['amount'];
-        $orderNumber = $xml->createAttribute('orderNumber');
-        $orderNumber->value = $output_array['orderNumber'];
-        $element->appendChild($clientOrderId);
-        $element->appendChild($invoiceId);
-        $element->appendChild($amount);
-        $element->appendChild($orderNumber);
-        if(isset($output_array['cvv'])) {
-            $cvv =  $xml->createAttribute('cvv');
-            $cvv->value = $output_array['cvv'];
-            $element->appendChild($cvv);
-        }
-        $xml->appendChild($element);*/
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->ymurl);
@@ -177,8 +153,14 @@ class Rebilling
         //echo  "Result: " . $result . "\n";
 
         if (!empty($result) && $result != false) {
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId(0);
+            $sysEvent->setEvent('Recurrent result: ' . $result);
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->context->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
 
-            $xml->loadXML($result);
+            @$xml->loadXML($result);
             $result = array();
             $responses = $xml->getElementsByTagName('repeatCardPaymentResponse');
             foreach ($responses as $response) {
@@ -194,30 +176,6 @@ class Rebilling
 
 
         if ($result['error'] == 0) {
-            // Insert transaction
-            /*$transaction = new Transaction();
-            $transaction->setDates();
-            $transaction->setCurrency("RUB");
-            $transaction->setDetails(json_encode($result));
-            $transaction->setDonor($donor);
-            $transaction->setGross(floatval($amount));
-            $transaction->setPaymentStatus("Completed");
-            $transaction->setTransactionType("YMKassa: donate");
-            $transaction->setCampaign($campaign);
-            $transaction->setInvoiceId($recur->getInvoiceId());
-            $this->icpdo->persist($transaction);
-            $this->icpdo->flush();*/
-
-            /*$day = date('j');
-            $month = date('n') + 1;
-            $year = date('Y');
-            if ($month > 12) {
-                $month = 1;
-                $year += 1;
-            }
-            if ($day > 28) $day = 28;
-            $recur->setNextDate(mktime(12, 0, 0, $month, $day, $year));*/
-            //$recur->setSuccessDate(time());
             $recur->setClientOrderId($orderId);
             $recur->setOrderNumber($orderNumber);
             $recur->setLastOperationTime(time());
@@ -225,8 +183,6 @@ class Rebilling
             $recur->setLastError($result['error']);
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
-
-            //$this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
         } else {
             // NEW DATE = TOMORROW
             $day = date('j') + 1;
@@ -246,8 +202,6 @@ class Rebilling
             $recur->setLastError($result['error']);
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
-
-            //$this->notify_about_successfull_monthly_payment($emailTo, $emailFrom, $fond, $amount, $unsubscribe);
         }
     }
 
