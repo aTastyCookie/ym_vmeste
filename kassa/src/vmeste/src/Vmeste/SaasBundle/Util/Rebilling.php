@@ -6,6 +6,7 @@ use Vmeste\SaasBundle\Entity\Transaction;
 use Vmeste\SaasBundle\Entity\Donor;
 use Vmeste\SaasBundle\Entity\Campaign;
 use Vmeste\SaasBundle\Entity\YandexKassa;
+use Vmeste\SaasBundle\Entity\SysEvent;
 
 class Rebilling
 {
