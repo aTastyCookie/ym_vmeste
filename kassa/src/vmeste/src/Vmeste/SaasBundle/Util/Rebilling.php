@@ -157,7 +157,7 @@ class Rebilling
             $sysEvent = new SysEvent();
             $sysEvent->setUserId(0);
             $sysEvent->setEvent('Recurrent result: ' . $result);
-            $sysEvent->setIp($this->context->get('request')->getClientIp());
+            $sysEvent->setIp('');
             $eventTracker = $this->context->get('sys_event_tracker');
             $eventTracker->track($sysEvent);
 
