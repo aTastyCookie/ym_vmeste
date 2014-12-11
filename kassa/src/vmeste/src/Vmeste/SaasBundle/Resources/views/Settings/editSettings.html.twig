@@ -17,6 +17,7 @@
     <h3>Основные настройки</h3>
     <div>
         <form action="{{ updateEmailSettingsRoute }}" method="post">
+			<input name="token" type="hidden" value="{{ token }}" />
             {{ email_setting_errors | raw }}
             <p>
                 <sup class="reg-sup">*</sup><input type="text" name="company_name" placeholder="Название организации"
@@ -84,6 +85,7 @@
         </p>
 
         <form action="{{ updateYKSettingsRoute }}" method="post" enctype="multipart/form-data">
+			<input name="token" type="hidden" value="{{ token }}" />
             {{ shopErrors | raw }}
 
             <p><label><sup class="reg-sup">*</sup>shopId:
@@ -149,6 +151,7 @@
     <h3>Настройки доступа</h3>
     <div>
         <form action="{{ updatePasswordRoute }}" method="post">
+			<input name="token" type="hidden" value="{{ token }}" />
             {{ password_setting_errors | raw }}
             {% if userIdForEdit %}
                 <input type="hidden" name="userId" value="{{ userIdForEdit }}"/>

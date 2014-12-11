@@ -10,6 +10,7 @@ namespace Vmeste\SaasBundle\Controller;
 
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\File;
@@ -36,13 +37,14 @@ class SettingsController extends Controller
 
         $emailSettingsErrors = null;
         $recentCustomerSetting = null;
+        $session = $this->get('session');
         if (count($this->get('session')->getFlashBag()->peek(self::EMAIL_SETTING_ERRORS)) > 0) {
-            $emailSettingsErrorsArray = $this->get('session')->getFlashBag()->get(self::EMAIL_SETTING_ERRORS);
+            $emailSettingsErrorsArray = $session->getFlashBag()->get(self::EMAIL_SETTING_ERRORS);
             $emailSettingsErrors = $emailSettingsErrorsArray[0];
-            $session = $this->get('session');
             $recentCustomerSetting = $session->get(self::RECENT_CUSTOMER_SETTINGS);
             $session->remove(self::RECENT_CUSTOMER_SETTINGS);
         }
+
 
         $passwordSettingsErrors = null;
         if (count($this->get('session')->getFlashBag()->peek('password_setting_errors')) > 0) {
@@ -146,6 +148,9 @@ class SettingsController extends Controller
             $userIdForEdit = $userId;
         }
 
+        $token = md5(uniqid(mt_rand() . microtime()));
+        $session->set('token', $token);
+
         return array(
             self::EMAIL_SETTING_ERRORS => $emailSettingsErrors,
             'notification_email' => $notificationEmail,
@@ -175,7 +180,8 @@ class SettingsController extends Controller
             'updatePasswordRoute' => $updatePasswordRoute,
             'userIdForEdit' => $userIdForEdit,
             'fileErrors' => $fileErrors,
-            'shopErrors' => $shopErrors
+            'shopErrors' => $shopErrors,
+            'token' => $token
         );
     }
 
@@ -185,7 +191,14 @@ class SettingsController extends Controller
 
         $redirectUri = $this->generateUrl('vmeste_saas');
 
+        $session = $this->get('session');
         if ($request->isMethod('POST')) {
+
+            if($session->get('token') == $request->request->get('token')) {
+                $session->set('token', '');
+            } else {
+                die("404 Not Found!");
+            }
 
             $generalCustomerSettingsBucket = array();
 
@@ -301,7 +314,6 @@ class SettingsController extends Controller
                 $errorList .= !in_array($csvSeparator, $availableSeparators) ? "<li>Separator, you have choosen is forbidden.</li>" : "";
                 $errorList .= "</ul>";
 
-                $session = $this->get('session');
                 $session->getFlashBag()->add(self::EMAIL_SETTING_ERRORS, $errorList);
                 $session->set(self::RECENT_CUSTOMER_SETTINGS, $generalCustomerSettingsBucket);
 
@@ -324,7 +336,14 @@ class SettingsController extends Controller
 
         $redirectUri = $this->generateUrl('vmeste_saas');
 
+        $session = $this->get('session');
         if ($request->isMethod('POST')) {
+
+            if($session->get('token') == $request->request->get('token')) {
+                $session->set('token', '');
+            } else {
+                die("404 Not Found!");
+            }
             $em = $this->getDoctrine()->getManager();
             $shopid = Clear::integer($request->request->get('yandex_shopid', NULL), null);
             $scid = Clear::integer($request->request->get('yandex_scid', NULL), null);
@@ -423,7 +442,7 @@ class SettingsController extends Controller
 
                 $fileErrors .= '</ul>';
 
-                $this->get('session')->getFlashBag()->add('file_errors', $fileErrors);
+                $session->getFlashBag()->add('file_errors', $fileErrors);
 
                 $redirectUri = $this->generateUrl('customer_settings');
 
@@ -439,7 +458,7 @@ class SettingsController extends Controller
                 }
                 $shopErrors .= '</ul>';
 
-                $this->get('session')->getFlashBag()->add('shop_errors', $shopErrors);
+                $session->getFlashBag()->add('shop_errors', $shopErrors);
 
                 $redirectUri = $this->generateUrl('customer_settings');
 
@@ -513,7 +532,14 @@ class SettingsController extends Controller
 
         $redirectUri = $this->generateUrl('vmeste_saas');
 
+        $session = $this->get('session');
         if ($request->isMethod('POST')) {
+
+            if($session->get('token') == $request->request->get('token')) {
+                $session->set('token', '');
+            } else {
+                die("404 Not Found!");
+            }
 
 
             $notBlank = new NotBlank();
@@ -604,7 +630,7 @@ class SettingsController extends Controller
 
                 $errorList = "<ul>" . $errorList . "</ul>";
 
-                $this->get('session')->getFlashBag()->add('password_setting_errors', $errorList);
+                $session->getFlashBag()->add('password_setting_errors', $errorList);
 
                 $redirectUri = $this->generateUrl('customer_settings');
 
