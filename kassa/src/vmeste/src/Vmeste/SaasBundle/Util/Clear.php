@@ -44,10 +44,12 @@ class Clear
      * @param  boolean $htmlchars
      * @return string
      */
-    public static function removeCRLF($input, $htmlchars = true) {
+    public static function removeCRLF($input, $htmlchars = true, $quotes = true) {
         $newString = '';
         if($htmlchars)
-            $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
+            if($quotes)
+                $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
+            else $input = htmlspecialchars(strip_tags($input));
         else
             $input = strip_tags($input);
         for ($i = 0; $i < strlen($input); $i++) {
