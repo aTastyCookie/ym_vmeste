@@ -49,7 +49,7 @@ class Clear
         if($htmlchars)
             if($quotes)
                 $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
-            else $input = htmlspecialchars(strip_tags($input));
+            else $input = htmlspecialchars(strip_tags($input), ENT_NOQUOTES);
         else
             $input = strip_tags($input);
         for ($i = 0; $i < strlen($input); $i++) {
