@@ -34,9 +34,9 @@ class Clear
      * @param  boolean $htmlchars
      * @return string
      */
-    public static function string_without_quotes($input, $htmlchars = true)
+    public static function string_without_quotes($input, $htmlchars = true, $quotes = true)
     {
-        return str_replace("'", '', str_replace('"', '', self::removeCRLF($input, $htmlchars)));
+        return str_replace("'", '', str_replace('"', '', self::removeCRLF($input, $htmlchars, $quotes)));
     }
 
     /**
