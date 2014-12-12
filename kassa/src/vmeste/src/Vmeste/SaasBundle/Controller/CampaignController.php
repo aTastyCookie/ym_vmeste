@@ -151,7 +151,16 @@ class CampaignController extends Controller
         $userChoices = array();
 
         foreach ($result as $user) {
-            $userChoices[$user['id']] = $user['username'];
+            $settingsCollection = $user->getSettings();
+            if(isset($settingsCollection[0])) {
+                $userSettings = $settingsCollection[0];
+                if($userSettings) {
+                    $yandexKassa = $userSettings->getYandexKassa();
+                    if($yandexKassa) {
+                        $userChoices[$user['id']] = $user['username'];
+                    }
+                }
+            }
         }
 
         $form = $this->createFormBuilder()
@@ -694,10 +703,28 @@ class CampaignController extends Controller
         $user = $campaign->getUser();
         $userLogoPath = $user->getLogoPath();
 
+        $continue = false;
         $settingsCollection = $user->getSettings();
-        $userSettings = $settingsCollection[0];
+        if(isset($settingsCollection[0])) {
+            $userSettings = $settingsCollection[0];
+            if($userSettings) {
+                $yandexKassa = $userSettings->getYandexKassa();
+                if($yandexKassa) {
+                    $continue = true;
+                }
+            }
+        }
+        if(!$continue) {
+            $sysEvent = new SysEvent();
+            $sysEvent->setUserId($user->getId());
+            $sysEvent->setEvent("GET CAMPAIGN '$campaignUrl' ERROR: Не установлены настройки Яндекс.Кассы");
+            $sysEvent->setIp($this->container->get('request')->getClientIp());
+            $eventTracker = $this->get('sys_event_tracker');
+            $eventTracker->track($sysEvent);
+            echo "Произошла ошибка. Обратитесь к администратору";
+            exit;
+        }
 
-        $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
 
         $paymentHost = $this->container->getParameter('production.payment.host');
