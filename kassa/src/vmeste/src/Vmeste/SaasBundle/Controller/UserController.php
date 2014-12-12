@@ -79,7 +79,7 @@ class UserController extends Controller
                         new NotBlank(),
                         new Email(),
                     ),
-                    'options' => array('attr' => array('autocomplete'=>"off"))
+                    'attr' => array('autocomplete'=>"off")
                 ))
             ->add('username', 'text', array('constraints' => array(
                 new NotBlank(),
