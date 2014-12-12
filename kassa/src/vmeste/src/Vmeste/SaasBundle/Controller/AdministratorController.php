@@ -44,7 +44,7 @@ class AdministratorController extends Controller
         $queryBuilder = $connection->createQueryBuilder();
 
         $queryBuilder
-            ->select('yk.id')
+            ->select('yandex_kassa.id')
             ->from('yandex_kassa', 'yandex_kassa')
             ->leftJoin('yandex_kassa', 'settings', null, 'settings.yk_id = yandex_kassa.id')
             ->where('settings.id is null');
