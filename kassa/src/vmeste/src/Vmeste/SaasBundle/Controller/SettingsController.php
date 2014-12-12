@@ -211,7 +211,9 @@ class SettingsController extends Controller
             $generalCustomerSettingsBucket['authority'] = $authority =
                 Clear::string_without_quotes($request->request->get('authority'), true, false);
             $generalCustomerSettingsBucket['details'] = $details =
-                htmlspecialchars(strip_tags($request->request->get('details')), ENT_NOQUOTES);
+                str_replace("&amp;", '&',
+                    htmlspecialchars(
+                        strip_tags($request->request->get('details')), ENT_NOQUOTES, 'UTF-8', false));
             $generalCustomerSettingsBucket['notification_email'] = $notificationEmail =
                 Clear::string_without_quotes($request->request->get('notification_email'));
             $generalCustomerSettingsBucket['sender_name'] = $senderName =
