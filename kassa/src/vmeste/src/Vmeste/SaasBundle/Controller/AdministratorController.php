@@ -44,10 +44,10 @@ class AdministratorController extends Controller
         $queryBuilder = $connection->createQueryBuilder();
 
         $queryBuilder
-            ->select('yk', 's')
-            ->from('yandex_kassa', 'yk')
-            ->leftJoin('settings', 's', 'ON', 's.yk_id = yk.id')
-            ->where('s.id is null');
+            ->select('yandex_kassa', 'settings')
+            ->from('yandex_kassa', 'yandex_kassa')
+            ->leftJoin('settings', 'settings', 'ON', 'settings.yk_id = yandex_kassa.id')
+            ->where('settings.id is null');
         $statement = $queryBuilder->execute();
         $result = $statement->fetchAll();
         $unusedKassa = count($result);
