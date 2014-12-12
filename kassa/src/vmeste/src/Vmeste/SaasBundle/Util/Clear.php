@@ -48,8 +48,8 @@ class Clear
         $newString = '';
         if($htmlchars)
             if($quotes)
-                $input = htmlspecialchars(strip_tags($input), ENT_QUOTES);
-            else $input = htmlspecialchars(strip_tags($input), ENT_NOQUOTES);
+                $input = htmlspecialchars(strip_tags($input), ENT_QUOTES, 'UTF-8', false);
+            else $input = htmlspecialchars(strip_tags($input), ENT_NOQUOTES, 'UTF-8', false);
         else
             $input = strip_tags($input);
         for ($i = 0; $i < strlen($input); $i++) {
