@@ -133,7 +133,7 @@ class CampaignController extends Controller
      */
     public function createAction(Request $request)
     {
-
+        $em = $this->getDoctrine()->getManager();
 //        $currentUser = $this->get('security.context')->getToken()->getUser();
         $connection = $this->getDoctrine()->getConnection();
         $queryBuilder = $connection->createQueryBuilder();
@@ -151,7 +151,8 @@ class CampaignController extends Controller
         $userChoices = array();
 
         foreach ($result as $user) {
-            $settingsCollection = $user->getSettings();
+            $userEntity = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $user['id']));
+            $settingsCollection = $userEntity->getSettings();
             if(isset($settingsCollection[0])) {
                 $userSettings = $settingsCollection[0];
                 if($userSettings) {
