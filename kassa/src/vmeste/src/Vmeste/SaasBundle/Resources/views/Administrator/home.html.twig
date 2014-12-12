@@ -3,8 +3,8 @@
 {% block body %}
     <h2>Welcome!</h2>
 
-    Подвисшие настройки Яндекс.Кассы: {{ unusedKassa }} <br>
-    <a href="/admin/kassadestroy">Уничтожить</a>
+    Подвисшие настройки Яндекс.Кассы: {{ unusedKassa }}
+    {% if unusedKassa>0 %} - <a href="/admin/kassadestroy">Уничтожить</a> {% endif %}
 
 
 {% endblock %}
