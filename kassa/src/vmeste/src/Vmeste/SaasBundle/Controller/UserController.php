@@ -74,10 +74,13 @@ class UserController extends Controller
         $currentUser = $this->get('security.context')->getToken()->getUser();
 
         $form = $this->createFormBuilder()
-            ->add('email', 'text', array('constraints' => array(
-                new NotBlank(),
-                new Email(),
-            )))
+            ->add('email', 'text', array(
+                    'constraints' => array(
+                        new NotBlank(),
+                        new Email(),
+                    ),
+                    'options' => array('attr' => array('autocomplete'=>"off"))
+                ))
             ->add('username', 'text', array('constraints' => array(
                 new NotBlank(),
                 new Length(array('min' => 3, 'max' => 25)),
@@ -85,7 +88,7 @@ class UserController extends Controller
             ->add('password', 'repeated', array(
                 'type' => 'password',
                 'invalid_message' => 'Пароли должны совпадать.',
-                'options' => array('attr' => array('class' => 'password-field')),
+                'options' => array('attr' => array('class' => 'password-field', 'autocomplete'=>"off")),
                 'required' => true,
                 'first_options' => array('label' => 'Пароль'),
                 'second_options' => array('label' => 'Повторите пароль'),
@@ -217,7 +220,7 @@ class UserController extends Controller
             ->add('password', 'repeated', array(
                 'type' => 'password',
                 'invalid_message' => 'Пароли должны совпадать.',
-                'options' => array('attr' => array('class' => 'password-field')),
+                'options' => array('attr' => array('class' => 'password-field', 'autocomplete'=>"off")),
                 'required' => false,
                 'first_options' => array('label' => 'Пароль'),
                 'second_options' => array('label' => 'Повторите пароль'),
