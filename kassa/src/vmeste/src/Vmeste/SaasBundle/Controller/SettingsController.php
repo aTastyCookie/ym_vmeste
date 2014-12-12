@@ -215,9 +215,9 @@ class SettingsController extends Controller
             $generalCustomerSettingsBucket['notification_email'] = $notificationEmail =
                 Clear::string_without_quotes($request->request->get('notification_email'));
             $generalCustomerSettingsBucket['sender_name'] = $senderName =
-                Clear::string_without_quotes($request->request->get('sender_name'), true, false);
+                Clear::removeCRLF($request->request->get('sender_name'), true, false);
             $generalCustomerSettingsBucket['sender_email'] = $senderEmail =
-                Clear::removeCRLF($request->request->get('sender_email'), true, false);
+                Clear::string_without_quotes($request->request->get('sender_email'), true, false);
             $generalCustomerSettingsBucket['csv_separator'] = $csvSeparator =
                 Clear::string_without_quotes($request->request->get('csv_separator'), true, false);
 
