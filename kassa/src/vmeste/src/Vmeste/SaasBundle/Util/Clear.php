@@ -36,7 +36,10 @@ class Clear
      */
     public static function string_without_quotes($input, $htmlchars = true, $quotes = true)
     {
-        return str_replace("'", '', str_replace('"', '', self::removeCRLF($input, $htmlchars, $quotes)));
+        return str_replace("&amp;", '&',
+            str_replace("'", '',
+                str_replace('"', '',
+                    self::removeCRLF($input, $htmlchars, $quotes))));
     }
 
     /**
