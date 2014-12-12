@@ -24,8 +24,6 @@ class AdministratorController extends Controller
      */
     public function homeAction(Request $request)
     {
-
-
         $session = $request->getSession();
         $sysEventVal = $session->get('SYS_EVENT', NULL);
         if($sysEventVal != NULL && $sysEventVal == 'LOGIN') {
@@ -42,7 +40,19 @@ class AdministratorController extends Controller
             ));
         }
 
-        return array();
+        $connection = $this->getDoctrine()->getConnection();
+        $queryBuilder = $connection->createQueryBuilder();
+
+        $queryBuilder
+            ->select('yk.id')
+            ->from('yandex_kassa', 'yk')
+            ->where('s.id is null')
+            ->leftJoin('s', 'settings', 'WITH', 's.yk_id = yk.id');
+        $statement = $queryBuilder->execute();
+        $result = $statement->fetchAll();
+        $unusedKassa = count($result);
+
+        return array('unusedKassa' => $unusedKassa);
     }
 
     public function trackAdminLoginEvent()

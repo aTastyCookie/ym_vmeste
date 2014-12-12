@@ -1,7 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <h2>Welcome!</h2>
 
-   <h2>Welcome!</h2>
+    Подвисшие настройки Яндекс.Кассы: {{ unusedKassa }} <br>
+    <a href="/admin/kassadestroy">Уничтожить</a>
+
 
 {% endblock %}
