@@ -24,6 +24,10 @@ admin_home:
     path: /admin/home
     defaults: { _controller: VmesteSaasBundle:Administrator:home }
 
+admin_kassadestroy:
+    path: /admin/kassadestroy
+    defaults: { _controller: VmesteSaasBundle:Administrator:kassadestroy }
+
 admin_user:
     path: /admin/user
     defaults: { _controller: VmesteSaasBundle:User:home }

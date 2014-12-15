@@ -55,6 +55,31 @@ class AdministratorController extends Controller
         return array('unusedKassa' => $unusedKassa);
     }
 
+    public function kassadestroyAction()
+    {
+        $em = $this->getDoctrine()->getManager();
+        $connection = $this->getDoctrine()->getConnection();
+        $queryBuilder = $connection->createQueryBuilder();
+
+        $queryBuilder
+            ->select('yandex_kassa.id')
+            ->from('yandex_kassa', 'yandex_kassa')
+            ->leftJoin('yandex_kassa', 'settings', null, 'settings.yk_id = yandex_kassa.id')
+            ->where('settings.id is null');
+        $statement = $queryBuilder->execute();
+        $result = $statement->fetchAll();
+        foreach($result as $kassa_id) {
+            $kassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')
+                ->findOneBy(array('id' => $kassa_id['yandex_kassa.id']));
+            if($kassa) {
+                $em->remove($kassa);
+            }
+        }
+        $em->flush();
+        $redirectUrl = $this->generateUrl('admin_home');
+        return $this->redirect($redirectUrl);
+    }
+
     public function trackAdminLoginEvent()
     {
         $user = $this->get('security.context')->getToken()->getUser();
