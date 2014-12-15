@@ -69,9 +69,8 @@ class AdministratorController extends Controller
         $statement = $queryBuilder->execute();
         $result = $statement->fetchAll();
         foreach($result as $kassa_id) {
-            print_r($kassa_id); exit;
             $kassa = $em->getRepository('Vmeste\SaasBundle\Entity\YandexKassa')
-                ->findOneBy(array('id' => $kassa_id['yandex_kassa.id']));
+                ->findOneBy(array('id' => $kassa_id['id']));
             if($kassa) {
                 $em->remove($kassa);
             }
