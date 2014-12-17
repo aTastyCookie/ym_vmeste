@@ -17,7 +17,7 @@ use Vmeste\SaasBundle\Util\Rebilling;
 
 class RebillingTest extends Rebilling {
     const SSL_VERIFYPEER = false;
-    const SSL_VERIFYHOST = false;
+    const SSL_VERIFYHOST = 1;
     const USERAGENT = 'Ymoney Vmeste';
     const CONNECTTIMEOUT = 30;
     const HTTPHEADER = 'application/x-www-form-urlencoded';
@@ -70,14 +70,14 @@ class RebillingTest extends Rebilling {
             'amount' => 100,
             'orderNumber' => '1232466287');
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->ymurl);
+        curl_setopt($ch, CURLOPT_URL, $this->context->getParameter('sandbox.recurrent.ymurl'));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, self::SSL_VERIFYPEER);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, self::SSL_VERIFYHOST);
         curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
         curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
