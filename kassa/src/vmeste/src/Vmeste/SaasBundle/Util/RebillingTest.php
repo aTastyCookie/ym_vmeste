@@ -17,7 +17,7 @@ use Vmeste\SaasBundle\Util\Rebilling;
 
 class RebillingTest extends Rebilling {
     const SSL_VERIFYPEER = false;
-    const SSL_VERIFYHOST = 1;
+    const SSL_VERIFYHOST = 2;
     const USERAGENT = 'Ymoney Vmeste';
     const CONNECTTIMEOUT = 30;
     const HTTPHEADER = 'application/x-www-form-urlencoded';
@@ -69,8 +69,9 @@ class RebillingTest extends Rebilling {
             'invoiceId' => '321321321321',
             'amount' => 100,
             'orderNumber' => '1232466287');
+        $url = $this->context->getParameter('sandbox.recurrent.ymurl');
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->context->getParameter('sandbox.recurrent.ymurl'));
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -82,9 +83,10 @@ class RebillingTest extends Rebilling {
         curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($output_array));
-        echo  "Request: " . http_build_query($output_array) . "\n";
+        echo  "Request $url : " . http_build_query($output_array) . "\n";
         $result = curl_exec($ch);
-        echo "Result: \n";
+        echo "Result string: $result \n";
+        echo "Result curl_getinfo: \n";
         print_r(curl_getinfo($ch));
         echo "\n";
         curl_close($ch);
