@@ -91,6 +91,16 @@ class RebillingTest extends Rebilling {
         print_r(curl_getinfo($ch));
         echo "\n";
         curl_close($ch);
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent("Recurrent Request $url : " . http_build_query($output_array));
+        $sysEvent->setIp('');
+        $eventTracker = $this->context->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+        $sysEvent->setEvent('Recurrent result: ' . $result);
+        $sysEvent->setIp('');
+        $eventTracker = $this->context->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         //echo "Search transaction \n";
         //$transaction = $this->icpdo->getRepository('Vmeste\SaasBundle\Entity\Transaction')->findOneBy(

@@ -153,14 +153,18 @@ class Rebilling
         curl_close($ch);
 
         //echo  "Result: " . $result . "\n";
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
+        $sysEvent->setEvent("Recurrent Request $url : " . http_build_query($output_array));
+        $sysEvent->setIp('');
+        $eventTracker = $this->context->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
+        $sysEvent->setEvent('Recurrent result: ' . $result);
+        $sysEvent->setIp('');
+        $eventTracker = $this->context->get('sys_event_tracker');
+        $eventTracker->track($sysEvent);
 
         if (!empty($result) && $result != false) {
-            $sysEvent = new SysEvent();
-            $sysEvent->setUserId(0);
-            $sysEvent->setEvent('Recurrent result: ' . $result);
-            $sysEvent->setIp('');
-            $eventTracker = $this->context->get('sys_event_tracker');
-            $eventTracker->track($sysEvent);
 
             @$xml->loadXML($result);
             $result = array();
