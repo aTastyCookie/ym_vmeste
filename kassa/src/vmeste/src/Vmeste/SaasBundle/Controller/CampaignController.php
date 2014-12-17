@@ -236,7 +236,7 @@ class CampaignController extends Controller
 
             $campaign = new Campaign();
             $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
-            $campaign->setTitle(Clear::string_without_quotes($data['title'], true, false));
+            $campaign->setTitle(Clear::removeCRLF($data['title'], true, false));
             $campaign->setSubTitle($data['subtitle']);
             $campaign->setCurrency($data['currency']);
             $campaign->setMinAmount(Clear::number($data['min_amount']));
