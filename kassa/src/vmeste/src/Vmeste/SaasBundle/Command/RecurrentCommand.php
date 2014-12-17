@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Vmeste\SaasBundle\Util\Rebilling;
+use Vmeste\SaasBundle\Util\RebillingTest;
 
 /**
  * To launch use: $ app/console vmeste:recurrent
