@@ -16,7 +16,7 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Rebilling;
 
 class RebillingTest extends Rebilling {
-    const SSL_VERIFYPEER = 1;
+    const SSL_VERIFYPEER = 0;
     const SSL_VERIFYHOST = 2;
     const USERAGENT = 'Ymoney Vmeste';
     const CONNECTTIMEOUT = 30;
