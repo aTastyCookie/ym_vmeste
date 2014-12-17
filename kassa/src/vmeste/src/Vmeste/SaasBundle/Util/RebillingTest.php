@@ -97,6 +97,8 @@ class RebillingTest extends Rebilling {
         $sysEvent->setIp('');
         $eventTracker = $this->context->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
+        $sysEvent = new SysEvent();
+        $sysEvent->setUserId(0);
         $sysEvent->setEvent('Recurrent result: ' . $result);
         $sysEvent->setIp('');
         $eventTracker = $this->context->get('sys_event_tracker');
