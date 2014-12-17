@@ -376,7 +376,7 @@ class CampaignController extends Controller
             $data = $form->getData();
 
             $campaign->setUploadDir($this->container->getParameter('image.upload.dir'));
-            $campaign->setTitle(Clear::string_without_quotes($data['title']));
+            $campaign->setTitle(Clear::removeCRLF($data['title'], true, false));
             $campaign->setSubTitle($data['subtitle']);
             $campaign->setUrl($data['url']);
             $campaign->setCurrency($data['currency']);
