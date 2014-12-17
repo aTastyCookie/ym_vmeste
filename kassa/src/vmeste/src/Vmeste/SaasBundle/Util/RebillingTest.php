@@ -16,7 +16,7 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Rebilling;
 
 class RebillingTest extends Rebilling {
-    const SSL_VERIFYPEER = false;
+    const SSL_VERIFYPEER = 1;
     const SSL_VERIFYHOST = 2;
     const USERAGENT = 'Ymoney Vmeste';
     const CONNECTTIMEOUT = 30;
@@ -79,6 +79,7 @@ class RebillingTest extends Rebilling {
         curl_setopt($ch, CURLOPT_USERAGENT, self::USERAGENT);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, self::SSL_VERIFYPEER);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, self::SSL_VERIFYHOST);
+        curl_setopt($ch, CURLOPT_CAINFO, $this->context->getParameter('recurrent.self_cert_path'));
         curl_setopt($ch, CURLOPT_SSLCERT, $this->context->getParameter('recurrent.cert_path'));
         curl_setopt($ch, CURLOPT_SSLKEY, $this->context->getParameter('recurrent.key_path'));
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->context->getParameter('recurrent.cert_pass'));

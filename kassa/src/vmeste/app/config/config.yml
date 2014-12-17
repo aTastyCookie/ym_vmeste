@@ -94,6 +94,7 @@ parameters:
 
     recurrent.ymurl: https://penelope.yamoney.ru:443/webservice/mws/api/repeatCardPayment
     sandbox.recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+    recurrent.self_cert_path: /etc/CA/web.robimgut.crt
     recurrent.cert_path: /srv/www/certificates/robimgut.cer
     recurrent.key_path: /srv/www/certificates/private.key
     recurrent.cert_pass: 123456
