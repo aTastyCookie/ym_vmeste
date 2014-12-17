@@ -69,7 +69,7 @@ class RebillingTest extends Rebilling {
             'invoiceId' => '321321321321',
             'amount' => 100,
             'orderNumber' => '1232466287');
-        $url = $this->context->getParameter('recurrent.ymurl');
+        $url = $this->ymurl;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(self::HTTPHEADER));

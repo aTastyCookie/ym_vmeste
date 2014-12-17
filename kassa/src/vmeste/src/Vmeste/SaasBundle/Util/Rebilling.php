@@ -122,12 +122,12 @@ class Rebilling
         $settings = $campaign->getUser()->getSettings();
         $userSettings = $settings[0];
 
-        //echo "Sending " . $amount . " to " . $orderNumber . "\n";
         $yandexKassa = $userSettings->getYandexKassa();
         $sandboxMode = $yandexKassa->getSandbox();
 
         if($sandboxMode == YandexKassa::SANDBOX_ENABLED)
             $this->ymurl = $this->context->getParameter('sandbox.recurrent.ymurl');
+        else $this->ymurl = $this->context->getParameter('recurrent.ymurl');
 
         $xml = new \DOMDocument();
 

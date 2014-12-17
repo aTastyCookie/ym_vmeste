@@ -22,7 +22,8 @@ class RecurrentCommand extends ContainerAwareCommand
         $this
             ->setName('vmeste:recurrent')
             ->setDescription('Notify and run recurrents')
-            ->addArgument('test', InputArgument::OPTIONAL);
+            ->addArgument('test', InputArgument::OPTIONAL)
+            ->addArgument('sandbox', InputArgument::OPTIONAL);
         /*->addOption('yell', null, InputOption::VALUE_NONE, 'If set, the task will yell in uppercase letters');*/
     }
 
@@ -44,8 +45,14 @@ class RecurrentCommand extends ContainerAwareCommand
         $recurrent = new Rebilling($params);
 
         $test = $input->getArgument('test');
+        $sandbox = $input->getArgument('sandbox');
         if($test && $test == 'testrun') {
             $recurrent = new RebillingTest($params);
+            if($sandbox && $sandbox == 'sandbox') {
+                $recurrent->ymurl = $this->getContainer()->getParameter('sandbox.recurrent.ymurl');
+            } else {
+                $recurrent->ymurl = $this->getContainer()->getParameter('recurrent.ymurl');
+            }
             $recurrent->recurrent_test();
         } else {
             $recurrent->notify();

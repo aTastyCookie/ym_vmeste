@@ -92,7 +92,7 @@ parameters:
 
     image.upload.dir: /uploads/documents/
 
-    recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
+    recurrent.ymurl: https://penelope.yamoney.ru:443/webservice/mws/api/repeatCardPayment
     sandbox.recurrent.ymurl: https://penelope-demo.yamoney.ru:8083/webservice/mws/api/repeatCardPayment
     recurrent.cert_path: /srv/www/certificates/robimgut.cer
     recurrent.key_path: /srv/www/certificates/private.key
