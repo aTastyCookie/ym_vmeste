@@ -44,7 +44,8 @@ class RecurrentCommand extends ContainerAwareCommand
 
         $test = $input->getArgument('test');
         if($test && $test == 'testrun') {
-            $recurrent->run(true);
+            $recurrent = new RebillingTest($params);
+            $recurrent->recurrent_test();
         } else {
             $recurrent->notify();
             $recurrent->run();

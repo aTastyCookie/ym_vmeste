@@ -16,6 +16,53 @@ use Vmeste\SaasBundle\Entity\SysEvent;
 use Vmeste\SaasBundle\Util\Rebilling;
 
 class RebillingTest extends Rebilling {
+    const SSL_VERIFYPEER = false;
+    const SSL_VERIFYHOST = false;
+    const USERAGENT = 'Ymoney Vmeste';
+    const CONNECTTIMEOUT = 30;
+    const HTTPHEADER = 'application/x-www-form-urlencoded';
+    const NO_ERROR = 0;
+    const LIMIT_ROWS = 100;
+
+    public $ymurl;
+    public $path_to_cert;
+    public $path_to_key;
+    public $cert_pass;
+    public $icpdo;
+    public $recurrent;
+    public $data;
+    public $status_blocked;
+    public $status_id_blocked;
+    public $status_id_deleted;
+    public $status_id_active;
+    public $context;
+    public $context_mailer;
+    public $apphost;
+
+    public function __construct($params = array())
+    {
+        if (!empty($params))
+            foreach ($params as $key => $param)
+                $this->$key = $param;
+        else return false;
+
+        $this->recurrent = new \stdClass;
+        $this->status_blocked = $this->icpdo
+            ->getRepository('Vmeste\SaasBundle\Entity\Status')
+            ->findOneBy(array('status' => 'BLOCKED'));
+        $this->status_id_blocked = $this->status_blocked->getId();
+        $this->status_id_deleted = $this->icpdo
+            ->getRepository('Vmeste\SaasBundle\Entity\Status')
+            ->findOneBy(array('status' => 'DELETED'));
+        $this->status_id_deleted = $this->status_id_deleted->getId();
+        $this->status_id_active = $this->icpdo
+            ->getRepository('Vmeste\SaasBundle\Entity\Status')
+            ->findOneBy(array('status' => 'ACTIVE'));
+        $this->status_id_active = $this->status_id_active->getId();
+
+        if (!$this->apphost) $this->apphost = "https://vmeste.yandex.ru/";
+    }
+
     public function recurrent_test()
     {
         $output_array = array('clientOrderId' => 132465,
