@@ -155,7 +155,7 @@ class Rebilling
         //echo  "Result: " . $result . "\n";
         $sysEvent = new SysEvent();
         $sysEvent->setUserId(0);
-        $sysEvent->setEvent("Recurrent Request $url : " . http_build_query($output_array));
+        $sysEvent->setEvent("Recurrent Request ".$this->ymurl." : " . http_build_query($output_array));
         $sysEvent->setIp('');
         $eventTracker = $this->context->get('sys_event_tracker');
         $eventTracker->track($sysEvent);
