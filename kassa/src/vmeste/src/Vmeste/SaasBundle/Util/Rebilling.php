@@ -32,6 +32,8 @@ class Rebilling
     public $context;
     public $context_mailer;
     public $apphost;
+    public $successful = 0;
+    public $failed = 0;
 
     public function __construct($params = array())
     {
@@ -86,6 +88,7 @@ class Rebilling
             $rtest->recurrent_test();
         } else {
             $this->attempt_send($today_start, $today_end);
+            echo "Successful: " . $this->successful . "; Failed: " . $this->failed."\n";
         }
 
         return true;
@@ -181,9 +184,8 @@ class Rebilling
             $result['error'] = 1000;
         }
 
-
-
         if ($result['error'] == 0) {
+            $this->successful++;
             $recur->setClientOrderId($orderId);
             $recur->setOrderNumber($orderNumber);
             $recur->setLastOperationTime(time());
@@ -192,6 +194,7 @@ class Rebilling
             $this->icpdo->persist($recur);
             $this->icpdo->flush();
         } else {
+            $this->failed++;
             // NEW DATE = TOMORROW
             $day = date('j') + 1;
             $month = date('n');
