@@ -179,7 +179,7 @@ class TransactionController extends Controller
 
                     $statusActive = $em->getRepository('Vmeste\SaasBundle\Entity\Status')->findOneBy(array('status' => 'ACTIVE'));
 
-                    $amount = Clear::number(number_format((float)stripslashes($request->request->get('orderSumAmount')), 2));
+                    $amount = Clear::number(number_format((float)stripslashes($request->request->get('orderSumAmount')), 2, '.', ''));
 
                     $invoiceId = Clear::string_without_quotes($request->request->get('invoiceId'));
 
