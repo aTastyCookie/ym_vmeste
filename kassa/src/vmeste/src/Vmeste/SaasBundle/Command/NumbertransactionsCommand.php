@@ -55,12 +55,14 @@ class NumbertransactionsCommand extends ContainerAwareCommand
                         $baseInvoice = $transaction->getInvoiceId();
                         $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
                             array('invoice_id' => $baseInvoice));
+
+                        $donor = $transaction->getDonor();
+                        if($donor) {
+                            $donor->setAmount($orderSumAmount);
+                            $em->persist($donor);
+                        }
+
                         if($existingRecurrent) {
-                            $donor = $existingRecurrent->getDonor();
-                            if($donor) {
-                                $donor->setAmount($orderSumAmount);
-                                $em->persist($donor);
-                            }
                             $existingRecurrent->setAmount($orderSumAmount);
                             $em->persist($existingRecurrent);
                         }
