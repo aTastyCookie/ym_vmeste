@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Vmeste\SaasBundle\Entity\Donor;
+use Vmeste\SaasBundle\Entity\Recurrent;
 use Vmeste\SaasBundle\Util\Clear;
 
 /**
@@ -29,6 +31,7 @@ class NumbertransactionsCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
         $doctrine = $this->getContainer()->get('doctrine');
         $em = $doctrine->getManager();
 
@@ -49,6 +52,18 @@ class NumbertransactionsCommand extends ContainerAwareCommand
                     if($orderSumAmount != $gross) {
                         $transaction->setGross($orderSumAmount);
                         $em->persist($transaction);
+                        $baseInvoice = $transaction->getInvoiceId();
+                        $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
+                            array('invoice_id' => $baseInvoice));
+                        if($existingRecurrent) {
+                            $donor = $existingRecurrent->getDonor();
+                            if($donor) {
+                                $donor->setAmount($orderSumAmount);
+                                $em->persist($donor);
+                            }
+                            $existingRecurrent->setAmount($orderSumAmount);
+                            $em->persist($existingRecurrent);
+                        }
                     }
                 }
             }
