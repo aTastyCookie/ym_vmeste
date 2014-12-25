@@ -311,7 +311,7 @@ class CampaignController extends Controller
                     new NotBlank(),
                     new Regex(
                         array(
-                            'pattern' => '/^[a-zA-Z0-9]+([a-zA-Z0-9]-?)+[a-zA-Z0-9]$/',
+                            'pattern' => '/^[a-zA-Z0-9]?([a-zA-Z0-9]-?)+[a-zA-Z0-9]$/',
                             'message' => 'Формат введенного URL неверен!'
                         )
                     ),
