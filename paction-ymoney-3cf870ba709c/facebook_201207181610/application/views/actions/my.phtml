@@ -1,0 +1,190 @@
+<script>
+$(document).ready(function(){
+	$('#action_is_closed a').click(function(){
+		$('#action_is_closed').remove();
+	});
+	<? if ($this->selected) {?>
+	$('#<?php echo $this->selected?>').replaceWith('<span>' + $('#<?php echo $this->selected?>').html() + '</span>');
+	<?php }?>
+	$('.mb_help').hide();
+	$('.mini_block_inner').mouseover(function(){
+		$(this).find('.mb_collected').hide();
+		$(this).find('.mb_help').show();
+		
+	});
+	$('.mini_block_inner').mouseout(function(){
+		$(this).find('.mb_help').hide();
+		$(this).find('.mb_collected').show();		
+	});
+
+	var search = false;
+	if($('.search input').val()!="Поиск акций по меткам") {
+		search = $('.search input').val();
+	}
+
+	var page = 1;
+	
+	$('.uiButton').live('click', function(){
+		var next = $(this).hasClass('next');
+		//alert(next);
+		$.ajax({
+            url: pageAjaxUrl, 
+            type: "GET",
+            dataType: "json",
+			data: {
+				page: page,
+				search: search,
+				selected: '<?php echo $this->selected?>',
+				next: next
+			},
+			success: function (data) { 
+            	if(data.next == true) {
+            		if($('#rfloat a').last().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').last().removeClass('uiButtonDisabled');
+                	}	
+            	} else {
+            		if(!$('#rfloat a').last().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').last().addClass('uiButtonDisabled');
+                	}	
+            	}
+            	if(data.prev == true) {
+            		if($('#rfloat a').first().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').first().removeClass('uiButtonDisabled');
+                	}
+            	} else {
+                	if(!$('#rfloat a').first().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').first().addClass('uiButtonDisabled');
+                	}	
+            	}
+
+            	if(data.li.length>0) {
+                	var tr='';
+                	if(next) {
+                		page = page + 1;
+                	} else {
+                		page = page - 1;
+                	}
+            		
+                	$('ul.all_actions_list li').html('');                	
+	            	for(key in data.li) {
+	            		tr = data.li[key];
+	            		$('ul.all_actions_list li').append(tr);
+	            	}
+	            	FB.Canvas.setAutoGrow();
+	            	$('.mb_help').hide();
+            	}
+            }
+    	});
+    	return false;
+	});
+	
+});
+</script>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; <span>Мои акции</span> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-98347" target="_top">Информация о счете</a>
+		<?php if($this->cancreate) { ?>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Создать акцию</a>
+		<?php } ?>
+	</div>
+</div>
+
+<div class="top_line">
+	<form method="post" enctype="application/x-www-form-urlencoded" class="search">
+		<input name="search" type="text" value="<?php echo ($this->search) ? $this->search : "Поиск акций по меткам"?>" onfocus="this.value=='Поиск акций по меткам'?this.value='':void(0)" onblur="this.value==''?this.value='Поиск акций по меткам':void(0)" />
+		<button type="submit">&nbsp;</button>
+	</form>
+
+	<div class="tl_links">
+	<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top" id="all">Опубликованные акции</a> 
+	· <a href="/actions/my/?completed=y" id="completed">Завершенные</a>
+	· <a href="/actions/my/drafts/y" id="drafts">Черновики</a>
+	<?php if($this->hasBlocked) {?> · <a href="/actions/my/blocked/y" id="blocked">Заблокированные</a><?php } ?>
+	</div>
+</div>
+<div class="content">
+	<?php if($this->error) {?>
+	<div id="action_is_closed"><a href="#">закрыть</a> Ой, акция, на которую вы перешли, уже закрыта, но вы можете посмотреть другие.</div>
+	<?php } ?>
+	<?php if($this->search) { ?>
+	<div>
+		<em>Найдено акций: <?php echo count($this->actions)?></em>
+	</div>
+	<?php }?>
+	<?php if(isset($this->actions) && count($this->actions)>0) { 
+	$i = 1;?>
+	<div class="slider"  id="main_slider">
+	<ul class="all_actions_list">
+	<li>
+		<?php foreach($this->actions as $action) { 
+		if($action['percents']>=0 && $action['completed']=='N') {
+				if($action['percents']==0) {
+					$bkground = '0';
+				} elseif($action['percents']<=33) {
+					$bkground = '0';
+				} elseif($action['percents']<=67) {
+					$bkground = '-7';
+				} else {
+					$bkground = '-14';
+				}
+			} else {
+				$bkground = '-21';
+			}
+			if($i>9) break;
+			?>
+			<div class="mini_block_outer<?php if(($i%3)==0) echo " last";?>">
+				<div class="mini_block">
+					<div class="mini_block_inner">
+						<div class="mb_timer"><?php echo $action['dates']?> <span><?php if(isset($action['left'])) { echo $action['left']; }?></span></div>
+						<?php if($action['blocked']=='Y') {?><img src="/i/symbol-rejected-24.png" alt="Акция заблокирована администратором" class="mb_ico" /><?php }?>
+						<div class="mb_title">
+							<a href="<?php echo $this->appurl?>?app_data=<?php echo $action['id']?>" target="_top"><?php echo mb_strlen($action['name'], "UTF-8")<=50 ? $action['name'] : mb_substr($action['name'], 0, 49, "UTF-8")."…";?></a> 
+							<div><a href="<?php echo $action['Userurl']?>" target="_blank"><?php echo mb_strlen($action['Username'], "UTF-8")<=18 ? $action['Username'] : 
+							mb_substr($action['Firstname'], 0, 1, "UTF-8").'. '.$action['Lastname']?></a></div>
+						</div>
+						<div class="mb_money_line">
+							<?php if($action['percents']>0) { ?>
+							<div style="width:<?php echo $action['percents'];?>%; background-position:0 <?php echo $bkground?>px;">
+								<div></div>
+							</div>
+							<?php } else { ?>
+							<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+								<div></div>
+							</div>
+							<?php } ?>
+						</div>
+						<div class="mb_collected" id="mb_collected<?php echo $action['id']?>">Собрано <span><?php echo $action['current_sumF']; ?></span> 
+						<?php if ($action['required_sum']>0) {?>из <span><?php echo $action['required_sumF']; ?></span><?php }?> <span>руб.</span></div>
+						
+						<a id="mb_help<?php echo $action['id']?>" href="https://money.yandex.ru/direct-payment.xml?receiver=<?php 
+						echo $action['receiver']?>&Formcomment=<?php 
+						echo urlencode('На акцию в Facebook "'.$action['name'].'"')?>&destination=<?php 
+						echo urlencode('На акцию в Facebook "'.$action['name'].'". Пожалуйста, не меняйте текст комментария.')?>&from=sfbp2plist" target="_blank" class="mb_help">Помочь деньгами</a>
+						
+					</div>
+				</div>
+			</div>
+		<?php 
+		$i++;
+		} ?>
+	</li>
+	</ul>
+	</div>
+	<?php if(count($this->actions)>9) { ?>
+	<div id="rfloat">
+		<a data-href="/?page=-1" role="button" class="prev uiButtonDisabled uiButton uiButtonNoText"><i class="mrs customimg img sp_4v59vo sx_a84f00"></i><span class="uiButtonText"></span></a>
+		<a data-href="/?page=1" role="button" 
+		class="next <?php if(count($this->actions)<=1) echo "uiButtonDisabled";?> uiButton uiButtonNoText"><i class="mrs customimg img sp_4v59vo sx_224a55"></i><span class="uiButtonText"></span></a>
+	</div>
+	<?php } ?>
+	<?php } elseif($this->selected!='drafts') { ?>
+	<p>У вас нет активных акций</p>
+	<p><a href="/actions/create" class="button1"><img src="/i/b_plus.gif" alt="" />Создать акцию</a></p>
+	<?php } else { ?>
+	<p>У вас пока нет сохраненных черновиков.</p>
+	<p><a href="/actions/create" class="button1"><img src="/i/b_plus.gif" alt="" />Создать акцию</a></p>
+	<?php } ?>
+	
+</div>

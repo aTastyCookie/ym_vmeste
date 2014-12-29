@@ -1,0 +1,59 @@
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/font.css') ?>" id="font-css" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/styles.css') ?>" />
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery-ui.css') ?>">
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery.tagit.css') ?>">
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/tagit.ui-zendesk.css') ?>" >
+<div class="header">
+    <a class="logo" href="<?php echo $this->appurl?>" target="_top"><img src="/img/logo.png"></a>
+    <?php if($this->cancreate) { ?>
+    	<a class="btn pull-right" href="<?php echo $this->appurl?>?app_data=21354-23895" target="_top">Создать акцию</a>
+    <?php } ?>
+    <div class="nick"><p><?php echo $this->user_name;?></p></div>
+    <div class="clear"></div>
+</div>
+<?php //var_dump($this->photos)?>
+<div class="content">
+	<div class="actions">
+		<div class="panel">
+	        <div class="filter">
+	          <a href="#" class="active">Все акции</a>
+	          <a href="<?php echo $this->appurl ?>" target="_top">Популярные</a>
+	          <a href="<?php echo $this->appurl ?>?app_data=21354-48523" target="_top">Мои акции</a>
+	          <a href="<?php echo $this->appurl ?>?app_data=21354-98347" target="_top">Информация о счете</a>
+			<?php if ($this->admin) { ?> 
+			<a href="/actions/adminstat">Статистика</a>
+			<a href="/actions/duplicates">Дубликаты</a>
+            <a href="/actions/admins">Админы</a> 
+            <a href="/rubric/admin">Рубрики</a>
+			<?php } ?>
+	        </div>
+	        <div class="search">
+	          <form action="/actions/index" method="get">
+	            <div class="control">
+	              <ul id="myTags"></ul>
+	              <div class="submit">
+	                <button type="submit"></button>
+	              </div>
+	            </div>
+	          </form>
+	        </div>
+		</div>
+		<div class="action_items">
+			<h1>Как поддержать акцию, если у вас нет кошелька</h1>
+			<br />
+			<p>Это просто. Всё, что вам нужно знать, — номер счета получателя. Просто выберите ближайшую точку пополнения или внесите деньги через интернет. За один раз можно будет отправить до 15 000 рублей.</p>
+			<br />
+			<h2>Наличными</h2>
+			<br />
+			<p>Ваши деньги примут в любом салоне «Евросети» и других офисах из <a href="https://money.yandex.ru/doc.xml?id=523896" target="_blank">нашего списка</a>. Просто назовите кассиру нужный номер счета в Яндекс.Деньгах.</p>
+			<br />
+			<p>Кроме того, вы можете отправить деньги через <a href="https://money.yandex.ru/doc.xml?id=522781" target="_blank">платежные терминалы</a> — они есть во многих торговых центрах и банковских отделениях.</p>
+			<br />
+			<h2>С банковской карты</h2>
+			<br />
+			<p>Деньги с карты можно отправить через <a href="https://money.yandex.ru/doc.xml?id=522870" target="_blank">банкоматы</a> — например, Сбербанка, ВТБ24 и многих других банков.</p>
+			<br />
+			<p>А если у вас есть доступ к интернет-банкингу, вы сможете поддержать акцию, не выходя из дома. В большинстве систем из <a href="https://money.yandex.ru/doc.xml?id=242314" target="_blank">нашего списка</a> переводы выполняются мгновенно.</p>
+		</div>
+	</div>
+</div>

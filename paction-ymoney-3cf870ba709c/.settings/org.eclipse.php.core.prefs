@@ -1,0 +1,4 @@
+#Sat Jan 04 09:09:43 PETT 2014
+eclipse.preferences.version=1
+include_path=5;org.zend.php.framework.CONTAINER\u00050;/ymoney
+use_asp_tags_as_php=false

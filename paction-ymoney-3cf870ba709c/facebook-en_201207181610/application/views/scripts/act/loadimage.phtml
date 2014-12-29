@@ -1,0 +1,30 @@
+<link href="<?php echo $this->baseUrl('css/fileuploader.css')?>" rel="stylesheet" type="text/css">
+<script src="<?php echo $this->baseUrl('js/fileuploader.js')?>" type="text/javascript"></script>
+<script>        
+    function createUploader() {
+        var uploader = new qq.FileUploader({
+            element: document.getElementById('file-uploader-demo1'),
+            action: '/act/loadimageajax',
+            debug: false,
+            allowedExtensions: ['jpg', 'jpeg', 'png', 'gif'],
+            params: {
+                aid: <?php echo $this->aid;?>
+            },
+            onComplete: function(id, fileName, responseJSON) {
+    //            response =  jQuery.parseJSON(responseJSON.data);
+            }
+        });
+    }
+        
+    // in your app create uploader as soon as the DOM is ready
+    // don't wait for the window to load  
+    window.onload = createUploader;
+    
+</script>
+
+<div id="file-uploader-demo1">		
+		<noscript>			
+			<p>Please enable JavaScript to use file uploader.</p>
+			<!-- or put a simple form for upload here -->
+		</noscript>         
+	</div>

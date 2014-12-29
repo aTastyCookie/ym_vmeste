@@ -1,0 +1,113 @@
+<script>
+$(document).ready(function(){
+	VK.callMethod('resizeWindow', 770, $('.wrapper').height());
+	
+	$(".delete").click(function(){
+		var id = $(this).attr('id').replace('admin-', '');
+			$.ajax({
+	            url: deleteadminAjaxUrl,
+	            type: "POST",
+	            dataType: "json",
+				data: {
+					id: id
+				},
+				success: function (data) {
+	            	if(data == true) {
+	            		$('#tr-' + id).remove();
+	            		VK.callMethod('resizeWindow', 770, $('.wrapper').height());
+	            	} else {
+	                	alert('error');
+	            	}
+	            }
+	    	});
+		return false;
+	});
+
+});
+</script>
+<style>
+input[type="submit"]{
+    background: #ccc;
+    border: 1px solid #000;
+    color: #000000;
+	cursor:pointer;
+}
+input[type="reset"] {
+    background: #DDD;
+    border: 1px solid red;
+    color: #000000;
+	cursor:pointer;
+	margin-left: 20px;
+}
+</style>
+<div class="header">
+	<a  href="<?php echo $this->appurlorigin?>" target="_top" class="logo"></a>
+	<div class="header_links"></div>
+</div>
+<div class="tabs">
+	<a href="<?php if($this->cancreate) { ?>/actions/create<?php } ?>"
+		<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_act"><span class="tl"><span class="tr">Создать акцию</span></span></a>
+	<ul>
+		<li>
+			<a href="/actions"><span class="tl"><span class="tr">Все акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/my"><span class="tl"><span class="tr">Мои акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/account"><span class="tl"><span class="tr">Мой счет</span></span></a>
+		</li>
+		<?php if($this->admin) {?> 
+		<li>
+			<a href="/actions/adminstat"><span><span class="tl"><span class="tr">Статистика</span></span></ф>
+		</li>
+		<li>
+			<a href="/actions/duplicates"><span class="tl"><span class="tr">Дубликаты</span></span></a>
+		</li>
+		<li class="current_link">
+			<span><span class="tl"><span class="tr">Админы</span></span></span>
+		</li>
+		<?php } ?>
+	</ul>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">
+		<div>
+			<div class="title2">Список админов</div>
+			<table class="stat_table">
+			<tr>
+				<td><b>ID</b></td>
+				<td><b>Имя, фамилия</b></td>
+				<td><b>Действия</b></td>
+			</tr>
+			
+			<?php foreach($this->admins as $admin) {?>
+				<tr id="tr-<?php echo $admin['id']?>">
+					<td><?php echo $admin['id']?></td>
+					<td><a href="<?php echo $admin['url']?>" target="blank"><?php echo $admin['name']?></a></td>
+					<td><a href="#" id="admin-<?php echo $admin['id']?>" class="delete">Удалить</a></td>
+				</tr>
+			<?php } ?>
+			</table>
+			<p>
+				<form action="" method="post">
+					<fieldset>
+						<legend>Добавить админа</legend>
+						<input type="text" value="" placeholder="Ссылка на профиль" name="url"/> 
+						<input type="text" value="" placeholder="Идентификатор" name="id" /><br><br>
+						<input type="text" value="" placeholder="Имя" name="firstname" />
+						<input type="text" value="" placeholder="Фамилия" name="lastname" /><br><br>
+						<input type="submit" value="Добавить админа" name="sub" /> <input type="reset" value="Сбросить" name="reset" />
+					</fieldset>
+				</form>
+			</p>
+		</div>
+	</div>
+
+	<div class="right">
+
+	</div>
+</div>

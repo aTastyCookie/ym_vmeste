@@ -1,0 +1,46 @@
+@charset "utf-8";
+
+html, body, p, pre, table, tr, th, td, h1, h2, h3, h4, h5, h6, ul, ol, li, form, input, select, textarea, button, a, img, label {
+padding:0;
+border:0;
+margin:0;
+}
+body {
+font:11px/1.28 "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+color:#333;
+background:#fff;
+}
+table { border-collapse:collapse; }
+td { vertical-align:top; }
+p { padding:7px 0; }
+a { color:#3b5998; text-decoration:none; }
+a:hover { text-decoration:underline; }
+h1, h2, h3, h4, h5, h6 {
+}
+h1 {
+}
+h2 {
+}
+h3 {
+}
+h4 {
+}
+h5 {
+}
+h6 {
+}
+input, select, textarea {
+	border:1px solid #bdc6d9;
+	font:11px/1.2 "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+	padding:3px 4px 4px;
+	background:#fff;
+	color:#000000;
+}
+input {
+}
+select {
+}
+input[type=radio], input[type=checkbox] { background:none; border:0; padding:0; margin:0; width:auto; height:auto; cursor:pointer; vertical-align:middle; }
+textarea { overflow:auto; }
+button { cursor:pointer; }
+label { cursor:pointer; }

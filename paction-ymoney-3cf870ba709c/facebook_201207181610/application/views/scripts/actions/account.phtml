@@ -1,0 +1,65 @@
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/ym_fb.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery-ui-1.8.16.custom.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery.fancybox-1.3.4.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/reset.css')?>" type="text/css" media="screen" />
+<script>
+$(document).ready(function(){
+	$('#action_is_closed a').click(function(){
+		$('#action_is_closed').remove();
+	});
+	$('.unset').click(function(){
+		$.ajax({
+            url: '/actions/unset',
+            type: "POST",
+            dataType: "json",
+			data: 1,
+            success: function (data) { 
+            	if(data == true) {
+            		$('.unset').replaceWith('Счет отвязан');
+            	} else {
+                	alert('error');
+            	}
+            }
+    	});
+		return false;
+	});
+	jQuery(window.parent).live('scroll', function() {
+		alert('ok');
+	});
+});
+</script>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> &#0149; <span>Информация о счете</span>
+		<?php if ($this->admin) { ?> &#0149; <a href="/actions/adminstat">Статистика</a> &#0149; <a href="/actions/duplicates">Дубликаты</a>
+                &#0149; <a href="/actions/admins">Админы</a><?php } ?>
+                <?php if($this->cancreate) { ?>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Создать акцию</a>
+		<?php } ?>
+	</div>
+</div>
+<div class="content">
+	<?php if($this->error) {?>
+	<div id="action_is_closed"><a href="#">закрыть</a> Ой, ошибка: <?php echo $this->error?></div>
+	<?php } ?>
+
+	<div class="title">Информация о счете в Яндекс.Деньгах</div>
+	<table class="account_info">
+		<tr>
+			<td>Электронная почта</td><td><strong><?php echo $this->email?></strong></td><td><a href="#" class="unset">Отменить привязку счета</a></td>
+		</tr>
+		<tr>
+			<td>Номер счета</td><td><span><?php echo $this->account?></span></td><td></td>
+		</tr>
+		<tr>
+			<td>Баланс</td><td><strong><?php echo $this->balance?></strong></td><td><a href="https://money.yandex.ru/doc.xml?id=157131&_openstat=socapp;fb;out;" target="_blank">Вывести деньги</a></td>
+		</tr>
+	</table>
+	<div class="go_to_ym">
+	Советуем вам пройти <a href="https://money.yandex.ru/security/identification/?from=fbapp" target="_blank">идентификацию</a> и 
+	использовать самый надежный способ защиты счета — <a href="https://money.yandex.ru/strongsec/?from=fbapp" target="_blank">усиленную авторизацию</a>.
+	<br/><br/>
+	<a href="https://money.yandex.ru/?_openstat=socapp;fb;ma;" target="_blank">Перейти на сайт Яндекс.Денег</a></div>
+</div>

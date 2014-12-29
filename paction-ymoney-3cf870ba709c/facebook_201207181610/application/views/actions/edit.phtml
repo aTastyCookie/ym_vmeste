@@ -1,0 +1,597 @@
+<script>
+/* ABOUT MONEY */
+var bal = <?php echo $this->balance?>;
+var action_id = '<?php echo $this->action['id']?>';
+$(function() {
+
+    /* select variant */
+    $('#cash_variants li').each(function(CVI) {
+    	if(($(this).hasClass('curr') && CVI==0)) {
+        	if($('#required_sum').val()>0) {
+    			$('.right .mb_collected')
+    			.html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal)+'</span> из <span class="s2">' 
+    	    		+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+    		} else {
+    			$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal)+'</span> <span>руб.</span>');
+    		}
+    	}
+    	sumbalance();
+        $(this).click(function() {
+            $('#cash_variants li').removeClass('curr');
+            $(this).addClass('curr');
+            $('#cash_variants input').attr('value',CVI);
+            /* show/hide hidden rows */
+            if(CVI==0||CVI==2) { $('.mbegin').addClass('tr_closed'); }
+            if(CVI==1) { $('.mbegin').removeClass('tr_closed'); }
+            $('.cv_info').removeClass('cv_show'); $('.cv_info').eq(CVI).addClass('cv_show');
+            if(CVI==0) {
+            	sumbalance();
+            	if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+	            	if($('#required_sum').val().replace(' ', '').replace(',', '.')>0) {
+	        			$('.right .mb_collected')
+	        			.html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal)+'</span> из <span class="s2">' 
+	    	        		+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+	        		} else {
+	        			$('.right .mb_collected')
+	        			.html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal)+'</span> <span>руб.</span>');
+	        		}
+            	} else if (isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+            		$('.right .mb_collected')
+        			.html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal)+'</span> <span>руб.</span>');
+            	} else if (isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+            		$('.right .mb_collected')
+        			.html('Собрано <span class="s1">'+bal+'</span> <span>руб.</span>');
+            	} else if (!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+            		$('.right .mb_collected')
+        			.html('Собрано <span class="s1">'+bal+'</span> из <span class="s2">' 
+    	        		+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+            	}
+            } else if(CVI==2) {
+            	$('.about_money td.inp p').first().html('руб.');
+            } else {
+            	sumbalance();
+            }
+        });
+    });
+});
+
+function sumbalance()
+{
+	var newbal = bal;
+	if(!isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+		newbal = Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+bal;
+	} 
+	if($('#cash_variants input').attr('value')==2) {
+		$('.about_money td.inp p').first().html('руб.');
+	} else {
+		$('.about_money td.inp p').first().html('руб. (всего &ndash; <span>' + newbal + ' руб.</span>)');
+	}
+}
+
+function checkname()
+{
+	var name = $('#name').val();
+
+	$.ajax({
+        url: checknameAjaxUrl,
+        type: "GET",
+        dataType: "json",
+		data: {
+			name: name,
+			id: action_id
+		},
+        success: function (data) { 
+        	if(data == true) {
+        		$('#name').css("border", '1px solid #F00');
+            	goodname = false;
+        	} else {
+        		$('#name').css("border", '1px solid #BDC6D9');
+        		goodname = true;
+        	}
+        }
+	});
+}
+
+$(document).ready(function(){
+	var action_id = '<?php echo $this->action['id']?>';
+	$('#draftbutton').click(function(){
+		var name = $('#name').val();
+
+		$.ajax({
+	        url: checknameAjaxUrl,
+	        type: "GET",
+	        dataType: "json",
+			data: {
+				name: name,
+				id: action_id
+			},
+	        success: function (data) { 
+	        	if(data == true) {
+	        		$('#name').css("border", '1px solid #F00');
+	            	goodname = false;
+	            	$('#name').focus();
+	        	} else {
+	        		$('#name').css("border", '1px solid #BDC6D9');
+	        		goodname = true;
+	        		$('#draft').val('Y');
+	    			$('#actionform').submit();
+	        	}
+	        }
+		});
+	});
+	$('#publicbutton').click(function(){
+		var name = $('#name').val();
+
+		$.ajax({
+	        url: checknameAjaxUrl,
+	        type: "GET",
+	        dataType: "json",
+			data: {
+				name: name,
+				id: action_id
+			},
+	        success: function (data) { 
+	        	if(data == true) {
+	        		$('#name').css("border", '1px solid #F00');
+	            	goodname = false;
+	            	$('#name').focus();
+	        	} else {
+	        		$('#name').css("border", '1px solid #BDC6D9');
+	        		goodname = true;
+	        		$('#draft').val('N');
+	    			$('#actionform').submit();
+	        	}
+	        }
+		});
+	});
+
+	$('#date1 .datepicker, #date2 .datepicker').change(function() {
+        settime();
+    });
+	$('#date2 .datepicker').click(function() {
+    	if($('#signal:checked').length) {
+    		$('#signal').prop('checked', false);
+    	}
+	});
+    $('#signal').change(function() {
+        if($('#date2 .datepicker').val().length != 0) {
+            settime();
+        }
+    });
+    var goodname = true;
+
+    $('#name').blur(function(){
+		var name = $(this).val();
+		checkname();
+		if(name.length<=50) {
+			$('.right .mb_title a').first().html(name);
+		} else {
+			$('.right .mb_title a').first().html(name.slice(0, 50) + '…');
+		}
+		settime();
+
+		var curbal = 0;
+		if($('input[name="source"]').val()!='2') {
+			curbal = bal;
+		}
+		
+		if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			if($('#required_sum').val().replace(' ', '').replace(',', '.')>0) {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> из <span class="s2">' 
+					+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+			} else {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+			}
+		} else if(isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+		} else if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> из <span class="s2">' 
+				+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+		} else {
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> <span>руб.</span>');
+		}
+		
+	});
+    
+	$('#name').keyup(function(){
+		var name = $(this).val();
+		checkname();
+		if(name.length<=50) {
+			$('.right .mb_title a').first().html(name);
+		} else {
+			$('.right .mb_title a').first().html(name.slice(0, 50) + '…');
+		}
+		settime();
+
+		var curbal = 0;
+		if($('input[name="source"]').val()!='2') {
+			curbal = bal;
+		}
+		
+		if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			if($('#required_sum').val().replace(' ', '').replace(',', '.')>0) {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> из <span class="s2">' 
+					+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+			} else {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+			}
+		} else if(isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+		} else if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> из <span class="s2">' 
+				+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+		} else {
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> <span>руб.</span>');
+		}
+		
+	});
+	$('#current_sum').keyup(function(){
+
+		var curbal = 0;
+		if($('input[name="source"]').val()!='2') {
+			curbal = bal;
+		}
+		if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			if($('#required_sum').val().replace(' ', '').replace(',', '.')>0) {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> из <span class="s2">' 
+					+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+			} else {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+			}
+		} else if(isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+		} else if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {			
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> из <span class="s2">' 
+				+ Number($('#required_sum').val().replace(' ', '').replace(',', '.')) + '</span> <span>руб.</span>');
+		} else {
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> <span>руб.</span>');
+		}
+		settime();
+		sumbalance();
+	});
+	$('#required_sum').keyup(function(){
+		var curbal = 0;
+		if($('input[name="source"]').val()!='2') {
+			curbal = bal;
+		}
+		
+		if(!isNaN(Number($('#required_sum').val().replace(' ', '').replace(',', '.'))) && !isNaN(Number($('#current_sum').val().replace(' ', '').replace(',', '.')))) {
+			if($(this).val().replace(' ', '').replace(',', '.')>0) {
+				$('.right .mb_collected')
+				.html(
+						'Собрано <span class="s1">'
+						+ (Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)
+						+'</span> из <span class="s2">' 
+						+ Number($(this).val().replace(' ', '').replace(',', '.')) 
+						+ '</span> <span>руб.</span>');
+			} else {
+				$('.right .mb_collected').html('Собрано <span class="s1">'+(Number($('#current_sum').val().replace(' ', '').replace(',', '.'))+curbal)+'</span> <span>руб.</span>');
+			}
+		} else {
+			$('.right .mb_collected').html('Собрано <span class="s1">'+curbal+'</span> <span>руб.</span>');
+		}
+		settime();
+		sumbalance();
+	});
+
+	$('#required_sum').click(function(){
+		if($('#required_sum').val()==0) {
+			$('#required_sum').val('');	
+		}
+	});
+	$('#current_sum').blur(function(){
+		if($('#current_sum').val()=='') {
+			$('#current_sum').val('0');	
+		}
+	});
+	$('#current_sum').click(function(){
+		if($('#current_sum').val()==0) {
+			$('#current_sum').val('');	
+		}
+	});
+
+	jQuery.validator.addMethod("number", function(value, element) { 
+		if(/^\d*[\.|\,|\s]*\d+$/.test(value) || value=='') {
+			$(element).css("border", '1px solid #BDC6D9');
+			return true;
+		} else {
+			return false;
+		}
+	}, '');
+
+	var formValidator = $('#actionform').validate({
+        errorPlacement: function(error, element) {
+        	element.css("border", 'red 1px solid');
+        },
+        rules: {
+            'video': {
+            	url: true
+            },
+            'current_sum': {
+            	number: true
+            },
+            'required_sum': {
+            	number: true
+            }
+        }
+    });
+
+	/* add photo */
+    $('.selectphoto').live('click', function(){
+    	if($(this).attr('class') == 'selectphoto selected') {
+    		$(this).removeClass('selected');
+    		//alert($('.photocontainer').find('input[value="'+$(this).attr('pid').replace('photo', '')+'"]').length);
+    		//$('.photocontainer').find('input[value="'+$(this).attr('pid').replace('photo', '')+'"]').remove();
+    		$('.listphoto a[pid="'+$(this).attr('pid')+'"]').removeClass('selected');
+    		$('.photocontainer').find('#'+$(this).attr('pid').replace('photo', 'img')).remove();
+    	} else {
+    		$(this).addClass('selected');
+    		$('.listphoto a[pid="'+$(this).attr('pid')+'"]').addClass('selected');
+        	$('.photocontainer').append('<table id="'+$(this).attr('pid').replace('photo', 'img')+'"><tr><td><a href="#" class="del_photo"></a><input type="hidden" name="photo['+fileCounter+']" value="'+$(this).attr('pid').replace('photo', '')+'" /><img src="'+$(this).find('img').attr('src')+'" valign="middle"/></td></tr></table>');
+        	//$('.photocontainer').append('');
+            fileCounter++;
+    	}
+    	FB.Canvas.setAutoGrow();
+    });
+    
+    $('.del_photo').live('click', function() {
+		var table_id = $(this).siblings('input').val();
+		$('.listphoto a[pid=photo'+table_id+']').removeClass('selected');
+    	$('table#img'+table_id).remove();
+    	FB.Canvas.setAutoGrow();
+    	return false;
+    });
+
+	var offset = 0;
+	
+	
+	$('.add_photo a').click(function() {
+		$(this).fb_popup({
+			content_container: '.listphoto',
+			//content:'',
+			title: 'Выберите фото',
+			popup_id: 'popup_tpl',
+			width: 760,
+			height: 450,
+			overflow: 'auto'
+		});
+		$.ajax({
+            url: getphotoAjaxUrl,
+            type: "POST",
+            dataType: "json",
+			data: {
+				offset: offset,
+				action_id: action_id
+			},
+            success: function (data) { 
+            	if(data.length > 0) {
+                	//alert(data);
+            		$('.morephoto').remove();
+                	jQuery.each(data, function(i, element){
+                    	var selected = '';
+                    	if(element['selected']==1) {
+                        	selected = ' selected';
+                    	}
+            			$('.p_pad').append('<a class="selectphoto'+selected+'" pid="photo'+element['pid']+'" href="#"><img src="'+element['src']+'" /></a>');
+            			$('.listphoto').append('<a class="selectphoto'+selected+'" pid="photo'+element['pid']+'" href="#"><img src="'+element['src']+'" /></a>');
+                	});
+                	$('.p_pad').append('<div class="morephoto"><a href="#">Еще...</a></div>');
+                	$('.listphoto').append('<div class="morephoto"><a href="#">Еще...</a></div>');
+            		offset = 50;
+            		if(data.length<50) {
+            			$('.morephoto').remove();
+            		}
+            	} else {
+                	$('.morephoto').remove();
+            	}
+            	FB.Canvas.setAutoGrow();
+            }
+    	});
+        return false;
+    });
+	$('.morephoto').live("click", function(){
+    	$.ajax({
+            url: getphotoAjaxUrl,
+            type: "POST",
+            dataType: "json",
+			data: {
+				offset: offset,
+				action_id: action_id
+			},
+            success: function (data) { 
+            	if(data.length > 0) {
+                	//alert(data);
+            		$('.morephoto').remove();
+                	jQuery.each(data, function(i, element){
+                		var selected = '';
+                    	if(element['selected']==1) {
+                        	selected = ' selected';
+                    	}
+            			$('.p_pad').append('<a class="selectphoto'+selected+'" pid="photo'+element['pid']+'" href="#"><img src="'+element['src']+'" /></a>');
+            			$('.listphoto').append('<a class="selectphoto'+selected+'" pid="photo'+element['pid']+'" href="#"><img src="'+element['src']+'" /></a>');
+                	});
+                	$('.p_pad').append('<div class="morephoto"><a href="#">Еще...</a></div>');
+                	$('.listphoto').append('<div class="morephoto"><a href="#">Еще...</a></div>');
+            		offset = offset+50;
+            		if(data.length<50) {
+            			$('.morephoto').remove();
+            		}
+            	} else {
+                	$('.morephoto').remove();
+            	}
+            	FB.Canvas.setAutoGrow();
+            }
+    	});
+		return false;
+    });
+});
+$(document).ajaxStart(function(){ 
+		$('.morephoto').append('<span class="loading"></span>'); 
+	}).ajaxStop(function(){ 
+		$('.morephoto span').remove();
+});
+</script>
+
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-98347" target="_top">Информация о счете</a>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Создать акцию</a>
+	</div>
+</div>
+
+<div class="content">
+<div class="admin">
+	<div class="title3">Описание акции</div>
+	<div class="left">
+	<form action="" method="post" enctype="multipart/form-data" id="actionform">
+		<input type="hidden" value="<?php echo $this->action['id']?>" name="action_id" id="action_id" />
+		<div class="new_action">
+		<table>
+			<tr><td>На что собираете:</td><td class="inp"><input name="name" type="text" value="<?php echo $this->action['name']?>" id="name" /></td></tr>
+
+			<tr><td>Подробное описание:</td><td class="inp"><textarea name="description" cols="" rows=""><?php echo $this->action['description']?></textarea></td></tr>
+
+			<tr><td>Метки:</td><td class="inp"><input name="tags" type="text" value="<?php echo $this->action['tags']?>" /></td></tr>
+
+			<tr class="period"><td>Срок проведения:</td><td class="inp">
+                    <div class="select1" id="date1">
+                        <input type="text" class="datepicker" id="from" value="<?php echo $this->starthidden?>" />
+                        <input name="date_start" type="text" value="<?php echo $this->starthidden?>" class="settable date_start" />
+                    </div>
+                    &mdash;
+                    <div class="select1" id="date2">
+                        <input type="text" class="datepicker" id="to" value="<?php echo $this->endhidden==0 ? '' : $this->endhidden?>" />
+                        <input name="date_end" type="text" value="<?php echo $this->endhidden==0 ? '' : $this->endhidden?>" class="settable date_end" />
+                    </div>
+                    <div style="display: inline;">
+                        <input type="checkbox" value="<?php if ($this->endhidden==0) { echo "1"; }?> />" name="signal" id="signal" <?php if ($this->endhidden==0) {?>checked="checked" <?php }?> /> бессрочно
+                    </div>
+				</td></tr>
+
+				<tr id="add_link"><td></td><td class="add_link"><a href="#">Добавить сайт, фотографии или видео</a></td></tr>
+
+				<tr class="add_tr add_tr_closed"><td class="namepad_td">Адрес сайта:</td><td class="inp pad_td"><input name="url" type="text" value="<?php echo $this->action['url']?>" /></td></tr>
+
+				<tr class="add_tr add_tr_closed"><td>Видео на YouTube:</td><td class="inp"><input name="video" value="<?php echo $this->action['video']?>" type="text" /></td></tr>
+
+				<tr class="add_tr add_tr_closed"><td>Фотографии:</td><td class="add_photo"><a href="#">добавить/удалить фотографию</a></td></tr>
+				<tr><td></td><td>
+				<div class="photocontainer">
+				<?php 
+				$i=0;
+				//print_r($this->showphotos);
+				foreach($this->showphotos as $photo) {
+					?>
+					<table id="img<?php echo $photo['pid']?>"><tr><td>
+					<a href="#" class="del_photo"></a>
+					<input type="hidden" name="photo[<?php echo $i?>]" value="<?php echo $photo['pid']?>" />
+        			<img src="<?php echo $photo['src']?>" hspace="3" vspace="3" id="img<?php echo $photo['pid']?>" />
+        			</td></tr></table>
+					<?php 
+					$i++;
+				}
+				?>
+				</div>
+				</td></tr>
+			</table>
+		</div>
+
+	
+
+		<div class="about_money">
+
+			<div class="title3">Про деньги</div>
+
+			<div>Какую сумму показывать на информере? Выберите нужный вариант:</div>
+
+			<div id="cash_variants">
+				<ul>
+					<li<?php if($this->action['source']==0) echo ' class="curr"'; ?>><img src="/i/settings-all-32.png" alt="Всё, что есть на счете"/> <div>Всё, что есть на счете</div></li>
+					<li<?php if($this->action['source']==1) echo ' class="curr"'; ?>><img src="/i/settings-date-32.png" alt="Только за время акции" /> <div>Только за время акции</div></li>
+					<li<?php if($this->action['source']==2) echo ' class="curr"'; ?>><img src="/i/settings-campaign-32.png" alt="Только через приложение" /> <div>Только для этой акции</div></li>
+				</ul>
+				<input name="source" type="text" value="<?php echo $this->action['source']?>" />
+			</div>
+			<div class="cv_info<?php if($this->action['source']==0) echo " cv_show"; ?>">Показываем баланс вашего счёта в Яндекс.Деньгах. Также вы можете указать сумму, которая собрана другими способами.</div>
+			<div class="cv_info<?php if($this->action['source']==1) echo " cv_show"; ?>">Показываем все деньги, которые пришли на ваш счёт за определённый срок. Вы можете дополнительно указать сумму, которая собрана другими способами.</div>
+			<div class="cv_info<?php if($this->action['source']==2) echo " cv_show"; ?>">Учитываем только деньги, переведенные через приложение на эту акцию. Вы также можете указать сумму, которая собрана другими способами.</div>
+			<table>
+				<tr class="mbegin<?php if($this->action['source']!=1) echo " tr_closed"; ?>"><td class="period">Начать отсчет с:</td><td class="inp">
+					<div class="select1" id="date3">
+                        <input type="text" class="datepicker" value="<?php echo $this->ymfromdatehidden;?>" />
+						<input name="ymfromdate" type="text" value="<?php echo $this->ymfromdatehidden;?>" class="settable ymfromdate" />
+					</div>
+				</td></tr>
+
+				<tr><td>У вас уже есть:</td><td class="inp"><input name="current_sum" id="current_sum" type="text" value="<?php echo $this->action['current_sum']?>" /> 
+
+				<p>руб. (всего – <span><?php echo ($this->balance + $this->action['current_sum'])?> руб.</span>)</p></td></tr>
+
+				<tr><td>Всего нужно собрать:</td><td class="inp"><input name="required_sum" id="required_sum" value="<?php echo $this->action['required_sum'] ? $this->action['required_sum'] : ''?>" type="text" /> <p>руб.</p></td></tr>
+
+			</table>
+
+		</div>
+
+		<input type="hidden" value="<?php echo $this->action['draft']?>" name="draft" id="draft" />
+
+		<div class="new_action_buttons">
+		<button type="button" class="button2" name="public" id="publicbutton">Опубликовать</button> 
+		<a href="#" class="button1" id="draftbutton">Сохранить черновик</a></div>
+
+	</form>
+
+	</div>
+
+
+
+	<div class="right">
+		<div class="mini_block">
+			<?php 
+			if($this->action['percents']>=0) {
+				if($this->action['percents']==0) {
+					$bkground = '0';
+				} elseif($this->action['percents']<=33) {
+					$bkground = '0';
+				} elseif($this->action['percents']<=67) {
+					$bkground = '-7';
+				} else {
+					$bkground = '-14';
+				}
+			} else {
+				$bkground = '-21';
+			}
+			?>
+			<div class="mini_block_inner">
+				<div class="mb_timer"><?php echo $this->action['dates']?> <span><?php if(isset($this->action['left'])) { echo $this->action['left']; }?></span></div>
+				<div class="mb_title"><a href="/?app_data=<?php echo $this->action['id']?>"><?php echo mb_strlen($this->action['name'], "UTF-8")<=50 ? $this->action['name'] : mb_substr($this->action['name'], 0, 49, "UTF-8")."…";?></a> 
+				<div><a href="<?php echo $this->action['Userurl']?>" target="_blank"><?php echo mb_strlen($this->action['Username'], "UTF-8")<=18 ? $this->action['Username'] : 
+					mb_substr($this->action['Firstname'], 0, 1, "UTF-8").'. '.$this->action['Lastname']?></a></div></div>
+				<div class="mb_money_line">
+					<?php if($this->action['percents']>0) { ?>
+					<div style="width:<?php echo $this->action['percents'];?>%; background-position:0 <?php echo $bkground?>px;">
+						<div></div>
+					</div>
+					<?php } else { ?>
+					<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+						<div></div>
+					</div>
+					<?php } ?>
+				</div>
+				<div class="mb_collected" id="mb_collected<?php echo $this->action['id']?>">Собрано <span class="s1"><?php echo $this->action['current_sumF']; ?></span> 
+				<?php if ($this->action['required_sum']>0) {?>из <span class="s2"><?php echo $this->action['required_sumF']; ?></span><?php }?> <span>руб.</span> </div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+</div>
+
+<div class="listphoto" style="display:none">
+	<p>Фотографии должны быть в общедоступных альбомах.</p>
+	<div class="morephoto"><a href="#">Еще...</a></div>
+</div>

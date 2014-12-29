@@ -1,0 +1,49 @@
+<script>
+$(document).ready(function(){
+	
+});
+</script>
+<style>
+
+.left table tr {
+	border:1px solid #ddd;
+	padding:3px;
+}
+.left table td {
+	padding:3px;
+	font-size:11px
+}
+</style>
+<div class="header">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149;
+                <a href="<?php echo $this->appurl ?>?app_data=21354-48523" target="_top">My collections</a> &#0149; 
+                <a href="<?php echo $this->appurl ?>?app_data=21354-98347" target="_top">Account information</a>
+                <?php if ($this->admin) { ?> &#0149; <a href="/actions/adminstat">Statistics</a> &#0149; <span>Duplicates</span>
+                &#0149; <a href="/actions/admins">Admins</a><?php } ?>
+                <?php if ($this->cancreate) { ?>
+                <a href="<?php echo $this->appurl ?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Create collection</a>
+                <?php } ?>
+	</div>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">close</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">		
+		<div>
+			<div class="title2">Duplicate <?php if(isset($this->id)) echo "of ";?>collection page<?php if(isset($this->id)) echo " ".$this->id; else echo "s";?></div>
+			<table width="100%">
+			<?php foreach($this->actions as $action) {?>
+			<tr>
+				<td><a href="<?php echo $this->appurl?>?app_data=<?php echo $action['id']?>" target="_blank"><?php echo $action['name'];?></a></td>
+				<td><a href="<?php echo $this->appurl?>?app_data=<?php echo $action['dupl']?>" target="_blank">Duplicate of collection page <?php echo $action['dupl'];?></a></td>
+				<td><a href="/actions/duplicates?check=<?php echo $action['id']; ?><?php if(isset($this->id)) echo "&id=".$this->id;?>">Remove from duplicates list</a></td>
+			</tr>
+			<?php } ?>
+			</table>
+		</div>
+	</div>
+
+</div>

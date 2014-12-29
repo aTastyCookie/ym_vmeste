@@ -1,0 +1,86 @@
+<script>
+$(document).ready(function(){
+	$('#action_is_closed a').click(function(){
+		$('#action_is_closed').remove();
+	});
+	$('.unset').click(function(){
+		$.ajax({
+            url: '/actions/unset',
+            type: "POST",
+            dataType: "json",
+			data: 1,
+            success: function (data) {
+            	if(data == true) {
+            		$('.unset').replaceWith('Счет отвязан');
+            	} else {
+                	alert('error');
+            	}
+            }
+    	});
+		return false;
+	});
+
+	VK.callMethod('resizeWindow', 770, 720);
+	
+});
+</script>
+<div class="header">
+	<a  href="<?php echo $this->appurlorigin?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<div id="vk_like"></div>
+		<script type="text/javascript">
+		VK.Widgets.Like("vk_like", {type: "button", 
+			pageUrl: '<?php echo $this->appurlorigin?>', 
+			pageDescription: '<?php echo $this->appdesc?>', 
+			pageTitle: '<?php echo $this->appname?>',
+			text: '<?php echo $this->appdesc?>',
+			verb: 1});
+		</script>
+	</div>
+</div>
+<div class="tabs">
+	<a href="<?php if($this->cancreate) { ?>/actions/create<?php } ?>"
+		<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_act"><span class="tl"><span class="tr">Создать акцию</span></span></a>
+	<ul>
+		<li>
+			<a href="/actions"><span class="tl"><span class="tr">Все акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/my"><span class="tl"><span class="tr">Мои акции</span></span></a>
+		</li>
+		<li class="current_link">
+			<span><span class="tl"><span class="tr">Мой счет</span></span></span>
+		</li>
+		<?php if($this->admin) {?> 
+		<li>
+			<a href="/actions/adminstat"><span class="tl"><span class="tr">Статистика</span></span></a>
+		</li>
+                <li>
+			<a href="/actions/duplicates"><span class="tl"><span class="tr">Дубликаты</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/admins"><span class="tl"><span class="tr">Админы</span></span></a>
+		</li>
+		<?php } ?>
+	</ul>
+</div>
+<div class="content">
+	<?php if($this->error) {?>
+	<div id="action_is_closed"><a href="#">закрыть</a> Ой, ошибка: <?php echo $this->error?></div>
+	<?php } ?>
+
+	<div class="accounttitle">Информация о счете в Яндекс.Деньгах</div>
+	<table class="account_info">
+		<tr>
+			<td>Номер счета</td><td><span><?php echo $this->account?></span></td><td><a href="#" class="unset">Отменить привязку счета</a></td>
+		</tr>
+		<tr>
+			<td>Баланс</td><td><strong><?php echo $this->balance?></strong></td><td><a href="https://money.yandex.ru/doc.xml?id=157131&_openstat=socapp;vk;out" target="_blank">Вывести деньги</a></td>
+		</tr>
+	</table>
+	<div class="go_to_ym">
+	Советуем вам пройти <a href="https://money.yandex.ru/security/identification/?from=svkapp" target="_blank">идентификацию</a> и
+	использовать самый надежный способ защиты счета — <a href="https://money.yandex.ru/strongsec/?from=svkapp" target="_blank">усиленную авторизацию</a>.
+	<br/><br/>
+	<a href="https://money.yandex.ru/?_openstat=socapp;vk;ma;" target="_blank">Перейти на сайт Яндекс.Денег</a></div>
+</div>

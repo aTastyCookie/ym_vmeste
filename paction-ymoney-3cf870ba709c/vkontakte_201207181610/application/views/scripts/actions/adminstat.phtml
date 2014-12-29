@@ -1,0 +1,174 @@
+<script>
+$(document).ready(function(){
+var hframe = $('.wrapper').height(); 
+VK.callMethod('resizeWindow', 770, hframe);
+});
+</script>
+<div class="header">
+	<a  href="<?php echo $this->appurlorigin?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<div id="vk_like"></div>
+		<script type="text/javascript">
+		VK.Widgets.Like("vk_like", {type: "button", 
+			pageUrl: '<?php echo $this->appurlorigin?>', 
+			pageDescription: '<?php echo $this->appdesc?>', 
+			pageTitle: '<?php echo $this->appname?>',
+			text: '<?php echo $this->appdesc?>',
+			verb: 1});
+		</script>
+	</div>
+</div>
+<div class="tabs">
+	<a href="<?php if($this->cancreate) { ?>/actions/create<?php } ?>"
+		<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_act"><span class="tl"><span class="tr">Создать акцию</span></span></a>
+	<ul>
+		<li>
+			<a href="/actions"><span class="tl"><span class="tr">Все акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/my"><span class="tl"><span class="tr">Мои акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/account"><span class="tl"><span class="tr">Мой счет</span></span></a>
+		</li>
+		<?php if($this->admin) {?> 
+		<li class="current_link">
+			<span><span class="tl"><span class="tr">Статистика</span></span></span>
+		</li>
+                <li>
+			<a href="/actions/duplicates"><span class="tl"><span class="tr">Дубликаты</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/admins"><span class="tl"><span class="tr">Админы</span></span></a>
+		</li>
+		<?php } ?>
+	</ul>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">
+		<div>
+			<div class="title2">Статистика акций</div>
+			<table class="stat_table">
+			<tr>
+				<td>Всего акций</td>
+				<td  class="st_pay"><?php echo $this->countAll?></td>
+			</tr>
+			<tr>
+				<td>Акций в ТОП (отмеченные, незаблокированные)</td>
+				<td class="st_pay"><?php echo $this->countTop?></td>
+			</tr>
+			<tr>
+				<td>Черновики</td>
+				<td class="st_pay"><?php echo $this->countDraft?></td>
+			</tr>
+			<tr>
+				<td>Новые</td>
+				<td class="st_pay"><?php echo $this->countNew?></td>
+			</tr>
+			<tr>
+				<td>Скрытые</td>
+				<td class="st_pay"><?php echo $this->countHidden?></td>
+			</tr>
+			<tr>
+				<td>Заблокированые</td>
+				<td class="st_pay"><?php echo $this->countBlocked?></td>
+			</tr>
+			<tr>
+				<th colspan="2">Акций создано</th>
+			</tr>
+			<tr>
+				<td>За сегодня</td>
+				<td class="st_pay"><?php echo $this->countThisDay?></td>
+			</tr>
+			<tr>
+				<td>За вчерашний день</td>
+				<td class="st_pay"><?php echo $this->countLastDay?></td>
+			</tr>
+			<tr>
+				<td>За эту неделю</td>
+				<td class="st_pay"><?php echo $this->countThisWeek?></td>
+			</tr>
+			<tr>
+				<td>За прошлую неделю</td>
+				<td class="st_pay"><?php echo $this->countLastWeek?></td>
+			</tr>
+			<tr>
+				<td>2 недели назад</td>
+				<td class="st_pay"><?php echo $this->count2Week?></td>
+			</tr>
+			<tr>
+				<td>3 недели назад</td>
+				<td class="st_pay"><?php echo $this->count3Week?></td>
+			</tr>
+			<tr>
+				<td>За этот месяц</td>
+				<td class="st_pay"><?php echo $this->countThisMonth?></td>
+			</tr>
+			<tr>
+				<td>За прошлый месяц</td>
+				<td class="st_pay"><?php echo $this->countLastMonth?></td>
+			</tr>
+			<tr>
+				<td>2 месяца назад</td>
+				<td class="st_pay"><?php echo $this->count2Month?></td>
+			</tr>
+			<tr>
+				<th colspan="2">Платежи по акциям</th>
+			</tr>
+			<tr>
+				<td>За сегодня</td>
+				<td class="st_pay"><?php echo $this->paymentsThisDay?></td>
+			</tr>
+			<tr>
+				<td>За вчерашний день</td>
+				<td class="st_pay"><?php echo $this->paymentsLastDay?></td>
+			</tr>
+			<tr>
+				<td>На этой неделе</td>
+				<td class="st_pay"><?php echo $this->paymentsThisWeek?></td>
+			</tr>
+			<tr>
+				<td>На прошлой неделе</td>
+				<td class="st_pay"><?php echo $this->paymentsLastWeek?></td>
+			</tr>
+			<tr>
+				<td>2 недели назад</td>
+				<td class="st_pay"><?php echo $this->payments2Week?></td>
+			</tr>
+			<tr>
+				<td>3 недели назад</td>
+				<td class="st_pay"><?php echo $this->payments3Week?></td>
+			</tr>
+			<tr>
+				<td>В этом месяце</td>
+				<td class="st_pay"><?php echo $this->paymentsThisMonth?></td>
+			</tr>
+			<tr>
+				<td>В прошлом месяце</td>
+				<td class="st_pay"><?php echo $this->paymentsLastMonth?></td>
+			</tr>
+			<tr>
+				<td>2 месяца назад</td>
+				<td class="st_pay"><?php echo $this->payments2Month?></td>
+			</tr>
+			<?php /* foreach($this->operations as $operation) {?>
+				<tr>
+					<td class="st_date"><?php echo date("d M", $operation->getDateTime())?></td>
+					<td  class="st_pay"><?php
+					echo (ceil($operation->getAmount())>$operation->getAmount())
+					? number_format($operation->getAmount(), 2, ',', ' ')
+					: number_format($operation->getAmount(), 0, ',', ' ') ?> руб.</td>
+					<td><?php echo $operation->getTitle()?></td>
+				</tr>
+			<?php } */?>
+			</table>
+		</div>
+	</div>
+
+	<div class="right">
+
+	</div>
+</div>

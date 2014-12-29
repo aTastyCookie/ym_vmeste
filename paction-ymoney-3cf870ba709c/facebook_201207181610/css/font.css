@@ -1,0 +1,17 @@
+/*****************************************
+**             CUSTOM FONTS             **
+*****************************************/
+
+
+@font-face {
+    font-family : lucida;
+    src         : url('../fonts/lucida.eot');
+    src         : url('../fonts/lucida.eot?#iefix') format('embedded-opentype'), url('../fonts/lucida.ttf') format('truetype');
+}
+
+@font-face {
+  font-family : lucida;
+  src         : url('../fonts/lucida_b.eot');
+  src         : url('../fonts/lucida_b.eot?#iefix') format('embedded-opentype'), url('../fonts/lucida_b.ttf') format('truetype');
+  font-weight: bold;
+}

@@ -1,0 +1,1142 @@
+<?php
+if(isset($this->action)) :
+?>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/shelp.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/index.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/jquery.autoSuggest.minified.js') ?>'></script>
+<link type='text/css' href='<?php echo $this->baseUrl('css/autoSuggest.css') ?>' rel='stylesheet' media='screen' />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/font.css') ?>" id="font-css" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/styles.css') ?>" />
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+<script>
+var baseUrl = '<?php echo $this->baseUrl() ?>';
+var app_picture = '<?php echo $this->appPicture;?>';
+var action_link = '<?php echo $this->share;?>';
+var action_id = <?php echo $this->action['id'];?>;
+var action_name = '<?php echo $this->action['name'];?>';
+var action_description = '<?php echo $this->action['short']?>';
+var left = '<?php echo $this->action['left'];?>';
+var starttext = '<?php if(isset($this->action) && isset($this->action['starttext'])) echo $this->action['starttext'];?>';
+var dates = '<?php echo $this->action['dates']?>';
+var soc_users = <?php echo json_encode($this->social_users); ?>;
+//var 
+
+/* Image|video gallery init */
+$(function() {
+	$('.sliding_img').fancybox();
+	$('.sliding_video').click(function() {
+		$.fancybox({
+				'padding'		: 0,
+				'autoScale'		: false,
+				'transitionIn'	: 'none',
+				'transitionOut'	: 'none',
+				'title'			: this.title,
+				'width'			: 680,
+				'height'		: 495,
+				'href'			: this.href.replace(new RegExp("watch\\?v=", "i"), 'v/'),
+				'type'			: 'swf',
+				'swf'			: {
+				   	 'wmode'		: 'transparent',
+					 'allowfullscreen'	: 'true'
+				}
+			});
+
+		return false;
+	});
+});
+
+function getSum(arr) {
+//    for(var i=0; i<arr.length; i++) {
+//        (function(i) {
+            $.ajax({
+                url: fundAjaxUrl, 
+                type: "GET",
+                data: {
+                    action_id: arr.id
+                },
+                success: function (data) {
+                    sum = parseInt(arr.all_sum) + parseInt(arr.current_sum) + (data.sum) ? parseInt(data.sum) : parseInt(data.balance);
+                    console.log(sum);
+                    if(parseInt(arr.required_sum) == 0 && sum == 0) {
+//                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+//                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr.required_sum) > 0 && sum > 0) {
+                        setrightWithReqWoBalC(arr.id, parseInt(arr.required_sum), sum);
+                    } else if (parseInt(arr.required_sum) == 0 && sum > 0) {
+                        setrightWoReqWBalC(arr.id, parseInt(arr.required_sum), sum);
+                    }
+                }
+            });
+//        })(i);
+//    }
+}
+//var actions = <?php //echo json_encode($this->actions); ?>;
+var action = <?php echo json_encode($this->actionforajax); ?>;
+getSum(action);
+
+$(document).ready(function(){
+	for(i=0; i < soc_users.length; i++){
+            FB.api('/' + soc_users[i].id + '/picture', function(response) {
+                //непонятный фэйсбук
+                var pic_url = "";
+                if(typeof(response) == 'string') {
+                    pic_url = response;
+                } else {
+                    pic_url = response.data.url;
+                }
+                $('#social_pics').append('<img src="' + pic_url + '" width="30" height="30" style="padding-right:5px;" />');
+            });
+        }
+
+		$('.code').click(function(){
+			$(this).fb_popup({
+				content_container: '.popup-code',
+				//content:'',
+				title: 'Код для вставки на другом сайте',
+				popup_id: 'popup_tpl',
+				width: 450,
+				height: 390,
+                                notshowpanel: true,
+				overflow: 'auto'
+			});
+			return false;
+		});
+
+		var link = '<?php echo $this->share?>';
+		$('.public').click(function(){
+			FB.ui(
+				  {
+				    method: 'feed',
+				    link: link,
+                                    picture: app_picture,
+				    name: '<?php echo $this->action['name']?>',
+                                    caption: 'Акция по сбору средств',
+				    description: '<?php echo $this->action['short']?>',
+				    actions: [{name : 'Ссылка на акцию', link: link }]
+				  },
+				  function(response) {	
+					  if(response.post_id) {
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Сообщение об успешной отправке',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+					  }
+				  }
+			  );
+			return false;
+		});
+                
+                $('.public2').click(function(){
+			FB.ui(
+				  {
+				    method: 'feed',
+				    link: link,
+                                    picture: app_picture,
+				    name: '<?php echo $this->action['name']?>',
+                                    caption: 'Акция по сбору средств',
+				    description: '<?php echo $this->action['short']?>',
+				    actions: [{name : 'Ссылка на акцию', link: link }]
+				  },
+				  function(response) {	
+					  if(response.post_id) {
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Сообщение об успешной отправке',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+					  }
+				  }
+			  );
+			return false;
+		});
+
+		$('.recommend').click(function(){
+			FB.ui(
+				{
+					method: 'send',
+					name: '<?php echo $this->action['name']?>',
+                                        picture: app_picture,
+					link: '<?php echo $this->redirect_url?>',
+                                        description: '<?php echo $this->action['short']?>'
+				},
+				function(response) { 
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Сообщение об успешной отправке',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+				    }
+			);
+			return false;
+		});
+
+		var friendsarray = '';
+	    <?php if($this->action['group']==1) { ?>
+	    	friendsarray = '<?php foreach($this->action['friends'] as $k=>$friend) {
+	    		echo $friend; if($k<(count($this->action['friends'])-1)) echo ","; } ?>';
+	    <?php }?>
+		
+		$('.friends').click(function(){
+			/*$.ajax({
+	            url: '/actions/sendtodriends',
+	            type: "POST",
+	            dataType: "json",
+				data: {
+					name: 'Друзья, скидываемся на акцию "<?php echo $this->action['name']?>" по <?php echo $this->action['required_sum_group']?>',
+					<?php if(!empty($this->photo)) {?>picture: '<?php echo $this->host?>/actions/image?src=<?php echo $this->photo?>',<?php }?>
+					link: '<?php echo $this->redirect_friends_url?>',
+		            description: '<?php echo $this->action['short']?>',
+		            to: friendsarray
+				},
+	            success: function (data) {
+	            	alert('OK');
+	            }
+	    	});*/
+			
+			FB.ui(
+				{
+					method: 'send',
+					name: 'Друзья, скидываемся на акцию "<?php echo $this->action['name']?>" по <?php if (isset($this->action['required_sum_group'])) echo $this->action['required_sum_group']; ?>',
+					<?php if(!empty($this->photo)) {?>picture: '<?php echo $this->host?>/actions/image?src=<?php echo $this->photo?>',<?php }?>
+					link: '<?php echo $this->redirect_friends_url?>',
+		            description: '<?php echo $this->action['short']?>',
+		            to: friendsarray
+				},
+				function(response) { return false; }
+			);
+			return false;
+		});
+
+		$(".stop").click(function(){
+			var link = $(this);
+			if($(this).attr('href').replace('#', '') == 'stop') {
+
+				$.ajax({
+		            url: stopAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		link.attr('href', '#start');
+		            		link.html('Возобновить акцию');
+		            		$('.pause').attr('src', '/i/play-16.png');
+		            		$('.bb_timer').html(dates + '<span>акция завершена</span>');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: startAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		link.attr('href', '#stop');
+		            		link.html('Остановить акцию');
+		            		$('.pause').attr('src', '/i/pause-16.png');
+		            		if(left == 'акция завершена') {
+		            			$('.bb_timer').html(starttext + ' — бессрочно');
+		            		} else {
+		            			$('.bb_timer').html(dates + '<span>' + left + '</span>');
+		            		}
+		            		$('#action_is_closed').remove();
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+		<?php if($this->admin) { ?>
+		$("#top").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: topAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Снять отметку');
+		            		$('.favi').attr('src', '/i/favi-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: untopAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Отметить');
+		            		$('.favi').attr('src', '/i/favi-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#nomain").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: nomainAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Разрешить быть на главной');
+		            		$('.nomain').attr('src', '/i/rejected-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: onmainAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Запретить быть на главной');
+		            		$('.nomain').attr('src', '/i/rejected-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#hide").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: hideAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Показать в каталоге');
+		            		$('.catalogue-rejected').attr('src', '/i/catalogue-rejected-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: unhideAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Убрать из каталога');
+		            		$('.catalogue-rejected').attr('src', '/i/catalogue-rejected-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#block").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: blockAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Разблокировать');
+		            		$('.rejected').attr('src', '/i/rejected-off-16.png');
+                                        $('#nomain').parent().hide();
+                                        $('#hide').parent().hide();
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: unblockAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Заблокировать');
+		            		$('.rejected').attr('src', '/i/rejected-on-16.png');
+                                        $('#nomain').parent().show(); 
+                                        $('#hide').parent().show(); 
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+		<?php }?>
+	FB.Canvas.setAutoGrow();
+});
+
+</script>
+<div id="scrpt">
+
+</div>
+
+<div class="header">
+    <a class="logo" href="<?php echo $this->appurl?>" target="_top"><img src="/img/logo.png"></a>
+    <?php if($this->cancreate) { ?>
+    	<a class="btn pull-right" href="<?php echo $this->appurl?>?app_data=21354-23895" target="_top">Создать акцию</a>
+    <?php } ?>
+    <div class="nick"><p><?php echo $this->user_name;?></p></div>
+    <div class="clear"></div>
+</div>
+<?php /* ?>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-98347" target="_top">Информация о счете</a>
+		<?php if($this->admin) {?> 
+		&#0149; <a href="/actions/adminstat">Статистика</a> 
+		&#0149; <a href="/actions/duplicates">Дубликаты</a>
+		&#0149; <a href="/actions/admins">Админы</a>
+		<?php } ?>
+		<?php if($this->cancreate) { ?>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Создать акцию</a>
+		<?php } ?>
+	</div>
+</div>
+<?php */ ?>
+<div class="content">
+
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+<?php if(isset($this->action)) {?>
+	
+	<div class="action">
+      <div class="stock">
+        <div class="pic">
+			<?php if($this->photo) {?>
+				<img src="<?php echo $this->photo?>">
+			<?php }?>
+          <div class="text">
+            <p><?php echo $this->action['filteredName']?></p>
+            <span>
+            <?php if($this->action['page_id'] != NULL) : ?><?php echo $this->action['Pagename']?>
+			<?php else : ?><?php echo $this->action['Username']?><?php endif; ?>
+             <?php if($this->action['identified']==1) echo "<i></i>";?></span>
+          </div>
+        </div>
+        <div class="desc">
+          <div class="bar">
+            <div class="ava">
+              <div>
+                <img src="<?php echo $this->user_profile_picture?>">
+              </div>
+            </div>
+            <p class="total">Собрано <?php echo $this->action['current_sumF']?> руб.</p>
+            <?php if ($this->action['blocked']=='N') {?>
+            <div class="summ"><p>+</p>
+              <div class="send">
+              <form action="<?php echo $this->paymenturl;?>" enctype="application/x-www-form-urlencoded" target="_blank" method="get">
+                <div class="control"><input type="text" name="sum" value="<?php echo $this->paymentsum;?>"> руб.</div>
+                <input type="submit" class="submit" value="Передать">
+                <input type="hidden" name="receiver" value="<?php echo $this->action['receiver']?>"/>
+                <input type="hidden" name="Formcomment" value="<?php echo ('На акцию в Facebook «'.$this->action['name'].'»')?>"/>
+                <input type="hidden" name="destination" value="<?php echo ('Для акции «'.$this->action['name'].'» от пользователя facebook.com/' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>"/>
+                <input type="hidden" name="_openstat" value="socapp;fb;p2p;list"/>
+                <input type="hidden" name="label" value="fb_<?php echo $this->action['id']?>"/>
+              </form>
+              </div>
+            </div>
+            <a href="<?php echo $this->appurl ?>?app_data=21354-34621" target="_top" class="get_yd">У меня нет<br />Яндекс.Денег</a>
+            <?php } ?>
+          </div>
+          <div class="progress">
+          	<?php if(!empty($this->action['percents'])){?>
+            <div class="track" style="width: <?php echo $this->action['percents']?>%;">
+              <div class="tip"><?php echo $this->action['percents']?>%</div>
+            </div>
+            <?php }?>
+          </div>
+          <div class="text">
+            <?php print($this->action['description'])?>
+          </div>
+          <div class="info">
+            <p>Сбор ведется <?php echo $this->action['dates']?></p>
+            <ul class="links">
+            <?php if($this->action['url']){
+                    $urls = explode(" ", trim($this->action['url']));
+                    if(count($urls) == 1)  $urls = explode(",", trim($this->action['url']));
+                    foreach($urls as $v){
+            			$link = trim($v, ",");
+            			$link = (strpos($link, "http://") !== false && strpos($link, "http://") === 0) ? $link : ("http://" . $link); ?>
+            			<li><a class="site" href="<?php echo $link; ?>" target="_blank"><?php echo $link; ?></a></li>
+            	<?php } } ?>
+				<?php if($this->action['video']) {?><li><a href="#" class="youtube" target="_blank"><?php echo $this->action['video'];?></a></li><?php } ?>
+				<?php if($this->user_id == $this->action['user_id'] || $this->admin) {?>
+					<li>
+						<div><img src="/i/stats-16.png" alt="" /> <a href="/actions/stat/action_id/<?php echo $this->action['id']?>">Статистика</a></div>
+						<div><img src="/i/edit-16.png" alt="" /> <a href="/actions/edit/action_id/<?php echo $this->action['id']?>/t/<?php echo mktime()?>">Редактировать</a></div>
+						<?php if($this->action['draft'] != 'Y') : ?>
+		                <div>
+							<img class="pause" src="/i/<?php echo ($this->action['completed'] == 'N') ? 'pause-16.png' : 'play-16.png' ?>" alt="" />
+							<a href="#<?php echo ($this->action['completed'] == 'Y') ? 'start' : 'stop' ?>" class="stop">
+								<?php echo ($this->action['completed'] == 'Y') ? 'Возобновить акцию' : 'Остановить акцию' ?>
+							</a>
+						</div>
+		                <?php endif; ?>
+					</li>
+				<?php } ?>
+				<?php if($this->admin) {?>
+					<li>
+						<div>
+							<img src="/i/<?php echo ($this->action['top'] == 'N') ? 'favi-off-16.png' : 'favi-off-16.png' ?>" alt="" /> 
+							<a href="#<?php echo ($this->action['top'] == 'Y') ? 'uncheck' : 'check' ?>" id="top"><?php echo ($this->action['top'] == 'Y') ? 'Снять отметку' : 'Отметить' ?></a>
+						</div>
+						<div <?php echo ($this->action['blocked'] == 'Y') ? 'style="display:none;"' : ''; ?>>
+							<img src="/i/<?php echo ($this->action['hidden'] == 'N') ? 'catalogue-rejected-on-16.png' : 'catalogue-rejected-off-16.png' ?>" alt="" />
+							<a href="#<?php echo ($this->action['hidden'] == 'Y') ? 'uncheck' : 'check' ?>" id="hide"><?php echo ($this->action['hidden'] == 'Y') ? 'Показать в каталоге' : 'Убрать из каталога' ?></a>
+						</div>
+					</li>
+			<?php } ?>
+            </ul>
+            <div class="face">
+            	<div class="fb-like" data-href="<?php echo $this->host?>/?app_data=<?php echo $this->action['id']?>" data-send="true" data-layout="button_count" data-width="230" data-show-faces="false" data-action="recommend"></div>
+            </div>
+            
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
+    </div>
+	<div class="action_items">
+		<div class="section">
+		<?php
+			if(!empty($this->similar_actions)) { 
+				for($k=0;$k<count($this->similar_actions);$k++) { 
+					if(!isset($this->similar_actions[$k]) || empty($this->similar_actions[$k])) continue;
+					$action = $this->similar_actions[$k]; ?>
+			<div class="col">
+			
+	          <div class="item">
+	          <?php if(!empty($this->photos[$action['id']])) {?>
+	          	<div class="pic">
+	          		<img src="<?php echo $this->photos[$action['id']]?>">
+	          	</div>
+	          <?php } ?>
+	            <div class="desc">
+	              <p><a href="<?php echo $this->appurl ?>?app_data=<?php echo $action['id'] ?>" target="_top">
+	              <?php echo $action['filteredName']; ?></a></p>
+	              <a href="<?php echo $action['Userurl'] ?>" class="name" target="_blank"><?php  echo $action['Username']; ?></a>
+	            </div>
+	            <div class="bot">
+	                <div class="b1"><p>Собрано <?php echo $action['current_sumF'] . $action['current_sum_suffix']; ?> руб.</p></div>
+	                <div class="b2">
+	                  <div class="send">
+	                  	<form action="<?php echo $this->paymenturl;?>" enctype="application/x-www-form-urlencoded" target="_blank" method="get">
+			                <div class="control"><input type="text" name="sum" value="<?php echo $action['paymentsum'];?>"> руб.</div>
+			                <input type="submit" class="submit" value="Передать">
+			                <input type="hidden" name="receiver" value="<?php echo $action['receiver']?>"/>
+			                <input type="hidden" name="Formcomment" value="<?php echo ('На акцию в Facebook «'.$action['name'].'»')?>"/>
+			                <input type="hidden" name="destination" value="<?php echo ('Для акции «'.$action['name'].'» от пользователя facebook.com/' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>"/>
+			                <input type="hidden" name="_openstat" value="socapp;fb;p2p;list"/>
+			                <input type="hidden" name="label" value="fb_<?php echo $action['id']?>"/>
+			            </form>
+	                  </div>
+	                  <div class="q">
+	                    <i></i>
+	                    <div class="tooltip">
+	                      <div class="top"></div>
+	                      <div class="section">
+	                        <p>Вы можете передать нужную сумму с помощью Яндекс.Денег, или воспользоваться <a href="<?php echo $this->appurl ?>?app_data=21354-34621" target="_top">другими способами</a>.</p>
+	                      </div>
+	                      <div class="bot"></div>
+	                    </div>
+	                  </div>
+	                </div>
+	            </div>
+	          </div>
+	        </div>
+	     <?php } }?>
+		</div>
+	</div>
+<?php /* ?>
+	<div class="left">
+		<div class="big_block">
+			<div class="big_block_inner">
+				<div class="bb_timer"><?php echo $this->action['dates']?> <span><?php 
+				if(isset($this->action['left'])) { echo $this->action['left']; }?></span></div>
+				<?php if($this->admin && $this->action['top']=='Y') {?><img src="/i/symbol-favi-24.png" alt="Акция в ТОПе" class="bb_ico" /><?php } ?>
+				<?php if($this->admin && $this->action['blocked']=='Y') {?><img src="/i/symbol-rejected-24.png" alt="Акция заблокирована администратором"  class="bb_ico" /><?php }?>
+				<div class="bb_title"><div><?php echo $this->action['filteredName']?></div>
+				<?php if($this->action['page_id'] != NULL) : ?>
+				<a href="<?php echo $this->action['Pagelink']?>" target="_blank"><?php echo $this->action['Pagename']?></a></div>
+				<?php else : ?>
+                                <a href="<?php echo $this->action['Userurl']?>" target="_blank"><?php echo $this->action['Username']?></a></div>
+				<?php endif; ?>
+				<div class="bb_money_line">
+				<?php if($this->action['percents']>0) { ?>
+					<div style="width:<?php echo $this->action['percents']?>%; background-position:0 <?php echo $bkground?>px;">
+						
+					</div>
+				<?php } else { ?>
+					<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+						<div></div>
+					</div>
+				<?php } ?>
+				</div>
+				<div class="bb_collected">Собрано <span><?php echo $this->action['current_sumF']?></span>
+				<?php if ($this->action['required_sum']>0) {?>из <span><?php echo $this->action['required_sumF']; ?></span><?php }?> <span>руб.</span></div>
+			</div>
+		</div>
+
+		<div class="action_desc">
+			<div class="title2">Описание акции</div>
+			<?php print($this->action['description'])?>
+		</div>
+
+		<?php if($this->action['url']){
+                    $urls = explode(" ", trim($this->action['url']));
+                    if(count($urls) == 1) {
+                        $urls = explode(",", trim($this->action['url']));
+                    }?>
+                    <div class="url">Ссылка на сайт:&nbsp;
+                    <?php foreach($urls as $v){
+                        $link = trim($v, ",");
+                        $link = (strpos($link, "http://") !== false && strpos($link, "http://") === 0) ? $link : ("http://" . $link); ?>
+                        <a href="<?php echo $link; ?>" target="_blank"><?php echo $link; ?></a>
+                    <?php } ?>
+                    </div>
+                <?php } ?>
+
+                <?php if(count($this->photos)>0 || $this->action['video']) {?>
+
+		<div id="img_slider" class="slider">
+
+			<ul>
+
+			<?php if($this->action['video'] && strstr($this->action['video'], 'youtu')) {
+
+				if(strstr($this->action['video'], 'youtu.be')) {
+
+					$vid1 = explode("/", $this->action['video']);	$vid = $vid1[count($vid1)-1];
+
+				} else {
+                                    
+                                    if(strpos($this->action['video'], "v=")>0) {
+
+					$vid1 = explode("v=", $this->action['video']);
+
+					if(strstr($vid1[1], '&')) {
+
+						$vid1 = explode("&", $vid1[1]);	$vid = $vid1[0];
+
+					} else { $vid = $vid1[1]; }
+                                        
+                                    } else { $vid = ''; }                                        
+
+				}
+                                
+                                if($vid != '') {
+
+				?>
+
+				<li><a href="<?php echo $this->action['video']?>" rel="group2" class="sliding_video"><img src="http://img.youtube.com/vi/<?php echo $vid; ?>/2.jpg" alt="" /><span class="is_video"></span></a></li>
+
+			<?php }?>
+                                    
+                        <?php }?>
+
+			<?php foreach($this->photos as $i=>$photo) {?>
+
+				<li<?php if(($i%4)==3) echo ' class="last"'; ?>><a href="<?php echo $photo['src_big']?>" rel="group1" class="sliding_img"><img src="<?php echo $photo['src_big']?>" alt="" /></a></li>
+
+			<?php } ?>
+
+			</ul>
+
+		</div>
+		<div id="img_slider_controller" class="slider_controller"><a href="#"></a> <a href="#"></a> <a href="#"></a></div>
+		<?php } ?>
+	</div>
+	<div class="right">
+		<?php if ($this->action['blocked']=='N') {?>
+		<a target="_blank" 
+		href="https://money.yandex.ru/direct-payment.xml?receiver=<?php 
+		echo $this->action['receiver']?>&Formcomment=<?php 
+		echo urlencode('На акцию в Facebook «'.$this->action['name'].'»')?>&destination=<?php 
+		echo urlencode('Для акции «'.$this->action['name'].'» от пользователя facebook.com/' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>&sum=<?php 
+		if(isset($this->action['required_sum_group']) && $this->action['required_sum_group']>0) echo $this->action['required_sum_group'];?>&_openstat=socapp;fb;p2p;list&label=fb_<?php echo $this->action['id'];?>" 
+		class="money_help mb_help">Помочь деньгами</a>
+                <?php  if(count($this->social_users) > 0) : ?>
+                <div style="margin-top: 15px;">
+                    <div style="color: #3B5998; border-bottom: solid #d9e1e7 1px; width: 134px; height: 15px;"><?php echo $this->social_string; ?></div>
+                    <div id="social_pics" style="margin-top: 5px; width: 142px;"></div>
+                </div>
+                <?php endif; ?>
+                <a href="#" id="shelpbutton" class="money_shelp mb_shelp">Рассказать</a>
+                <?php } ?>
+		<ul class="right_menu">
+			<li>
+<!--				<div><img src="/i/like-16.png" alt="" /> <a href="#" class="public">Поделиться</a></div>-->
+<div class="fb-like" data-send="false" data-layout="button_count" data-width="200" data-show-faces="false" data-font="lucida grande"></div>
+<!--                                				
+<div><img src="/i/share-16.png" alt="" /> <a href="#" class="recommend">Отправить друзьям</a></div>-->
+				<div><img src="/i/code-16.png" alt="" /> <a href="#" class="code">Получить код</a></div>
+			</li>
+			<?php if($this->user_id == $this->action['user_id'] || $this->admin) {?>
+			<li>
+				<?php //if($this->action['group']) { ?><div><img src="/i/share-16.png" alt="" /> <a href="#" class="friends">Рассказать друзьям</a></div><?php } ?>
+				<div><img src="/i/stats-16.png" alt="" /> <a href="/actions/stat/action_id/<?php echo $this->action['id']?>">Статистика</a></div>
+				<div><img src="/i/edit-16.png" alt="" /> <a href="/actions/edit/action_id/<?php echo $this->action['id']?>/t/<?php echo mktime()?>">Редактировать</a></div>
+				<?php if($this->action['draft'] != 'Y') : ?>
+                                <div>
+				<img class="pause" src="/i/<?php echo ($this->action['completed'] == 'N') ? 'pause-16.png' : 'play-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['completed'] == 'Y') ? 'start' : 'stop' ?>" class="stop"><?php echo ($this->action['completed'] == 'Y') ? 'Возобновить акцию' : 'Остановить акцию' ?></a></div>
+                                <?php endif; ?>
+			</li>
+			<?php } ?>
+			<?php if($this->admin) {?>
+			<li>
+				<div>
+				<img class="favi" src="/i/<?php echo ($this->action['top'] == 'N') ? 'favi-off-16.png' : 'favi-off-16.png' ?>" alt="" />
+
+				<a href="#<?php echo ($this->action['top'] == 'Y') ? 'uncheck' : 'check' ?>" id="top"><?php echo ($this->action['top'] == 'Y') ? 'Снять отметку' : 'Отметить' ?></a></div>
+				<div <?php echo ($this->action['blocked'] == 'Y') ? 'style="display:none;"' : ''; ?>>
+				<img class="catalogue-rejected" src="/i/<?php echo ($this->action['hidden'] == 'N') ? 'catalogue-rejected-on-16.png' : 'catalogue-rejected-off-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['hidden'] == 'Y') ? 'uncheck' : 'check' ?>" id="hide"><?php echo ($this->action['hidden'] == 'Y') ? 'Показать в каталоге' : 'Убрать из каталога' ?></a></div>
+				<div>
+				<img class="rejected" src="/i/<?php echo ($this->action['blocked'] == 'N') ? 'rejected-on-16.png' : 'rejected-off-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['blocked'] == 'Y') ? 'uncheck' : 'check' ?>" id="block"><?php echo ($this->action['blocked'] == 'Y') ? 'Разблокировать' : 'Заблокировать' ?></a></div>
+				<div <?php echo ($this->action['blocked'] == 'Y') ? 'style="display:none;"' : ''; ?>>
+				<img class="nomain" src="/i/<?php echo ($this->action['nomain'] == 1) ? 'rejected-off-16.png' : 'rejected-on-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['nomain'] == 1) ? 'uncheck' : 'check' ?>" id="nomain"><?php echo ($this->action['nomain'] == 1) ? 'Разрешить быть на главной' : 'Запретить быть на главной' ?></a>
+				</div>
+
+			</li>
+
+			<?php } ?>
+		</ul>
+	</div>
+<div class="popup-code" style="display:none">
+	<p>Хотите всем рассказать об этой акции?</p>
+	<p>Выберите подходящий размер информера и разместите его код на своем сайт или в блоге! А в социальных сетях можно дать простую ссылку.</p>
+	<p>
+	Информер с размером 238px × 132px<br/>
+	<textarea rows="4"  style="width: 380px;"><a href="<?php echo $this->redirect_url?>"><img alt="Собирайте Яндекс.Деньги в Facebook" border="0" src="<?php echo $this->host?>/actions/informer/id/<?php echo $this->action['id']?>" /></a></textarea>
+	</p>	
+	<p>
+	Информер с размером 499px × 154px<br/>
+	<textarea rows="4"  style="width: 380px;"><a href="<?php echo $this->redirect_url?>"><img alt="Собирайте Яндекс.Деньги в Facebook" border="0" src="<?php echo $this->host?>/actions/biginformer/id/<?php echo $this->action['id']?>" /></a></textarea>
+	</p>
+	<p>Прямая ссылка на акцию<br/>
+	<input type="text"  style="width: 380px;" value="<?php echo $this->redirect_url?>" /></p>	
+</div>
+<div class="popup-sendok" style="display:none">
+	<p>Сообщение успешно отправлено</p>	
+</div>
+<?php */ ?>
+<?php } ?>
+
+</div>
+
+<?php else:?>
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/font.css') ?>" id="font-css" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/styles.css') ?>" />
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery-ui.css') ?>">
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery.tagit.css') ?>">
+<link  rel="stylesheet" href="<?php echo $this->baseUrl('css/tagit.ui-zendesk.css') ?>" >
+
+
+<div class="header">
+    <a class="logo" href="<?php echo $this->appurl?>" target="_top"><img src="/img/logo.png"></a>
+    <?php if($this->cancreate) { ?>
+    	<a class="btn pull-right" href="<?php echo $this->appurl?>?app_data=21354-23895" target="_top">Создать акцию</a>
+    <?php } ?>
+    <div class="nick"><p><?php echo $this->user_name;?></p></div>
+    <div class="clear"></div>
+</div>
+<div class="content">
+	<div class="actions">
+	<?php if($this->first_time) {?>
+		<div class="main_blocks">
+	        <a class="close" href="#"></a>
+	        <div class="mbs_block">
+	          <img alt="" src="/img/m1.png">
+	          <div>Помочь? Легко!</div>
+	          Хотите поддержать хорошее начинание?<br>С Яндекс.Деньгами это просто!
+	        </div>
+	        <div class="mbs_block">
+	          <img alt="" src="/img/m2.png">
+	          <div>Создавайте акции</div>
+	          Нужны деньги на доброе дело?<br>Расскажите об этом друзьям<br /> с помощью приложения Яндекс.Денег!
+	        </div>
+	        <div class="mbs_block">
+	          <img alt="" src="/img/m3.png">
+	          <div>А что дальше?</div>
+	          Получайте собранные деньги наличными,<br /> выводите в банк или сразу тратьте в<br /> интернет-магазинах.
+	        </div>
+	        <div class="create_action"></div>
+	        <div class="help_action"></div>
+		</div>
+	<?php } ?>
+		<div class="panel">
+	        <div class="filter">
+	          <a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a>
+	          <a href="#" class="active">Популярные</a>
+	        </div>
+	        <div class="search">
+	          <form action="/actions/index" method="get">
+	            <div class="control">
+	              <ul id="myTags"></ul>
+	              <div class="submit">
+	                <button type="submit"></button>
+	              </div>
+	            </div>
+	          </form>
+	        </div>
+		</div>
+		<div class="action_items">
+			<div class="gradient"></div>
+			<div class="section">
+				<?php 
+				$i = 0;
+				for($ic=0;$ic<3;$ic++){ ?>
+				<div class="col">
+					<?php 
+					for($k=0;$k<3;$k++) { 
+						if(!isset($this->actions[$i]) || empty($this->actions[$i])) continue;
+						$action = $this->actions[$i];
+					?>
+					<div class="item">
+					<?php if(!empty($this->photos[$action['id']])) {?>
+		              <div class="pic">
+		                <img src="<?php echo $this->photos[$action['id']]?>">
+		              </div>
+		            <?php } ?>
+		              <div class="desc">
+		                <p><a href="<?php echo $this->appurl ?>?app_data=<?php echo $action['id'] ?>" target="_top">
+		                <?php echo $action['filteredName']; ?></a></p>
+		                <a href="<?php echo $action['Userurl'] ?>" class="name" target="_blank"><?php  echo $action['Username']; ?></a>
+		              </div>
+		              <div class="bot">
+		                <div class="b1"><p>Собрано <?php echo $action['current_sumF'] . $action['current_sum_suffix']; ?> руб.</p></div>
+		                <div class="b2">
+		                  <div class="send">
+		                  	<form action="<?php echo $this->paymenturl;?>" enctype="application/x-www-form-urlencoded" target="_blank" method="get">
+				                <div class="control"><input type="text" name="sum" value="<?php echo $action['paymentsum'];?>"> руб.</div>
+				                <input type="submit" class="submit" value="Передать">
+				                <input type="hidden" name="receiver" value="<?php echo $action['receiver']?>"/>
+				                <input type="hidden" name="Formcomment" value="<?php echo ('На акцию в Facebook «'.$action['name'].'»')?>"/>
+				                <input type="hidden" name="destination" value="<?php echo ('Для акции «'.$action['name'].'» от пользователя facebook.com/' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>"/>
+				                <input type="hidden" name="_openstat" value="socapp;fb;p2p;list"/>
+				                <input type="hidden" name="label" value="fb_<?php echo $action['id']?>"/>
+				            </form>
+		                  </div>
+		                  <div class="q">
+		                    <i></i>
+		                    <div class="tooltip">
+		                      <div class="top"></div>
+		                      <div class="section">
+		                        <p>Вы можете передать нужную сумму с помощью Яндекс.Денег, или воспользоваться <a href="<?php echo $this->appurl ?>?app_data=21354-34621" target="_top">другими способами</a>.</p>
+		                      </div>
+		                      <div class="bot"></div>
+		                    </div>
+		                  </div>
+		                </div>
+		              </div>
+		            </div>
+				<?php $i++; }  ?>
+				</div>
+				<?php }?>
+				<div class="clear"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<?php /*?>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/shelp.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/jquery.autoSuggest.minified.js') ?>'></script>
+<link type='text/css' href='<?php echo $this->baseUrl('css/autoSuggest.css') ?>' rel='stylesheet' media='screen' />
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/index.js') ?>'></script>
+<script>
+function getSum(arr) {
+    for(var i=0; i<arr.length; i++) {
+        (function(i) {
+            $.ajax({
+                url: fundAjaxUrl, 
+                type: "GET",
+                data: {
+                    action_id: arr[i].id
+                },
+                success: function (data) {
+                    sum = parseInt(arr[i].all_sum) + parseInt(arr[i].current_sum) + (data.sum) ? parseInt(data.sum) : parseInt(data.balance);
+                    console.log(parseInt(arr[i].required_sum));
+                    if(parseInt(arr[i].required_sum) == 0 && sum == 0) {
+//                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+//                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr[i].required_sum) > 0 && sum > 0) {
+                        setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr[i].required_sum) == 0 && sum > 0) {
+                        setrightWoReqWBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    }
+                }
+            });
+        })(i);
+    }
+}
+var actions = <?php echo json_encode($this->actions); ?>;
+getSum(actions);
+var appurl = '<?php echo $this->appurl;?>';
+var apphost = '<?php echo $this->apphost;?>';
+$(document).ready(function(){
+
+	$('.mb_help').hide();
+	$('.mini_block_inner').mouseover(function(){
+		$(this).find('.mb_collected').hide();
+		$(this).find('.mb_help').show();
+		$(this).find('.mb_shelp').show();
+		
+	});
+	$('.mini_block_inner').mouseout(function(){
+		$(this).find('.mb_help').hide();
+		$(this).find('.mb_shelp').hide();
+		$(this).find('.mb_collected').show();		
+	});
+	
+//	var current_id;
+//	$('.mini_block_inner').mouseover(function(){
+//		current_id = $(this).find('.mb_collected').attr('id').replace('mb_collected', '');
+//		if(typeof $('#mb_help' + current_id).attr('href') != "undefined") {
+//			$('#mb_help' + current_id).css('display', 'block');
+//			$(this).find('.mb_collected').hide();
+//		} else {
+//			current_id = null;
+//		}
+//	});
+//	$('.mini_block_inner').mouseout(function(){
+//		$(this).find('.mb_collected').show();
+//		current_id = null;
+//		$('.mb_help').css('display', 'none');
+//	});
+});
+
+</script>
+
+<div class="header" style="overflow: visible">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<?php if(!$this->hasactions) { ?>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> 
+		<?php if($this->admin) {?> 
+		&#0149; <a href="/actions/adminstat">Статистика</a> 
+		&#0149; <a href="/actions/duplicates">Дубликаты</a>
+		&#0149; <a href="/actions/admins">Админы</a>
+		&#0149; <a href="/rubric/admin">Рубрики</a>
+		<?php } ?>
+		<div class="fb-like" data-href="<?php echo $this->appurl?>" data-send="false" data-layout="button_count" data-width="130" data-show-faces="false" data-font="lucida grande"></div>
+	</div>
+	<?php } else { ?>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> 
+		<?php if($this->admin) {?> 
+		&#0149; <a href="/actions/adminstat">Статистика</a> 
+		&#0149; <a href="/actions/duplicates">Дубликаты</a>
+		&#0149; <a href="/actions/admins">Админы</a>
+		&#0149; <a href="/rubric/admin">Рубрики</a>
+		<?php } ?>
+		<div class="fb-like" data-href="<?php echo $this->appurl?>" data-send="false" data-layout="button_count" data-width="130" data-show-faces="false" data-font="lucida grande"></div>
+	</div>
+	<?php } ?>
+</div>
+<div class="content">
+	<div class="main_blocks">
+		<div class="mbs_block">
+			<img src="/i/campaign-100.png" alt="" />
+			<div>Создавайте акции</div>
+			Нужны деньги на доброе дело?<br/>Расскажите об этом друзьям с помощью приложения Яндекс.Денег!
+		</div>
+		<div class="mbs_block">
+			<img src="/i/donation-100.png" alt="" />
+			<div>Помочь? Легко!</div>
+			Хотите поддержать хорошее начинание?<br/>С Яндекс.Деньгами это просто!
+		</div>
+		<div class="mbs_block">
+			<img src="/i/purchasing-100.png" alt="" />
+			<div>А что дальше?</div>
+			Получайте собранные деньги <br/>наличными, выводите в банк <br/>или сразу тратьте в интернет-магазинах.
+		</div>
+	</div>
+	<div class="arrow_to_create">
+		<img src="/i/arrow_to_create.png" alt="" />
+	</div>	
+	<a href="<?php if($this->cancreate) { ?><?php echo $this->appurl?>?app_data=21354-23895<?php } ?>"
+	<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_button" target="_top">Создать акцию</a>
+	<div id="main_slider" class="slider">
+	<?php if(isset($this->actions)) { ?>
+		<ul class="slider_wrapper">
+		<?php 
+		$i = 1;
+		foreach($this->actions as $action) {
+			
+			if($action['percents']>=0 && $action['completed']=='N') {
+				if($action['percents']==0) {
+					$bkground = '0';
+				} elseif($action['percents']<=33) {
+					$bkground = '0';
+				} elseif($action['percents']<=67) {
+					$bkground = '-7';
+				} else {
+					$bkground = '-14';
+				}
+			} else {
+				$bkground = '-21';
+			}
+		?>
+			<li<?php if(($i%3)==0) echo ' class="last"';?>>
+				<div class="mini_block_inner">
+					<div class="mb_timer"><?php echo $action['dates']?> <span><?php if(isset($action['left'])) { echo $action['left']; }?></span></div>
+					<div class="mb_title">
+                                            <a href="<?php echo $this->appurl ?>?app_data=<?php echo $action['id'] ?>" target="_top"><?php echo mb_strlen($action['filteredName'], "UTF-8") <= 50 ? $action['filteredName'] : mb_substr($action['filteredName'], 0, 49, "UTF-8") . "…"; ?></a> 
+                                            <?php if ($action['page_id'] != NULL) : ?>
+                                            <div><a href="<?php echo $action['Pagelink'] ?>" target="_blank"><?php
+                                                echo mb_strlen($action['Pagename'], "UTF-8") <= 40 ? $action['Pagename'] :
+                                                mb_substr($action['Pagename'], 0, 39, "UTF-8") . '...';
+                                                ?></a></div>
+                                            <?php else : ?>
+                                            <div><a href="<?php echo $action['Userurl'] ?>" target="_blank"><?php
+                                                echo mb_strlen($action['Username'], "UTF-8") <= 18 ? $action['Username'] :
+                                                mb_substr($action['Firstname'], 0, 1, "UTF-8") . '. ' . $action['Lastname']
+                                                ?></a></div>
+                                            <?php endif; ?>
+					</div>
+					<div class="mb_money_line">
+						<?php if($action['percents']>0) { ?>
+						<div style="width:<?php echo $action['percents'];?>%; background-position:0 <?php echo $bkground?>px;">
+							
+						</div>
+						<?php } else { ?>
+						<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+							<div></div>
+						</div>
+						<?php } ?>
+
+					</div>
+
+					<div class="mb_collected" id="mb_collected<?php echo $action['id']?>">Собрано <span><?php echo $action['current_sumF'] . $action['current_sum_suffix']; ?></span>
+
+					<?php if ($action['required_sum']>0) {?>из <span><?php echo $action['required_sumF']; ?></span><?php }?> <span>руб.</span></div>
+
+					<a id="mb_help<?php echo $action['id']?>" 
+					href="https://money.yandex.ru/direct-payment.xml?receiver=<?php echo $action['receiver']?>&Formcomment=<?php 
+					echo urlencode('На акцию в Facebook «'.$action['name'].'»')?>&destination=<?php 
+					echo urlencode('Для акции «'.$action['name'].'» от пользователя facebook.com/' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>&_openstat=socapp;fb;p2p;wid&label=fb_<?php echo $this->action['id'];?>" 
+					target="_blank" class="mb_help">Помочь деньгами</a>
+                                        <a data-id="<?php echo $action['id']?>" style="display:none;" href="#" title="Рассказать" class="mb_shelp"></a>
+				</div>
+
+			</li>
+
+			<?php 
+			$i++;
+		} ?>
+
+		</ul>
+
+	<?php } ?>
+
+	</div>
+
+	<div id="main_slider_controller" class="slider_controller"><a href="#"></a> <a href="#"></a> <a href="#"></a></div>
+
+</div>
+<?*/?>
+<?php endif;?>
+<div id="shelp"></div>

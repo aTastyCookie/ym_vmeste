@@ -1,0 +1,10 @@
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="/actions">Все акции</a>
+		<?php if($this->admin) {?> · <a href="/actions/fundraiser"><span>Обновить балансы</span></a> · <a href="/actions/adminstat">Статистика</a><?php } ?>
+	</div>
+</div>
+<div class="content">
+<?php echo $this->content;?>
+</div>

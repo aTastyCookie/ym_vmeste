@@ -1,0 +1,99 @@
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/ym_fb.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery-ui-1.8.16.custom.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/jquery.fancybox-1.3.4.css')?>" type="text/css" media="screen" />
+<link rel="stylesheet" href="<?php echo $this->baseUrl('css/reset.css')?>" type="text/css" media="screen" />
+<script>
+$(document).ready(function(){
+	FB.Canvas.setAutoGrow();
+	$(".delete").click(function(){
+		var id = $(this).attr('id').replace('admin-', '');
+			$.ajax({
+	            url: deleteadminAjaxUrl,
+	            type: "POST",
+	            dataType: "json",
+				data: {
+					id: id
+				},
+				success: function (data) {
+	            	if(data == true) {
+	            		$('#tr-' + id).remove();
+	            		FB.Canvas.setAutoGrow();
+	            	} else {
+	                	alert('error');
+	            	}
+	            }
+	    	});
+		return false;
+	});
+
+});
+</script>
+<style>
+input[type="submit"]{
+    background: #ccc;
+    border: 1px solid #000;
+    color: #000000;
+	cursor:pointer;
+}
+input[type="reset"] {
+    background: #DDD;
+    border: 1px solid red;
+    color: #000000;
+	cursor:pointer;
+	margin-left: 20px;
+}
+</style>
+<div class="header">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149;
+                <a href="<?php echo $this->appurl ?>?app_data=21354-48523" target="_top">Мои акции</a> &#0149; 
+                <a href="<?php echo $this->appurl ?>?app_data=21354-98347" target="_top">Информация о счете</a>
+                <?php if ($this->admin) { ?> &#0149; <a href="/actions/adminstat">Статистика</a> &#0149; <a href="/actions/duplicates">Дубликаты</a>
+                &#0149; <span>Админы</span> &#0149; <a href="/rubric/admin">Р</a><?php } ?>
+                <?php if ($this->cancreate) { ?>
+                <a href="<?php echo $this->appurl ?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Создать акцию</a>
+                <?php } ?>
+	</div>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">
+		<div>
+			<div class="title2">Список админов</div>
+			<table class="stat_table">
+			<tr>
+				<td><b>ID</b></td>
+				<td><b>Имя, фамилия</b></td>
+				<td><b>Действия</b></td>
+			</tr>
+			
+			<?php foreach($this->admins as $admin) {?>
+				<tr id="tr-<?php echo $admin['id']?>">
+					<td><?php echo $admin['id']?></td>
+					<td><a href="<?php echo $admin['url']?>" target="blank"><?php echo $admin['name']?></a></td>
+					<td><a href="#" id="admin-<?php echo $admin['id']?>" class="delete">Удалить</a></td>
+				</tr>
+			<?php } ?>
+			</table>
+			<p>
+				<form action="" method="post">
+					<fieldset>
+						<legend>Добавить админа</legend>
+						<input type="text" value="" placeholder="Ссылка на профиль" name="url"/> 
+						<input type="text" value="" placeholder="Идентификатор" name="id" /><br><br>
+						<input type="text" value="" placeholder="Имя" name="firstname" />
+						<input type="text" value="" placeholder="Фамилия" name="lastname" /><br><br>
+						<input type="submit" value="Добавить админа" name="sub" /> <input type="reset" value="Сбросить" name="reset" />
+					</fieldset>
+				</form>
+			</p>
+		</div>
+	</div>
+
+	<div class="right">
+
+	</div>
+</div>

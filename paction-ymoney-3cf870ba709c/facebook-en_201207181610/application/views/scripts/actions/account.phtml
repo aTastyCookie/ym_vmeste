@@ -1,0 +1,61 @@
+<script>
+$(document).ready(function(){
+	$('#action_is_closed a').click(function(){
+		$('#action_is_closed').remove();
+	});
+	$('.unset').click(function(){
+		$.ajax({
+            url: '/actions/unset',
+            type: "POST",
+            dataType: "json",
+			data: 1,
+            success: function (data) { 
+            	if(data == true) {
+            		$('.unset').replaceWith('The account has been disconnected');
+            	} else {
+                	alert('error');
+            	}
+            }
+    	});
+		return false;
+	});
+	jQuery(window.parent).live('scroll', function() {
+		alert('ok');
+	});
+});
+</script>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">My collections</a> &#0149; <span>Account information</span>
+		<?php if ($this->admin) { ?> &#0149; <a href="/actions/adminstat">Statistics</a> &#0149; <a href="/actions/duplicates">Duplicates</a>
+                &#0149; <a href="/actions/admins">Admins</a><?php } ?>
+                <?php if($this->cancreate) { ?>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Create collection</a>
+		<?php } ?>
+	</div>
+</div>
+<div class="content">
+	<?php if($this->error) {?>
+	<div id="action_is_closed"><a href="#">close</a> Oops! Error: <?php echo $this->error?></div>
+	<?php } ?>
+
+	<div class="title">Information about Yandex.Money Account</div>
+	<table class="account_info">
+		<tr>
+			<td>Email</td><td><strong><?php echo $this->email?></strong></td><td><a href="#" class="unset">Cancel link to the account</a></td>
+		</tr>
+		<tr>
+			<td>Account number</td><td><span><?php echo $this->account?></span></td><td></td>
+		</tr>
+		<tr>
+			<td>Balance</td><td><strong><?php echo $this->balance?></strong></td><td><a href="https://money.yandex.ru/doc.xml?id=157131&_openstat=socapp;fben;out;" target="_blank">Withdraw money</a></td>
+		</tr>
+	</table>
+	<div class="go_to_ym">
+	It is recommended you become an <a href="https://money.yandex.ru/security/identification/?from=fbapp" target="_blank">identified user</a> and
+        use the most secure way of protecting your account — <a href="https://money.yandex.ru/strongsec/?from=fbapp" target="_blank">enhanced authorization</a>.
+	<br/><br/>
+	<a href="https://money.yandex.ru/?_openstat=socapp;fben;ma;" target="_blank">Go to the Yandex.Money site</a></div>
+</div>
