@@ -1,0 +1,40 @@
+<?php
+if(is_array($this->responsePayment)) {
+	?>
+	<p>Operation allowed</p>
+	<p>You have <?php echo $this->responsePayment['balance']?> RUB on your balance</p>
+	<p>Contract: <?php echo $this->responsePayment['contract']?></p>
+	<?php
+	if(is_array($this->processPayment)) {
+		if($this->processPayment['status']=='success') {
+			?>
+			<p>Operation successed</p>
+			<p>Payment ID <?php echo $this->processPayment['payment_id']?></p>
+			<p>You have <?php echo $this->processPayment['balance']?> RUB on your balance</p>
+			<p>You payed <?php echo $this->processPayment['credit_amount']?> RUB</p>
+			<p><a href="/index/index">Back to Index page</a></p>
+			<?php
+		} elseif($this->processPayment['status']=='in_progress') {
+			?>
+			<p>Авторизация платежа находится в процессе выполнения. Приложению следует повторить запрос с теми же параметрами спустя некоторое время.</p>
+			<p><a href="/index/index">Back to Index page</a></p>
+			<?php
+		} else {
+			?>
+			<p>Состояние платежа неизвестно. Приложению следует повторить запрос с теми же параметрами спустя некоторое время.</p>
+			<p><a href="/index/index">Back to Index page</a></p>
+			<?php
+		}
+	} else {
+		?>
+		<p class="error">Ошибка проведения платежа: <?php echo $this->processPayment;?></p>
+		<p><a href="/index/index">Back to Index page</a></p>
+		<?php
+	}
+} else {
+	?>
+	<p class="error">Ошибка запроса платежа: <?php echo $this->responsePayment;?></p>
+	<p><a href="/index/index">Back to Index page</a></p>
+	<?php
+}
+

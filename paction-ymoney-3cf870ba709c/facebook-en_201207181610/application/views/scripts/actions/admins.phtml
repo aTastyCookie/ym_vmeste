@@ -1,0 +1,95 @@
+<script>
+$(document).ready(function(){
+	FB.Canvas.setAutoGrow();
+	$(".delete").click(function(){
+		var id = $(this).attr('id').replace('admin-', '');
+			$.ajax({
+	            url: deleteadminAjaxUrl,
+	            type: "POST",
+	            dataType: "json",
+				data: {
+					id: id
+				},
+				success: function (data) {
+	            	if(data == true) {
+	            		$('#tr-' + id).remove();
+	            		FB.Canvas.setAutoGrow();
+	            	} else {
+	                	alert('error');
+	            	}
+	            }
+	    	});
+		return false;
+	});
+
+});
+</script>
+<style>
+input[type="submit"]{
+    background: #ccc;
+    border: 1px solid #000;
+    color: #000000;
+	cursor:pointer;
+}
+input[type="reset"] {
+    background: #DDD;
+    border: 1px solid red;
+    color: #000000;
+	cursor:pointer;
+	margin-left: 20px;
+}
+</style>
+<div class="header">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149;
+                <a href="<?php echo $this->appurl ?>?app_data=21354-48523" target="_top">My collections</a> &#0149; 
+                <a href="<?php echo $this->appurl ?>?app_data=21354-98347" target="_top">Account information</a>
+                <?php if ($this->admin) { ?> &#0149; <a href="/actions/adminstat">Statistics</a> &#0149;
+                <a href="/actions/duplicates">Duplicates</a> &#0149; <span>Admins</span><?php } ?>
+                <?php if ($this->cancreate) { ?>
+                <a href="<?php echo $this->appurl ?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Create collection</a>
+                <?php } ?>
+	</div>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">close</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">
+		<div>
+			<div class="title2">List of Administrators</div>
+			<table class="stat_table">
+			<tr>
+				<td><b>ID</b></td>
+				<td><b>Name and surname</b></td>
+				<td><b>Actions</b></td>
+			</tr>
+			
+			<?php foreach($this->admins as $admin) {?>
+				<tr id="tr-<?php echo $admin['id']?>">
+					<td><?php echo $admin['id']?></td>
+					<td><a href="<?php echo $admin['url']?>" target="blank"><?php echo $admin['name']?></a></td>
+					<td><a href="#" id="admin-<?php echo $admin['id']?>" class="delete">Delete</a></td>
+				</tr>
+			<?php } ?>
+			</table>
+			<p>
+				<form action="" method="post">
+					<fieldset>
+						<legend>Add a new administrator</legend>
+						<input type="text" value="" placeholder="Link to profile" name="url"/> 
+						<input type="text" value="" placeholder="Identifier" name="id" /><br><br>
+						<input type="text" value="" placeholder="First name" name="firstname" />
+						<input type="text" value="" placeholder="Last Name" name="lastname" /><br><br>
+						<input type="submit" value="Add a new administrator" name="sub" /> <input type="reset" value="Reset" name="reset" />
+					</fieldset>
+				</form>
+			</p>
+		</div>
+	</div>
+
+	<div class="right">
+
+	</div>
+</div>

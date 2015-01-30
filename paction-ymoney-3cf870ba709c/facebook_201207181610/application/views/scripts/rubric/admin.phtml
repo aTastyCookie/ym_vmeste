@@ -1,0 +1,72 @@
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+<script>
+
+$(document).ready(function(){
+	<?php if($this->admin) { ?>
+		$(".delete").click(function(){
+			var thisrow = 'row' + $(this).attr('href').replace('#', '');
+			$.ajax({
+	            url: deleterubricAjaxUrl,
+	            type: "GET",
+	            dataType: "json",
+				data: {
+					id: $(this).attr('href').replace('#', '')
+				},
+	            success: function (data) {
+	            	if(data == true) {
+	            		$("." + thisrow).remove();
+	            	} else {
+	                	alert('Error');
+	            	}
+	            }
+	    	});
+			return false;
+		});
+		<?php }?>
+	FB.Canvas.setAutoGrow();
+});
+</script>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">Все акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">Мои акции</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-98347" target="_top">Информация о счете</a>
+		<?php if($this->admin) {?> 
+			&#0149; <a href="/actions/adminstat">Статистика</a> 
+			&#0149; <a href="/actions/duplicates">Дубликаты</a>
+			&#0149; <a href="/actions/admins">Админы</a>
+			&#0149; <span>Рубрики</span>
+		<?php } ?>
+	</div>
+</div>
+
+<div class="content">
+<h2>Редактирование рубрик</h2><br />
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+
+<table>
+<?php if($this->rubrics) { foreach($this->rubrics as $rubric) { ?>
+<tr class="row<?php echo $rubric['id']?>"><td style="padding:4px">
+<form method="post">
+<input type="text" size="30" value="<?php echo $rubric['name']?>" name="key"/> 
+<input type="hidden" value="<?php echo $rubric['id']?>" name="id"/> 
+<input type="submit" name="sub" value="Сохранить">
+<a href="#<?php echo $rubric['id']?>" class="delete">Удалить</a>
+</form> 
+</td></tr>
+<?php } } ?>
+<tr style="background-color:#c5c2c6; "><td style="padding:4px">
+<form method="post"><input type="text" size="30" name="key" value="" placeholder="Новая рубрика"/> <input type="submit" name="sub" value="Добавить"></form>
+</td></tr>
+</table>
+</div>

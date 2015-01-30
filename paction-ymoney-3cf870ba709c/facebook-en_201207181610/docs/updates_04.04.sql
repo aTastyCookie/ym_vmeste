@@ -1,0 +1,1 @@
+ALTER TABLE  `ym_action` ADD  `nomain` BOOLEAN NOT NULL DEFAULT  '0' COMMENT  'Do not place action to main page'

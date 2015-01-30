@@ -1,0 +1,76 @@
+<script>
+$(document).ready(function(){
+	
+});
+</script>
+<style>
+
+.left table tr {
+	border:1px solid #ddd;
+	padding:3px;
+}
+.left table td {
+	padding:3px;
+	font-size:11px
+}
+</style>
+<div class="header">
+	<a  href="<?php echo $this->appurlorigin?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<div id="vk_like"></div>
+		<script type="text/javascript">
+		VK.Widgets.Like("vk_like", {type: "button", 
+			pageUrl: '<?php echo $this->appurlorigin?>', 
+			pageDescription: '<?php echo $this->appdesc?>', 
+			pageTitle: '<?php echo $this->appname?>',
+			text: '<?php echo $this->appdesc?>',
+			verb: 1});
+		</script>
+	</div>
+</div>
+<div class="tabs">
+	<a href="<?php if($this->cancreate) { ?>/actions/create<?php } ?>"
+		<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_act"><span class="tl"><span class="tr">Создать акцию</span></span></a>
+	<ul>
+		<li>
+			<a href="/actions"><span class="tl"><span class="tr">Все акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/my"><span class="tl"><span class="tr">Мои акции</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/account"><span class="tl"><span class="tr">Мой счет</span></span></a>
+		</li>
+		<?php if($this->admin) {?> 
+		<li>
+			<a href="/actions/adminstat"><span class="tl"><span class="tr">Статистика</span></span></a>
+		</li>
+		<li class="current_link">
+			<span><span class="tl"><span class="tr">Дубликаты</span></span></span>
+		</li>
+		<li>
+			<a href="/actions/admins"><span class="tl"><span class="tr">Админы</span></span></a>
+		</li>
+		<?php } ?>
+	</ul>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">закрыть</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">		
+		<div>
+			<div class="title2">Дубликаты акци<?php if(isset($this->id)) echo "и ".$this->id; else echo "й";?></div>
+			<table width="100%">
+			<?php foreach($this->actions as $action) {?>
+			<tr>
+				<td><a href="<?php echo $this->appurl?>#app_data=<?php echo $action['id']?>" target="_blank"><?php echo $action['name'];?></a></td>
+				<td><a href="<?php echo $this->appurl?>#app_data=<?php echo $action['dupl']?>" target="_blank">Дубликат акции <?php echo $action['dupl'];?></a></td>
+				<td><a href="/actions/duplicates?check=<?php echo $action['id']; ?><?php if(isset($this->id)) echo "&id=".$this->id;?>">Снять подозрения</a></td>
+			</tr>
+			<?php } ?>
+			</table>
+		</div>
+	</div>
+
+</div>

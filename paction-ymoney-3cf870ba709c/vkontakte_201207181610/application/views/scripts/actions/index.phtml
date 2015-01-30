@@ -1,0 +1,294 @@
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/index.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/shelp.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/jquery.autoSuggest.minified.js') ?>'></script>
+<link type='text/css' href='<?php echo $this->baseUrl('css/autoSuggest.css') ?>' rel='stylesheet' media='screen' />
+<script>
+var social_users = [];
+var user_id = '<?php echo $this->user_id;?>';
+var appid = '<?php echo $this->appid; ?>';
+
+function getSum(arr) {
+    for(var i=0; i<arr.length; i++) {
+        (function(i) {
+            $.ajax({
+                url: fundAjaxUrl, 
+                type: "GET",
+                data: {
+                    action_id: arr[i].id
+                },
+                success: function (data) {
+                    console.log(data);
+                    //sum = parseInt(arr[i].all_sum) + parseInt(arr[i].current_sum) + (typeof(data.sum) != 'undefined' || data.sum != null) ? parseInt(data.sum) : data.balance;
+                    sum = parseInt(arr[i].all_sum) + parseInt(arr[i].current_sum) + (data.sum) ? parseInt(data.sum) : parseInt(data.balance);
+                    console.log(parseInt(arr[i].required_sum));
+                    console.log(sum);
+                        if(parseInt(arr[i].required_sum) == 0 && sum == 0) {
+//                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+//                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                        } else if (parseInt(arr[i].required_sum) > 0 && sum > 0) {
+                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                        } else if (parseInt(arr[i].required_sum) == 0 && sum > 0) {
+                            setrightWoReqWBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                        }
+                }
+//                    if(parseInt(arr[i].required_sum) == 0 && sum == 0) {
+////                        alert('1');
+////                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+////                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+////                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                    } else if (parseInt(arr[i].required_sum) > 0 && sum > 0) {
+////                    alert($('#mb_help'+arr[i].id).parent().find('.mb_money_line div').html());
+////                        alert('2');
+//                        setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                    } else if (parseInt(arr[i].required_sum) == 0 && sum > 0) {
+////                        alert('3');
+//                        setrightWoReqWBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                    }
+//                }
+            });
+        })(i);
+    }
+}
+
+var actions = <?php echo json_encode($this->actions); ?>;
+getSum(actions);
+    
+$(document).ready(function(){
+    
+	<? if ($this->selected) {?>
+	$('#<?php echo $this->selected?>').replaceWith('<span class="current_sp">' + $('#<?php echo $this->selected?>').html() + '</span>');
+	<?php }?>
+	$('.mb_help').hide();
+	$('.mini_block_inner').live('mouseover', function(){
+		$(this).find('.mb_collected').hide();
+		$(this).find('.mb_help').show();
+		$(this).find('.mb_shelp').show();
+
+	});
+	$('.mini_block_inner').live('mouseout', function(){
+		$(this).find('.mb_help').hide();
+		$(this).find('.mb_shelp').hide();
+		$(this).find('.mb_collected').show();
+	});
+
+	var search = false;
+	if($('.search input').val()!="Поиск акций") {
+		search = $('.search input').val();
+	}
+
+	var page = 1;
+
+	$('.uiButton').live('click', function(){
+		var next = $(this).hasClass('next');
+		//alert(next);
+		$.ajax({
+            url: pageAjaxUrl,
+            type: "GET",
+            dataType: "json",
+			data: {
+				page: page,
+				search: search,
+				selected: '<?php echo $this->selected?>',
+				next: next
+			},
+			success: function (data) {
+            	if(data.next == true) {
+            		if($('#rfloat a').last().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').last().removeClass('uiButtonDisabled');
+                	}
+            	} else {
+            		if(!$('#rfloat a').last().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').last().addClass('uiButtonDisabled');
+                	}
+            	}
+            	if(data.prev == true) {
+            		if($('#rfloat a').first().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').first().removeClass('uiButtonDisabled');
+                	}
+            	} else {
+                	if(!$('#rfloat a').first().hasClass('uiButtonDisabled')) {
+                		$('#rfloat a').first().addClass('uiButtonDisabled');
+                	}
+            	}
+
+            	if(data.li.length>0) {
+                	var tr='';
+                	if(next) {
+                		page = page + 1;
+                	} else {
+                		page = page - 1;
+                	}
+
+                	$('ul.all_actions_list li').html('');
+	            	for(key in data.li) {
+	            		tr = data.li[key];
+	            		$('ul.all_actions_list li').append(tr);
+	            	}
+	            	$('.mb_help').hide();
+            	}
+                actions = data.actions;
+                getSum(data.actions);
+            }
+    	});
+    	return false;
+	});
+
+	VK.callMethod('resizeWindow', 770, 720);
+});
+</script>
+<div class="header">
+	<a  href="<?php echo $this->appurlorigin?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<div id="vk_like"></div>
+		<script type="text/javascript">
+		VK.Widgets.Like("vk_like", {type: "button", 
+			pageUrl: '<?php echo $this->appurlorigin?>',
+			pageDescription: '<?php echo $this->appdesc?>', 
+			pageTitle: '<?php echo $this->appname?>',
+			text: '<?php echo $this->appdesc?>',
+			verb: 1});
+		</script>
+	</div>
+</div>
+
+<div class="tabs">
+	<a href="<?php if($this->cancreate) { ?>/actions/create<?php } ?>"
+		<?php if(!$this->cancreate) { ?> onclick="alert('За 1 день можно создать только 5 акций'); return false;"<?php }?> class="create_act"><span class="tl"><span class="tr">Создать акцию</span></span></a>
+	<ul>
+		<li class="current_link">
+			<span><span class="tl"><span class="tr">Все акции</span></span></span>
+		</li>
+		<li>
+			<a href="/actions/my"><span class="tl"><span class="tr">Мои акции</span></span></a>
+			</li>
+		<li>
+			<a href="/actions/account"><span class="tl"><span class="tr">Мой счет</span></span></a>
+		</li>
+		<?php if($this->admin) {?> 
+		<li>
+			<a href="/actions/adminstat"><span class="tl"><span class="tr">Статистика</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/duplicates"><span class="tl"><span class="tr">Дубликаты</span></span></a>
+		</li>
+		<li>
+			<a href="/actions/admins"><span class="tl"><span class="tr">Админы</span></span></a>
+		</li>
+		<?php } ?>
+	</ul>
+</div>
+
+<div class="top_line">
+	<form method="post" enctype="application/x-www-form-urlencoded" class="search">
+		<input name="search" type="text"
+		value="<?php echo ($this->search) ? $this->search : "Поиск акций"?>"
+		onfocus="this.value=='Поиск акций'?this.value='':void(0)"
+		onblur="this.value==''?this.value='Поиск акций':void(0)" />
+		<button type="submit">&nbsp;</button>
+	</form>
+
+	<div class="tl_links">
+		<a href="/actions" id="all"><span class="tl"><span class="tr">Все</span></span></a>
+		<a href="/actions/?pop=y" id="pop"><span class="tl"><span class="tr">Популярные</span></span></a>
+
+	<?php if($this->admin) {?>
+		<a href="/actions/?top=y" id="top"><span class="tl"><span class="tr">Выделенные</span></span></a>
+		<a href="/actions/?completed=y" id="completed"><span class="tl"><span class="tr">Завершенные</span></span></a>
+		<a href="/actions/?hidden=y" id="hidden"><span class="tl"><span class="tr">Скрытые</span></span></a>
+		<a href="/actions/?blocked=y" id="blocked"><span class="tl"><span class="tr">Заблокированные</span></span></a>
+	<?php } ?>
+	</div>
+</div>
+<div class="content">
+	<?php if($this->error) {?>
+	<div id="action_is_closed"><a href="#">закрыть</a> Сбор денег по этой акции уже закончен, но вы можете поддержать другое доброе дело.</div>
+	<?php } ?>
+	<?php if($this->search) { ?>
+	<div class="found">
+		<em>Найдено акций: <?php echo count($this->actions)>=10 ? 'больше 10' : count($this->actions)?></em>
+	</div>
+	<?php } ?>
+
+	<div class="slider"  id="main_slider">
+	<ul class="all_actions_list">
+	<li>
+	<?php if(isset($this->actions)) {
+		$i = 1;
+		?>
+		<?php foreach($this->actions as $action) {
+			if($action['percents']>=0 && $action['completed']=='N') {
+				if($action['percents']==0) {
+					$bkground = '0';
+				} elseif($action['percents']<=33) {
+					$bkground = '0';
+				} elseif($action['percents']<=67) {
+					$bkground = '-7';
+				} else {
+					$bkground = '-14';
+				}
+			} else {
+				$bkground = '-21';
+			}
+			if($i>9) break;
+			?>
+			<div class="mini_block_outer<?php if(($i%3)==0) echo " last";?>">
+				<div class="mini_block">
+					<div class="mini_block_inner">
+						<div class="mb_timer"><?php echo $action['dates']?> <span><?php if(isset($action['left'])) { echo $action['left']; }?></span></div>
+						<?php if($this->admin && $action['top']=='Y') {?><img src="/i/symbol-favi-24.png" alt="Акция в ТОПе"  class="mb_ico" /><?php }?>
+						<?php if($this->admin && $action['blocked']=='Y') {?><img src="/i/symbol-rejected-24.png" alt="Акция заблокирована администратором"  class="mb_ico" /><?php }?>
+						<?php if($this->admin && $action['dupl']>0 && $action['checked']==0) {?><a href="/actions/duplicates?id=<?php echo $action['dupl']?>"><img src="/i/copy_file.png" alt="Подозрение на дубликат"  class="mb_ico" /></a><?php }?>
+						<div class="mb_title">
+							<a href="<?php echo $this->appurl?>#app_data=<?php echo $action['id']?>" target="_top"><?php echo mb_strlen($action['filteredName'], "UTF-8")<=47 ? $action['filteredName'] : mb_substr($action['filteredName'], 0, 43, "UTF-8")."…";?></a>
+							<?php if($action['page_id'] != NULL) : ?>
+                                                        <div><a href="<?php echo $action['Pagelink']?>" target="_blank"><?php echo mb_strlen($action['Pagename'], "UTF-8")<=40 ? $action['Pagename'] :
+							mb_substr($action['Pagename'], 0, 39, "UTF-8") . '...'; ?></a></div>
+                                                        <?php else :?>
+                                                        <div><a href="<?php echo $action['Userurl']?>" target="_blank"><?php echo mb_strlen($action['Username'], "UTF-8")<=18 ? $action['Username'] :
+							mb_substr($action['Firstname'], 0, 1, "UTF-8").'. '.$action['Lastname']?></a></div>
+                                                        <?php endif; ?>
+						</div>
+						<div class="mb_money_line">
+							<?php if($action['percents']>0) { ?>
+							<div style="width:<?php echo $action['percents'];?>%; background-position:0 <?php echo $bkground?>px;">
+								<div></div>
+							</div>
+							<?php } else { ?>
+							<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+								<div></div>
+							</div>
+							<?php } ?>
+						</div>
+						<?php if($action['current_sum']<1000000 && $action['required_sum']>999999) { ?>
+							<div class="mb_collected" id="mb_collected<?php echo $action['id']?>">Собрано <span><?php echo $action['current_sumF'] . (isset($action['current_sum_suffix']) ? $action['current_sum_suffix'] : '');?></span> <span>руб.</span>
+							<?php if ($action['required_sum']>0) {?>из <span><?php echo $action['required_sumF']; ?></span> <span>руб.</span><?php }?></div>
+						<?php } else { ?>
+							<div class="mb_collected" id="mb_collected<?php echo $action['id']?>">Собрано <span><?php echo $action['current_sumF'];?></span>	
+							<?php if ($action['required_sum']>0) {?>из <span><?php echo $action['required_sumF']; ?></span><?php }?>
+							 <span>руб.</span></div>
+						<?php }?>
+
+						<a id="mb_help<?php echo $action['id']?>" href="https://money.yandex.ru/direct-payment.xml?receiver=<?php echo $action['receiver']?>&Formcomment=<?php
+						echo urlencode('На акцию в Вконтакте «'.$action['name'].'»')?>&destination=<?php
+						echo urlencode('Для акции «'.$action['name'].'» от пользователя vk.com/id' . $this->user_id . '. Чтобы отправить деньги анонимно, удалите весь комментарий.')?>&_openstat=socapp;vk;p2p;wid&label=vk_<?php echo $action['id'];?>" target="_blank" class="mb_help">Помочь деньгами</a>
+                                                <a data-id="<?php echo $action['id']?>" style="display:none;" href="#" title="Рассказать" class="mb_shelp"></a>
+					</div>
+				</div>
+			</div>
+		<?php
+		$i++;
+		} ?>
+	<?php } ?>
+	</li>
+	</ul>
+	</div>
+	<?php if(count($this->actions)>9) { ?>
+	<div id="rfloat">
+		<a data-href="/?page=-1" role="button" class="prev uiButtonDisabled uiButton uiButtonNoText"><i class="mrs customimg img sp_4v59vo sx_a84f00"></i><span class="uiButtonText"></span></a>
+		<a data-href="/?page=1" role="button"
+		class="next <?php if(count($this->actions)<=1) echo "uiButtonDisabled";?> uiButton uiButtonNoText"><i class="mrs customimg img sp_4v59vo sx_224a55"></i><span class="uiButtonText"></span></a>
+	</div>
+	<?php } ?>
+</div>
+<div id="shelp"></div>

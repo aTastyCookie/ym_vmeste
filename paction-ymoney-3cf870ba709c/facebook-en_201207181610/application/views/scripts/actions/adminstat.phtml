@@ -1,0 +1,146 @@
+<script>
+$(document).ready(function(){
+	
+});
+</script>
+<div class="header">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149;
+                <a href="<?php echo $this->appurl ?>?app_data=21354-48523" target="_top">My collections</a> &#0149; 
+                <a href="<?php echo $this->appurl ?>?app_data=21354-98347" target="_top">Account information</a>
+                <?php if ($this->admin) { ?> &#0149; <span>Statistics</span> &#0149; <a href="/actions/duplicates">Duplicates</a>
+                &#0149; <a href="/actions/admins">Admins</a><?php } ?>
+                <?php if ($this->cancreate) { ?>
+                <a href="<?php echo $this->appurl ?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Create collection</a>
+                <?php } ?>
+	</div>
+</div>
+<div class="content">
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">close</a> <?php echo $this->error?></div>
+<?php } ?>
+	<div class="left">		
+		<div>
+			<div class="title2">Collection statistics</div>
+			<table class="stat_table">
+			<tr>
+				<td>All collections</td>
+				<td  class="st_pay"><?php echo $this->countAll?></td>
+			</tr>
+			<tr>
+				<td>TOP collections (featured, not blocked)</td>
+				<td class="st_pay"><?php echo $this->countTop?></td>
+			</tr>
+			<tr>
+				<td>Drafts</td>
+				<td class="st_pay"><?php echo $this->countDraft?></td>
+			</tr>
+			<tr>
+				<td>New</td>
+				<td class="st_pay"><?php echo $this->countNew?></td>
+			</tr>
+			<tr>
+				<td>Private</td>
+				<td class="st_pay"><?php echo $this->countHidden?></td>
+			</tr>
+			<tr>
+				<td>Blocked</td>
+				<td class="st_pay"><?php echo $this->countBlocked?></td>
+			</tr>
+			<tr>
+				<th colspan="2">Collections created</th>
+			</tr>
+			<tr>
+				<td>Today</td>
+				<td class="st_pay"><?php echo $this->countThisDay?></td>
+			</tr>
+			<tr>
+				<td>Yesterday</td>
+				<td class="st_pay"><?php echo $this->countLastDay?></td>
+			</tr>
+			<tr>
+				<td>This week</td>
+				<td class="st_pay"><?php echo $this->countThisWeek?></td>
+			</tr>
+			<tr>
+				<td>Last week</td>
+				<td class="st_pay"><?php echo $this->countLastWeek?></td>
+			</tr>
+			<tr>
+				<td>2 weeks ago</td>
+				<td class="st_pay"><?php echo $this->count2Week?></td>
+			</tr>
+			<tr>
+				<td>3 weeks ago</td>
+				<td class="st_pay"><?php echo $this->count3Week?></td>
+			</tr>
+			<tr>
+				<td>This month</td>
+				<td class="st_pay"><?php echo $this->countThisMonth?></td>
+			</tr>
+			<tr>
+				<td>Last month</td>
+				<td class="st_pay"><?php echo $this->countLastMonth?></td>
+			</tr>
+			<tr>
+				<td>2 months ago</td>
+				<td class="st_pay"><?php echo $this->count2Month?></td>
+			</tr>
+			<tr>
+				<th colspan="2">Collection payments</th>
+			</tr>
+			<tr>
+				<td>Today</td>
+				<td class="st_pay"><?php echo $this->paymentsThisDay?></td>
+			</tr>
+			<tr>
+				<td>Yesterday</td>
+				<td class="st_pay"><?php echo $this->paymentsLastDay?></td>
+			</tr>
+			<tr>
+				<td>This week</td>
+				<td class="st_pay"><?php echo $this->paymentsThisWeek?></td>
+			</tr>
+			<tr>
+				<td>Last week</td>
+				<td class="st_pay"><?php echo $this->paymentsLastWeek?></td>
+			</tr>
+			<tr>
+				<td>2 weeks ago</td>
+				<td class="st_pay"><?php echo $this->payments2Week?></td>
+			</tr>
+			<tr>
+				<td>3 weeks ago</td>
+				<td class="st_pay"><?php echo $this->payments3Week?></td>
+			</tr>
+			<tr>
+				<td>This month</td>
+				<td class="st_pay"><?php echo $this->paymentsThisMonth?></td>
+			</tr>
+			<tr>
+				<td>Last month</td>
+				<td class="st_pay"><?php echo $this->paymentsLastMonth?></td>
+			</tr>
+			<tr>
+				<td>2 months ago</td>
+				<td class="st_pay"><?php echo $this->payments2Month?></td>
+			</tr>
+			<?php /* foreach($this->operations as $operation) {?>
+				<tr>
+					<td class="st_date"><?php echo date("d M", $operation->getDateTime())?></td>
+					<td  class="st_pay"><?php 
+					echo (ceil($operation->getAmount())>$operation->getAmount()) 
+					? number_format($operation->getAmount(), 2, ',', ' ')
+					: number_format($operation->getAmount(), 0, ',', ' ') ?> rub.</td>
+					<td><?php echo $operation->getTitle()?></td>
+				</tr>
+			<?php } */?>
+			</table>
+		</div>
+	</div>
+
+	<div class="right">
+		
+	</div>
+</div>

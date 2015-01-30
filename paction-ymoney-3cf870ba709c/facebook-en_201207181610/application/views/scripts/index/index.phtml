@@ -1,0 +1,858 @@
+<?php
+if(isset($this->action)) :
+?>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/shelp.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/index.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/jquery.autoSuggest.minified.js') ?>'></script>
+<link type='text/css' href='<?php echo $this->baseUrl('css/autoSuggest.css') ?>' rel='stylesheet' media='screen' />
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+<script>
+var baseUrl = '<?php echo $this->baseUrl() ?>';
+var app_picture = '<?php echo $this->appPicture;?>';
+var action_link = '<?php echo $this->share;?>';
+var action_id = <?php echo $this->action['id'];?>;
+var action_name = '<?php echo $this->action['name'];?>';
+var action_description = '<?php echo $this->action['short']?>';
+var left = '<?php echo $this->action['left'];?>';
+var starttext = '<?php if(isset($this->action) && isset($this->action['starttext'])) echo $this->action['starttext'];?>';
+var dates = '<?php echo $this->action['dates']?>';
+var soc_users = <?php echo json_encode($this->social_users); ?>;
+//var 
+
+/* Image|video gallery init */
+$(function() {
+	$('.sliding_img').fancybox();
+	$('.sliding_video').click(function() {
+		$.fancybox({
+				'padding'		: 0,
+				'autoScale'		: false,
+				'transitionIn'	: 'none',
+				'transitionOut'	: 'none',
+				'title'			: this.title,
+				'width'			: 680,
+				'height'		: 495,
+				'href'			: this.href.replace(new RegExp("watch\\?v=", "i"), 'v/'),
+				'type'			: 'swf',
+				'swf'			: {
+				   	 'wmode'		: 'transparent',
+					 'allowfullscreen'	: 'true'
+				}
+			});
+
+		return false;
+	});
+});
+
+function getSum(arr) {
+//    for(var i=0; i<arr.length; i++) {
+//        (function(i) {
+            $.ajax({
+                url: fundAjaxUrl, 
+                type: "GET",
+                data: {
+                    action_id: arr.id
+                },
+                success: function (data) {
+                    sum = parseInt(arr.all_sum) + parseInt(arr.current_sum) + (data.sum) ? parseInt(data.sum) : parseInt(data.balance);
+                    console.log(sum);
+                    if(parseInt(arr.required_sum) == 0 && sum == 0) {
+//                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+//                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr.required_sum) > 0 && sum > 0) {
+                        setrightWithReqWoBalC(arr.id, parseInt(arr.required_sum), sum);
+                    } else if (parseInt(arr.required_sum) == 0 && sum > 0) {
+                        setrightWoReqWBalC(arr.id, parseInt(arr.required_sum), sum);
+                    }
+                }
+            });
+//        })(i);
+//    }
+}
+var action = <?php echo json_encode($this->actionforajax); ?>;
+getSum(action);
+
+$(document).ready(function(){
+	for(i=0; i < soc_users.length; i++){
+            FB.api('/' + soc_users[i].id + '/picture', function(response) {
+                //непонятный фэйсбук
+                var pic_url = "";
+                if(typeof(response) == 'string') {
+                    pic_url = response;
+                } else {
+                    pic_url = response.data.url;
+                }
+                $('#social_pics').append('<img src="' + pic_url + '" width="30" height="30" style="padding-right:5px;" />');
+            });
+        }
+
+		$('.code').click(function(){
+			$(this).fb_popup({
+				content_container: '.popup-code',
+				//content:'',
+				title: 'Embed code',
+				popup_id: 'popup_tpl',
+				width: 450,
+				height: 390,
+                                notshowpanel: true,
+				overflow: 'auto'
+			});
+			return false;
+		});
+
+		var link = '<?php echo $this->share?>';
+		$('.public').click(function(){
+			FB.ui(
+				  {
+				    method: 'feed',
+				    link: link,
+                                    picture: app_picture,
+				    name: '<?php echo $this->action['name']?>',
+                                    caption: 'Fundraising collection',
+				    description: '<?php echo $this->action['short']?>',
+				    actions: [{name : 'Link to collection', link: link }]
+				  },
+				  function(response) {	
+					  if(response.post_id) {
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Sent successfully',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+					  }
+				  }
+			  );
+			return false;
+		});
+                
+                $('.public2').click(function(){
+			FB.ui(
+				  {
+				    method: 'feed',
+				    link: link,
+                                    picture: app_picture,
+				    name: '<?php echo $this->action['name']?>',
+                                    caption: 'Fundraising collection',
+				    description: '<?php echo $this->action['short']?>',
+				    actions: [{name : 'Link to collection', link: link }]
+				  },
+				  function(response) {	
+					  if(response.post_id) {
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Sent successfully',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+					  }
+				  }
+			  );
+			return false;
+		});
+
+		$('.recommend').click(function(){
+			FB.ui(
+				{
+					method: 'send',
+					name: '<?php echo $this->action['name']?>',
+                                        picture: app_picture,
+					link: '<?php echo $this->redirect_url?>',
+                                        description: '<?php echo $this->action['short']?>'
+				},
+				function(response) { 
+						  $(this).fb_popup({
+								content_container: '.popup-sendok',
+								//content:'',
+								title: 'Sent successfully',
+								popup_id: 'popup_tpl',
+								width: 300,
+								height: 50,
+								overflow: 'auto'
+							});
+							return false;
+				    }
+			);
+			return false;
+		});
+
+		var friendsarray = '';
+	    <?php if($this->action['group']==1) { ?>
+	    	friendsarray = '<?php foreach($this->action['friends'] as $k=>$friend) {
+	    		echo $friend; if($k<(count($this->action['friends'])-1)) echo ","; } ?>';
+	    <?php }?>
+		
+		$('.friends').click(function(){
+			/*$.ajax({
+	            url: '/actions/sendtodriends',
+	            type: "POST",
+	            dataType: "json",
+				data: {
+					name: 'I have started a collection "<?php echo $this->action['name']?>" to raise <?php echo $this->action['required_sum_group']?>',
+					<?php if(isset($this->photos[0])) {?>picture: '<?php echo $this->host?>/actions/image?src=<?php echo $this->photos[0]['src_big']?>',<?php }?>
+					link: '<?php echo $this->redirect_friends_url?>',
+		            description: '<?php echo $this->action['short']?>',
+		            to: friendsarray
+				},
+	            success: function (data) {
+	            	alert('OK');
+	            }
+	    	});*/
+			
+			FB.ui(
+				{
+					method: 'send',
+					name: 'Hi!  We have started our "<?php echo $this->action['name']?>" collection, with each of us giving <?php echo $this->action['required_sum_group']?>',
+					<?php if(isset($this->photos[0])) {?>picture: '<?php echo $this->host?>/actions/image?src=<?php echo $this->photos[0]['src_big']?>',<?php }?>
+					link: '<?php echo $this->redirect_friends_url?>',
+		            description: '<?php echo $this->action['short']?>',
+		            to: friendsarray
+				},
+				function(response) { return false; }
+			);
+			return false;
+		});
+
+		$(".stop").click(function(){
+			var link = $(this);
+			if($(this).attr('href').replace('#', '') == 'stop') {
+
+				$.ajax({
+		            url: stopAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		link.attr('href', '#start');
+		            		link.html('Renew collection');
+		            		$('.pause').attr('src', '/i/play-16.png');
+		            		$('.bb_timer').html(dates + '<span>collection complete</span>');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: startAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		link.attr('href', '#stop');
+		            		link.html('Stop the collection');
+		            		$('.pause').attr('src', '/i/pause-16.png');
+		            		if(left == 'collection complete') {
+		            			$('.bb_timer').html(starttext + ' — no time limit set');
+		            		} else {
+		            			$('.bb_timer').html(dates + '<span>' + left + '</span>');
+		            		}
+		            		$('#action_is_closed').remove();
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+		<?php if($this->admin) { ?>
+		$("#top").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: topAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Unflag');
+		            		$('.favi').attr('src', '/i/favi-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: untopAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Flag');
+		            		$('.favi').attr('src', '/i/favi-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#nomain").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: nomainAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Allow on main page');
+		            		$('.nomain').attr('src', '/i/rejected-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: onmainAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Do not allow on main page');
+		            		$('.nomain').attr('src', '/i/rejected-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#hide").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: hideAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Show in catalogue');
+		            		$('.catalogue-rejected').attr('src', '/i/catalogue-rejected-off-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: unhideAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Remove from catalogue');
+		            		$('.catalogue-rejected').attr('src', '/i/catalogue-rejected-on-16.png');
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+
+		$("#block").click(function(){
+			var thislink = $(this);
+			if($(this).attr('href').replace('#', '') == 'check') {
+				$.ajax({
+		            url: blockAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+		            success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#uncheck');
+		            		thislink.html('Unblock');
+		            		$('.rejected').attr('src', '/i/rejected-off-16.png');
+                                        $('#nomain').parent().hide();
+                                        $('#hide').parent().hide();
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			} else {
+				$.ajax({
+		            url: unblockAjaxUrl,
+		            type: "POST",
+		            dataType: "json",
+					data: {
+						action_id: action_id
+					},
+					success: function (data) {
+		            	if(data == true) {
+		            		thislink.attr('href', '#check');
+		            		thislink.html('Block');
+		            		$('.rejected').attr('src', '/i/rejected-on-16.png');
+                                        $('#nomain').parent().show();
+                                        $('#hide').parent().show();
+		            	} else {
+		                	alert('error');
+		            	}
+		            }
+		    	});
+			}
+			return false;
+		});
+		<?php }?>
+	FB.Canvas.setAutoGrow();
+});
+
+</script>
+<div id="scrpt">
+
+</div>
+<div class="header">
+	<a href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">My collections</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-98347" target="_top">Account information</a>
+		<?php if($this->admin) {?> 
+		&#0149; <a href="/actions/adminstat">Statistics</a> 
+		&#0149; <a href="/actions/duplicates">Duplicates</a>
+		&#0149; <a href="/actions/admins">Admins</a>
+		<?php } ?>
+		<?php if($this->cancreate) { ?>
+		<a href="<?php echo $this->appurl?>?app_data=21354-23895" class="button1" target="_top"><img src="/i/b_plus.gif" alt="" />Create collection</a>
+		<?php } ?>
+	</div>
+</div>
+
+<div class="content">
+
+<?php if($this->error) {?>
+<div id="action_is_closed"><a href="#">close</a> <?php echo $this->error?></div>
+<?php } ?>
+<?php if(isset($this->action)) {
+	if($this->action['percents']>=0 && $this->action['completed']=='N' && $this->action['blocked']=='N') {
+		if($this->action['percents']==0) {
+			$bkground = '0';
+		} elseif($this->action['percents']<=33) {
+			$bkground = '0';
+		} elseif($this->action['percents']<=67) {
+			$bkground = '-12';
+		} else {
+			$bkground = '-24';
+		}
+	} else {
+		$bkground = '-36';
+	}
+	?>
+
+	<div class="left">
+		<div class="big_block">
+			<div class="big_block_inner">
+				<div class="bb_timer"><?php echo $this->action['dates']?> <span><?php 
+				if(isset($this->action['left'])) { echo $this->action['left']; }?></span></div>
+				<?php if($this->admin && $this->action['top']=='Y') {?><img src="/i/symbol-favi-24.png" alt="TOP collection" class="bb_ico" /><?php } ?>
+				<?php if($this->admin && $this->action['blocked']=='Y') {?><img src="/i/symbol-rejected-24.png" alt="This collection has been blocked by the administrator"  class="bb_ico" /><?php }?>
+				<div class="bb_title"><div><?php echo $this->action['filteredName']?></div>
+				<?php if($this->action['page_id'] != NULL) : ?>
+				<a href="<?php echo $this->action['Pagelink']?>" target="_blank"><?php echo $this->action['Pagename']?></a></div>
+				<?php else : ?>
+                                <a href="<?php echo $this->action['Userurl']?>" target="_blank"><?php echo $this->action['Username']?></a></div>
+				<?php endif; ?>
+				<div class="bb_money_line">
+				<?php if($this->action['percents']>0) { ?>
+					<div style="width:<?php echo $this->action['percents']?>%; background-position:0 <?php echo $bkground?>px;">
+						
+					</div>
+				<?php } else { ?>
+					<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+						<div></div>
+					</div>
+				<?php } ?>
+				</div>
+				<div class="bb_collected">Collected <span><?php echo $this->action['current_sumF']?></span>
+				<?php if ($this->action['required_sum']>0) {?>of <span><?php echo $this->action['required_sumF']; ?></span><?php }?> <span>rub.</span></div>
+			</div>
+		</div>
+
+		<div class="action_desc">
+			<div class="title2">Collection description</div>
+			<?php print($this->action['description'])?>
+		</div>
+
+		<?php if($this->action['url']){?>
+		<div class="url">Ссылка на сайт: <a href="<?php echo $this->action['url']?>" target="_blank"><?php echo $this->action['url']?></a></div>
+		<?php } ?>
+
+                <?php if(count($this->photos)>0 || $this->action['video']) {?>
+
+		<div id="img_slider" class="slider">
+
+			<ul>
+
+			<?php if($this->action['video'] && strstr($this->action['video'], 'youtu')) {
+
+				if(strstr($this->action['video'], 'youtu.be')) {
+
+					$vid1 = explode("/", $this->action['video']);	$vid = $vid1[count($vid1)-1];
+
+				} else {
+                                    
+                                    if(strpos($this->action['video'], "v=")>0) {
+
+					$vid1 = explode("v=", $this->action['video']);
+
+					if(strstr($vid1[1], '&')) {
+
+						$vid1 = explode("&", $vid1[1]);	$vid = $vid1[0];
+
+					} else { $vid = $vid1[1]; }
+                                        
+                                    } else { $vid = ''; }                                        
+
+				}
+                                
+                                if($vid != '') {
+
+				?>
+
+				<li><a href="<?php echo $this->action['video']?>" rel="group2" class="sliding_video"><img src="http://img.youtube.com/vi/<?php echo $vid; ?>/2.jpg" alt="" /><span class="is_video"></span></a></li>
+
+			<?php }?>
+                                    
+                        <?php }?>
+
+			<?php foreach($this->photos as $i=>$photo) {?>
+
+				<li<?php if(($i%4)==3) echo ' class="last"'; ?>><a href="<?php echo $photo['src_big']?>" rel="group1" class="sliding_img"><img src="<?php echo $photo['src_big']?>" alt="" /></a></li>
+
+			<?php } ?>
+
+			</ul>
+
+		</div>
+		<div id="img_slider_controller" class="slider_controller"><a href="#"></a> <a href="#"></a> <a href="#"></a></div>
+		<?php } ?>
+	</div>
+	<div class="right">
+		<?php if ($this->action['blocked']=='N') {?>
+		<a target="_blank" 
+		href="https://money.yandex.ru/direct-payment.xml?receiver=<?php 
+		echo $this->action['receiver']?>&Formcomment=<?php 
+		echo urlencode('For collection in Facebook «'.$this->action['name'].'»')?>&destination=<?php 
+		echo urlencode('For collection «'.$this->action['name'].'» from user facebook.com/' . $this->user_id . '. To send money anonymously, please delete all comments.')?>&sum=<?php 
+		if($this->action['required_sum_group']>0) echo $this->action['required_sum_group'];?>&_openstat=socapp;fben;p2p;list&label=fben_<?php echo $this->action['id'];?>" 
+		class="money_help mb_help">Donate</a>
+                <?php if(count($this->social_users) > 0) : ?>
+                <div style="margin-top: 15px;">
+                    <div style="color: #3B5998; border-bottom: solid #d9e1e7 1px; width: 134px; height: 15px;"><?php echo $this->social_string; ?></div>
+                    <div id="social_pics" style="margin-top: 5px; width: 142px;"></div>
+                </div>
+                <?php endif; ?>
+                <a href="#" id="shelpbutton" class="money_shelp mb_shelp">Publish</a>
+                <?php } ?>
+		<ul class="right_menu">
+			<li>
+<!--				<div><img src="/i/like-16.png" alt="" /> <a href="#" class="public">Поделиться</a></div>-->
+                                <div class="fb-like" data-send="false" data-layout="button_count" data-width="200" data-show-faces="false" data-font="lucida grande"></div>
+<!--				<div><img src="/i/share-16.png" alt="" /> <a href="#" class="recommend">Отправить друзьям</a></div>-->
+				<div><img src="/i/code-16.png" alt="" /> <a href="#" class="code">Get code</a></div>
+			</li>
+			<?php if($this->user_id == $this->action['user_id'] || $this->admin) {?>
+			<li>
+				<?php /*if($this->action['group']) { ?><div><img src="/i/share-16.png" alt="" /> <a href="#" class="friends">Рассказать друзьям</a></div><?php } */?>
+				<div><img src="/i/stats-16.png" alt="" /> <a href="/actions/stat/action_id/<?php echo $this->action['id']?>">Statistics</a></div>
+				<div><img src="/i/edit-16.png" alt="" /> <a href="/actions/edit/action_id/<?php echo $this->action['id']?>/t/<?php echo mktime()?>">Edit</a></div>
+				<?php if($this->action['draft'] != 'Y') : ?>
+                                <div>
+				<img class="pause" src="/i/<?php echo ($this->action['completed'] == 'N') ? 'pause-16.png' : 'play-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['completed'] == 'Y') ? 'start' : 'stop' ?>" class="stop"><?php echo ($this->action['completed'] == 'Y') ? 'Renew collection' : 'Stop the collection' ?></a></div>
+                                <?php endif; ?>
+			</li>
+			<?php } ?>
+			<?php if($this->admin) {?>
+			<li>
+				<div>
+				<img class="favi" src="/i/<?php echo ($this->action['top'] == 'N') ? 'favi-off-16.png' : 'favi-off-16.png' ?>" alt="" />
+
+				<a href="#<?php echo ($this->action['top'] == 'Y') ? 'uncheck' : 'check' ?>" id="top"><?php echo ($this->action['top'] == 'Y') ? 'Unflag' : 'Flag' ?></a></div>
+				<div <?php echo ($this->action['blocked'] == 'Y') ? 'style="display:none;"' : ''; ?>>
+				<img class="catalogue-rejected" src="/i/<?php echo ($this->action['hidden'] == 'N') ? 'catalogue-rejected-on-16.png' : 'catalogue-rejected-off-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['hidden'] == 'Y') ? 'uncheck' : 'check' ?>" id="hide"><?php echo ($this->action['hidden'] == 'Y') ? 'Show in catalogue' : 'Remove from catalogue' ?></a></div>
+				<div>
+				<img class="rejected" src="/i/<?php echo ($this->action['blocked'] == 'N') ? 'rejected-on-16.png' : 'rejected-off-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['blocked'] == 'Y') ? 'uncheck' : 'check' ?>" id="block"><?php echo ($this->action['blocked'] == 'Y') ? 'Unblock' : 'Block' ?></a></div>
+				<div <?php echo ($this->action['blocked'] == 'Y') ? 'style="display:none;"' : ''; ?>>
+				<img class="nomain" src="/i/<?php echo ($this->action['nomain'] == 1) ? 'rejected-off-16.png' : 'rejected-on-16.png' ?>" alt="" />
+				<a href="#<?php echo ($this->action['nomain'] == 1) ? 'uncheck' : 'check' ?>" id="nomain"><?php echo ($this->action['nomain'] == 1) ? 'Allow on main page' : 'Do not allow on main page' ?></a>
+				</div>
+
+			</li>
+
+			<?php } ?>
+		</ul>
+	</div>
+<div class="popup-code" style="display:none">
+	<p>Would you like to tell everyone about the collection?</p>
+	<p>Choose the size of your widget and use the code to place it on your website or blog!  For social networks you can simply add a link.</p>
+	<p>
+	Widget size 238px × 132px<br/>
+	<textarea rows="4"  style="width: 380px;"><a href="<?php echo $this->redirect_url?>"><img alt="Collect Yandex.Money in Facebook" border="0" src="<?php echo $this->host?>/actions/informer/id/<?php echo $this->action['id']?>" /></a></textarea>
+	</p>	
+	<p>
+	Widget size 499px × 154px<br/>
+	<textarea rows="4"  style="width: 380px;"><a href="<?php echo $this->redirect_url?>"><img alt="Collect Yandex.Money in Facebook" border="0" src="<?php echo $this->host?>/actions/biginformer/id/<?php echo $this->action['id']?>" /></a></textarea>
+	</p>
+	<p>Direct link to collection<br/>
+	<input type="text"  style="width: 380px;" value="<?php echo $this->redirect_url?>" /></p>	
+</div>
+<div class="popup-sendok" style="display:none">
+	<p>The message was sent successfully</p>	
+</div>
+<?php } ?>
+
+</div>
+
+<?php else:?>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/shelp.js') ?>'></script>
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/jquery.autoSuggest.minified.js') ?>'></script>
+<link type='text/css' href='<?php echo $this->baseUrl('css/autoSuggest.css') ?>' rel='stylesheet' media='screen' />
+<script type='text/javascript' src='<?php echo $this->baseUrl('js/index.js') ?>'></script>
+<script>
+function getSum(arr) {
+    for(var i=0; i<arr.length; i++) {
+        (function(i) {
+            $.ajax({
+                url: fundAjaxUrl, 
+                type: "GET",
+                data: {
+                    action_id: arr[i].id
+                },
+                success: function (data) {
+                    sum = parseInt(arr[i].all_sum) + parseInt(arr[i].current_sum) + (data.sum) ? parseInt(data.sum) : parseInt(data.balance);
+                    console.log(parseInt(arr[i].required_sum));
+                    if(parseInt(arr[i].required_sum) == 0 && sum == 0) {
+//                            setrightworeq(arr[i].id, parseInt(arr[i].required_sum), sum);
+//                        } else if (parseInt(arr[i].required_sum) > 0 && sum == 0) {
+//                            setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr[i].required_sum) > 0 && sum > 0) {
+                        setrightWithReqWoBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    } else if (parseInt(arr[i].required_sum) == 0 && sum > 0) {
+                        setrightWoReqWBalC(arr[i].id, parseInt(arr[i].required_sum), sum);
+                    }
+                }
+            });
+        })(i);
+    }
+}
+var actions = <?php echo json_encode($this->actions); ?>;
+getSum(actions);
+var appurl = '<?php echo $this->appurl;?>';
+var apphost = '<?php echo $this->apphost;?>';
+$(document).ready(function(){
+
+	$('.mb_help').hide();
+	$('.mini_block_inner').mouseover(function(){
+		$(this).find('.mb_collected').hide();
+		$(this).find('.mb_help').show();
+		$(this).find('.mb_shelp').show();
+		
+	});
+	$('.mini_block_inner').mouseout(function(){
+		$(this).find('.mb_help').hide();
+		$(this).find('.mb_shelp').hide();
+		$(this).find('.mb_collected').show();		
+	});
+	
+//	var current_id;
+//	$('.mini_block_inner').mouseover(function(){
+//		current_id = $(this).find('.mb_collected').attr('id').replace('mb_collected', '');
+//		if(typeof $('#mb_help' + current_id).attr('href') != "undefined") {
+//			$('#mb_help' + current_id).css('display', 'block');
+//			$(this).find('.mb_collected').hide();
+//		} else {
+//			current_id = null;
+//		}
+//	});
+//	$('.mini_block_inner').mouseout(function(){
+//		$(this).find('.mb_collected').show();
+//		current_id = null;
+//		$('.mb_help').css('display', 'none');
+//	});
+});
+
+</script>
+
+<div class="header" style="overflow: visible">
+	<a  href="<?php echo $this->appurl?>" target="_top" class="logo"></a>
+	<?php if(!$this->hasactions) { ?>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">My collections</a> 
+		<?php if($this->admin) {?> 
+		&#0149; <a href="/actions/adminstat">Statistics</a> 
+		&#0149; <a href="/actions/duplicates">Duplicates</a>
+		&#0149; <a href="/actions/admins">Admins</a>
+		<?php } ?>
+		<div class="fb-like" data-href="<?php echo $this->appurl?>" data-send="false" data-layout="button_count" data-width="130" data-show-faces="false" data-font="lucida grande"></div>
+	</div>
+	<?php } else { ?>
+	<div class="header_links">
+		<a href="<?php echo $this->appurl?>?app_data=21354-52934" target="_top">All collections</a> &#0149; 
+		<a href="<?php echo $this->appurl?>?app_data=21354-48523" target="_top">My collections</a> 
+		<div class="fb-like" data-href="<?php echo $this->appurl?>" data-send="false" data-layout="button_count" data-width="130" data-show-faces="false" data-font="lucida grande"></div>
+	</div>
+	<?php } ?>
+</div>
+<div class="content">
+	<div class="main_blocks">
+		<div class="mbs_block">
+			<img src="/i/campaign-100.png" alt="" />
+			<div>Create collections</div>
+			Need money for a good deed?<br/>Tell your friends about this using the Yandex.Money app!
+		</div>
+		<div class="mbs_block">
+			<img src="/i/donation-100.png" alt="" />
+			<div>Need help? No problem!</div>
+			Want to help make<br/> a good start even better?<br/>It's easy with Yandex.Money!
+		</div>
+		<div class="mbs_block">
+			<img src="/i/purchasing-100.png" alt="" />
+			<div>What next?</div>
+			Receive the money collected in cash,<br/> withdraw it from the bank <br/>or spend it straight away in online stores.
+		</div>
+	</div>
+	<div class="arrow_to_create">
+		<img src="/i/arrow_to_create.png" alt="" />
+	</div>	
+	<a href="<?php if($this->cancreate) { ?><?php echo $this->appurl?>?app_data=21354-23895<?php } ?>"
+	<?php if(!$this->cancreate) { ?> onclick="alert('Up to 5 collections can be created in a day'); return false;"<?php }?> class="create_button" target="_top">Create collection</a>
+	<div id="main_slider" class="slider">
+	<?php if(isset($this->actions)) { ?>
+		<ul class="slider_wrapper">
+		<?php 
+		$i = 1;
+		foreach($this->actions as $action) {
+			
+			if($action['percents']>=0 && $action['completed']=='N') {
+				if($action['percents']==0) {
+					$bkground = '0';
+				} elseif($action['percents']<=33) {
+					$bkground = '0';
+				} elseif($action['percents']<=67) {
+					$bkground = '-7';
+				} else {
+					$bkground = '-14';
+				}
+			} else {
+				$bkground = '-21';
+			}
+		?>
+			<li<?php if(($i%3)==0) echo ' class="last"';?>>
+				<div class="mini_block_inner">
+					<div class="mb_timer"><?php echo $action['dates']?> <span><?php if(isset($action['left'])) { echo $action['left']; }?></span></div>
+					<div class="mb_title">
+						<a href="<?php echo $this->appurl ?>?app_data=<?php echo $action['id'] ?>" target="_top"><?php echo mb_strlen($action['filteredName'], "UTF-8") <= 50 ? $action['filteredName'] : mb_substr($action['filteredName'], 0, 49, "UTF-8") . "…"; ?></a> 
+                                                <?php if ($action['page_id'] != NULL) : ?>
+                                                <div><a href="<?php echo $action['Pagelink'] ?>" target="_blank"><?php
+                                                    echo mb_strlen($action['Pagename'], "UTF-8") <= 40 ? $action['Pagename'] :
+                                                    mb_substr($action['Pagename'], 0, 39, "UTF-8") . '...';
+                                                    ?></a></div>
+                                                <?php else : ?>
+                                                <div><a href="<?php echo $action['Userurl'] ?>" target="_blank"><?php
+                                                    echo mb_strlen($action['Username'], "UTF-8") <= 18 ? $action['Username'] :
+                                                    mb_substr($action['Firstname'], 0, 1, "UTF-8") . '. ' . $action['Lastname']
+                                                    ?></a></div>
+                                                <?php endif; ?>
+					</div>
+					<div class="mb_money_line">
+						<?php if($action['percents']>0) { ?>
+						<div style="width:<?php echo $action['percents'];?>%; background-position:0 <?php echo $bkground?>px;">
+							
+						</div>
+						<?php } else { ?>
+						<div style="width:0%; background-position:0 <?php echo $bkground?>px;">
+							<div></div>
+						</div>
+						<?php } ?>
+
+					</div>
+
+					<div class="mb_collected" id="mb_collected<?php echo $action['id']?>">Collected <span><?php echo $action['current_sumF'] . $action['current_sum_suffix']; ?></span>
+
+					<?php if ($action['required_sum']>0) {?>of <span><?php echo $action['required_sumF']; ?></span><?php }?> <span>rub.</span></div>
+
+					<a id="mb_help<?php echo $action['id']?>" 
+					href="https://money.yandex.ru/direct-payment.xml?receiver=<?php echo $action['receiver']?>&Formcomment=<?php 
+					echo urlencode('For collection in Facebook «'.$action['name'].'»')?>&destination=<?php 
+					echo urlencode('For collection «'.$action['name'].'» from user facebook.com/' . $this->user_id . '. To send money anonymously, please delete all comments.')?>&_openstat=socapp;fben;p2p;wid&label=fben_<?php echo $this->action['id'];?>" 
+					target="_blank" class="mb_help">Donate</a>
+                                        <a data-id="<?php echo $action['id']?>" title="Publish" style="display:none;" href="#" class="mb_shelp"></a>
+				</div>
+
+			</li>
+
+			<?php 
+			$i++;
+		} ?>
+
+		</ul>
+
+	<?php } ?>
+
+	</div>
+
+	<div id="main_slider_controller" class="slider_controller"><a href="#"></a> <a href="#"></a> <a href="#"></a></div>
+
+</div>
+<?php endif;?>
+<div id="shelp"></div>

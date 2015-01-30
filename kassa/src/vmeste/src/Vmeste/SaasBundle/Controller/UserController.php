@@ -77,7 +77,7 @@ class UserController extends Controller
             ->add('email', 'text', array(
                     'constraints' => array(
                         new NotBlank(),
-                        new Email(),
+                        new Email(array('checkMX' => false, 'checkHost'=>false)),
                     ),
                     'attr' => array('autocomplete'=>"off")
                 ))
