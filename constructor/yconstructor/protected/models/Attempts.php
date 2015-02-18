@@ -15,12 +15,12 @@ class Attempts extends CActiveRecord
     public static function check()
     {
         $ip = $_SERVER['REMOTE_ADDR'];
-        $row = self::model()->findBySql("SELECT time FROM `".self::model()->tableName()."`
-                                        WHERE ip = '".$ip."' ORDER BY time DESC LIMIT 1;");
-        if(($row && ($row['time'] + self::TIME_LIMIT) < time()) || !$row)
-            return false;
-        else
-            return true;
+        $lastAttempt = time() - self::TIME_LIMIT;
+        $rows = self::model()->findAllBySql("SELECT time FROM `".self::model()->tableName()."`
+            WHERE ip = '".$ip."' AND time > ".$lastAttempt.";");
+
+        // QWEB-14768
+        return count($rows) > 3;
     }
 
     public static function add()

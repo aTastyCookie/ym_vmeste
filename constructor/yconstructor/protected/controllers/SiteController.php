@@ -99,9 +99,8 @@ class SiteController extends Controller
 
             $ext = pathinfo($attributes['photo'], PATHINFO_EXTENSION);
 
-
             $types = array('jpg', 'gif', 'png', 'jpeg');
-            if(!in_array($ext, $types)) {
+            if($ext !== null && !in_array($ext, $types)) {
                 $model->addError('photo', 'Допустимые файлы: jpg, jpeg, gif, png');
             }
 

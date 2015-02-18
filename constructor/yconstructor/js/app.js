@@ -53,7 +53,7 @@ var Konstructor = (function (app, $) {
           $_page_theme.find('.input_field').attr('class', 'input_field');
 
           if ($(this).prop('checked') === true) {
-            $_page_form.addClass($this.closest('label').attr('class') + " styled")
+            $_page_form.addClass($this.closest('label').attr('class') + " styled");
           }
           $_page_theme.attr('class', 'page_theme');
 
@@ -73,10 +73,10 @@ var Konstructor = (function (app, $) {
             }
             $_page_data.addClass('has_image');
             if ($_image_box.find('img').length) {
-              $_image_box.find('img').replaceWith(img)
+              $_image_box.find('img').replaceWith(img);
             }
             else {
-              $_image_box.find('.image').html(img)
+              $_image_box.find('.image').html(img);
             }
           });
 
@@ -88,11 +88,11 @@ var Konstructor = (function (app, $) {
         })
       // tooltips, erros
         .on('click', '.payment_form .input_field input', function () {
-          $(this).closest('.input_field').addClass('show_tip')
+          $(this).closest('.input_field').addClass('show_tip');
         })
         .on('click', function (e) {
-          if ($(e.target).closest('.input_field').length == 0) {
-            $('.input_field').removeClass('show_tip')
+          if ($(e.target).closest('.input_field').length === 0) {
+            $('.input_field').removeClass('show_tip');
           }
         })
         .on('blur', 'input, textarea', function (e) {
@@ -105,15 +105,15 @@ var Konstructor = (function (app, $) {
         .on('click', '.screen1 .make_page', function (e) {
           e.preventDefault();
           if ($d.scrollTop() < 800) {
-            $('html, body').scrollTop(800)
+            $('html, body').scrollTop(800);
           }
           scroll_to($('.screen4').offset().top);
         })
         .on('click', '.section_arrow', function (e) {
           if ($d.scrollTop() < 800) {
-            $('html, body').scrollTop(800)
+            $('html, body').scrollTop(800);
           }
-          scroll_to($(this).closest("div [class^='screen']").offset().top)
+          scroll_to($(this).closest("div [class^='screen']").offset().top);
         })
       // form validations
         .on('submit', '#main_form', function (e) {
@@ -154,15 +154,24 @@ var Konstructor = (function (app, $) {
           if (!valid) {
             var error_offset = $('.input_field.error').eq(0).offset().top;
             if (error_offset < $w.scrollTop()) {
-              scroll_to(error_offset)
+              scroll_to(error_offset);
             }
             return false;
           }
         });
 
-      $('#page_url').inputmask({
+      var $pageUrl = $('#page_url');
+      var pageUrl = $pageUrl.val();
+
+      if (pageUrl) {
+          // crazy fix for inputmask
+          $pageUrl.val('n' + pageUrl);
+      }
+
+      $pageUrl.inputmask({
           mask: "y\\asobe.ru/n\\a/q*{*}",
           showMaskOnHover: false,
+          placeholder: '',
           definitions: {
               '*': {
                   validator: "[0-9A-Za-z_]",
@@ -197,7 +206,7 @@ var Konstructor = (function (app, $) {
     // functions
 
     function scroll_to(offset) {
-      $('html,body').animate({scrollTop: offset}, '600')
+      $('html,body').animate({scrollTop: offset}, '600');
     }
 
     function validateEmail(email) {
@@ -221,7 +230,7 @@ var Konstructor = (function (app, $) {
           img.src = e.target.result;
           img.onload = function () {
             d.resolve(img);
-          }
+          };
         };
 
         reader.readAsDataURL(input.files[0]);
@@ -244,7 +253,7 @@ var Konstructor = (function (app, $) {
         if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
           e.preventDefault();
         }
-      })
+      });
     }
 
     function preload(arrayOfImages) {
@@ -253,9 +262,9 @@ var Konstructor = (function (app, $) {
           img.src = this;
           img.onload = function(){
               var d = $('<div/>');
-              d.css('background-image', 'url("' + img.src + '")');
-              $('#preload').append(d)
-          }
+              d.css('background-image', 'url("/' + img.src + '")');
+              $('#preload').append(d);
+          };
       });
     }
 
