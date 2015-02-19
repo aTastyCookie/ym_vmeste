@@ -29,8 +29,10 @@
         <div class="page_form" id="page_form">
             <form method="post" action="https://money.yandex.ru/quickpay/confirm.xml" autocomplete="off">
                 <input type="hidden" name="receiver" value="<?php echo $model->account; ?>">
+                <?php /* QWEB-14768
                 <input type="hidden" name="formcomment" value="Форма приниматель: <?php echo htmlspecialchars($model->title); ?>">
                 <input type="hidden" name="short-dest" value="Форма приниматель: <?php echo htmlspecialchars($model->title); ?>">
+                */ ?>
                 <input type="hidden" name="quickpay-form" value="shop">
                 <input type="hidden" name="targets" value="<?php echo htmlspecialchars($model->title); ?>">
                 <input type="hidden" name="need-fio" value="<?php echo $model->field_name ? 'true' : 'false'; ?>">

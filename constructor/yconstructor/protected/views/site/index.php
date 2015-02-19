@@ -10,7 +10,7 @@
     <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конструктор Скидывайся</title>
+    <title>Я соберу: создайте страницу для сбора денег на подарок или доброе дело</title>
     <link rel="stylesheet" href="/css/font.css" />
     <link rel="stylesheet" href="/css/styles.css" />
     <link rel="stylesheet" href="/css/animations.css" data-skrollr-stylesheet />
@@ -137,11 +137,13 @@
                         <label>Сумма по умолчанию</label>
 
                         <div class="input_field">
-                            <?php echo $form->textField($model,'default_amount', array('id' =>'amount')); ?>
-                            <span class="rouble">a</span>
-														<div class="error_box">
-																<span>Сумма не должна превышать 15 000</span>
-														</div>
+                            <div class="input">
+                                <?php echo $form->textField($model,'default_amount', array('id' =>'amount')); ?>
+                                <span class="rouble">a</span>
+                            </div>
+                            <div class="error_box">
+                                <span>Сумма не должна превышать 15 000</span>
+                            </div>
                         </div>
                         <div class="payment_icons">
                             <span class="master"> </span>
@@ -230,7 +232,6 @@
                         </div>
                         <div class="error_box">
                             <span>Пожалуйста, укажите свой email: на него придет ссылка для редактирования страницы.</span>
-                            <span class="break"></span>
                         </div>
                     </div>
                 </div>
@@ -302,40 +303,38 @@
             .parent().addClass($.support.fileInput ? undefined : 'disabled');
     });
 </script>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+(function (d, w, c) {
+	(w[c] = w[c] || []).push(function() {
+		try {
+			w.yaCounter152220 = new Ya.Metrika({id:152220,
+				webvisor:true,
+				clickmap:true,
+				trackLinks:true,
+				accurateTrackBounce:true});
+		} catch(e) { }
+	});
+	var n = d.getElementsByTagName("script")[0];
+	var s = d.createElement("script");
+	var f = function () { n.parentNode.insertBefore(s, n); };
+	s.type = "text/javascript";
+	s.async = true;
+	s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+	if (w.opera == "[object Opera]") {
+		d.addEventListener("DOMContentLoaded", f, false);
+	} else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/152220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+<script>
+(function(i,s,o,g,r,a,m){
+	i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-59838681-1', 'auto'); ga('send', 'pageview');
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
