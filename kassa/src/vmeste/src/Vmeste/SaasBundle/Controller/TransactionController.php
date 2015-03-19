@@ -567,10 +567,6 @@ class TransactionController extends Controller
 
         $em = $this->getDoctrine()->getManager();
 
-        $currentUser = $this->get('security.context')->getToken()->getUser();
-
-        $user = $em->getRepository('Vmeste\SaasBundle\Entity\User')->findOneBy(array('id' => $currentUser->getId()));
-
         $user = $this->get('security.context')->getToken()->getUser();
         $sysEvent = new SysEvent();
         $sysEvent->setUserId($user->getId());
@@ -582,7 +578,8 @@ class TransactionController extends Controller
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c');
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->orderBy('t.changed', 'DESC');
 
         $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
 
@@ -692,7 +689,8 @@ class TransactionController extends Controller
         $queryBuilder = $em->createQueryBuilder();
 
         $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
-            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c');
+            ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
+            ->orderBy('t.changed', 'DESC');
 
         if ($startTimestamp != 0 && $endTimestamp != 0) {
             $queryBuilder->andWhere('t.created >= ?1');
