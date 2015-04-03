@@ -324,6 +324,9 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
                 <div class="submit_box">
               <?php } ?>
               <?php if(!$error) { ?>
+                  <script type="text/javascript">
+                      document.documentElement.dispatchEvent(charity_success);
+                  </script>
               	<p class="success_submit">Приятно познакомиться! Менеджер перезвонит вам<br>
                   в течение двух дней, чтобы вы успели подготовить текст и картинки для вашей страницы.</p>
               <?php } else { ?>
