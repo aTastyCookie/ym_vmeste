@@ -321,7 +321,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
               <?php if($sent) { ?>
                 <?php if(!$error) { ?>
                     <script type="text/javascript">
-                        document.documentElement.dispatchEvent("charity_success");
+                        yaCounter152220.reachGoal('charity_success');
                     </script>
                 <?php } ?>
                 <div class="submit_box done">
