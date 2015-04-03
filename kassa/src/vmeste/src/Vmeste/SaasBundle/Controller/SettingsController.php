@@ -90,7 +90,7 @@ class SettingsController extends Controller
                 $notificationEmail = $companyName = $directorName = $position = $authority = $details =
                 $senderName = $senderEmail = $shopId = $scid = $shoppw = '';
                 $columnSeparator = ';';
-                $pc = $ac = $wm = $mc = $gp = 0;
+                $pc = $ac = $wm = $mc = $gp = $sb = 0;
                 $sandbox = 1;
                 $allowYkSettings = false;
                 $columnSeparator = ';';
@@ -105,7 +105,7 @@ class SettingsController extends Controller
                 $senderEmail = $userSettings->getSenderEmail();
                 $columnSeparator = $userSettings->getCsvColumnSeparator();
                 $shopId = $scid = $shoppw = '';
-                $pc = $ac = $wm = $mc = $gp = 0;
+                $pc = $ac = $wm = $mc = $gp =$sb = 0;
                 $sandbox = 1;
             } else {
                 $settingsCollection = $user->getSettings();
@@ -131,6 +131,7 @@ class SettingsController extends Controller
                 $wm = $yandexKassa->getWm();
                 $mc = $yandexKassa->getMc();
                 $gp = $yandexKassa->getGp();
+                $sb = $yandexKassa->getSb();
                 $sandbox = $yandexKassa->getSandbox();
             }
         }
@@ -170,6 +171,7 @@ class SettingsController extends Controller
             'wm' => $wm,
             'mc' => $mc,
             'gp' => $gp,
+            'sb' => $sb,
             'sandbox' => $sandbox,
             /*'certificate' => $yandexKassa->getCertFilePath(),
             'certkey' => $yandexKassa->getCertKeyFilePath(),
@@ -365,6 +367,7 @@ class SettingsController extends Controller
             $wm = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_wm'));
             $mc = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_mc'));
             $gp = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_gp'));
+            $sb = $this->convertCheckboxDataToInt($request->request->get('yandex_pt_sb'));
             $sandbox = $this->convertCheckboxDataToInt($request->get('yandex_sandbox'));
 
             $currentUser = $this->get('security.context')->getToken()->getUser();
@@ -491,6 +494,7 @@ class SettingsController extends Controller
                 $yandexKassa->setWm($wm);
                 $yandexKassa->setMc($mc);
                 $yandexKassa->setGp($gp);
+                $yandexKassa->setSb($sb);
                 $yandexKassa->setSandbox($sandbox);
 
                 $yandexKassa->setCertFile($certFile);

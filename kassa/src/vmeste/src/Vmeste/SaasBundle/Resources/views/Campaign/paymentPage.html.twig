@@ -181,6 +181,20 @@
                         </div>
                     {% endif %}
 
+                    {% if yandexKassa.sb == 1 %}
+                        <input type="radio" id="sb_option" name="paymentType" value="SB">
+                        <div class="item">
+                            <label for="sb_option">
+                                <i class="sb"></i>
+
+                                <p>Сбербанк Онлайн</p>
+                                <span>через интернет-банк</span>
+                            </label>
+
+                            <div class="over"></div>
+                        </div>
+                    {% endif %}
+
                     <div class="clearfix"></div>
                 </div>
             </div>
