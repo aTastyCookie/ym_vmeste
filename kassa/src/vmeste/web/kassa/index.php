@@ -13,7 +13,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
 		"Страна: ".$_POST['country'] . "\r\n" . 
 		"Телефон: ".$_POST['phone'] . "\r\n" . 
 		"Email: ".$_POST['email'] . "\r\n" . 
-		"Терминал: ".$_POST['terminal'] . "\r\n" . 
+		"Терминал: ".(isset($_POST['terminal'])?$_POST['terminal']:'') . "\r\n" .
 		"Дата/Время: ". date("H:i:s d M Y") . "\r\n";
 		
 		$headers  = 'MIME-Version: 1.0' . "\r\n";
