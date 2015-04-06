@@ -117,6 +117,7 @@ header h1 { display: inline-block; margin: 38px 0 0; }
 .payment_options .item i.bc { background-position: 0 -108px; }
 .payment_options .item i.wm { background-position: 0 0; }
 .payment_options .item i.mobile { background-position: 0 -72px; }
+.payment_options .item i.sb { background: url("../img/sb.png") 0 0 no-repeat; }
 
 .btn { border-radius: 4px; color: #000; display: inline-block; height: 45px; padding: 0 24px; font: 18px/44px tbn; }
 .btn.yellow { background: #fce055; border-bottom: 1px solid #c79b47; }

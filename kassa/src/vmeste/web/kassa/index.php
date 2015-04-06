@@ -13,7 +13,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
 		"Страна: ".$_POST['country'] . "\r\n" . 
 		"Телефон: ".$_POST['phone'] . "\r\n" . 
 		"Email: ".$_POST['email'] . "\r\n" . 
-		"Терминал: ".$_POST['terminal'] . "\r\n" . 
+		"Терминал: ".(isset($_POST['terminal'])?$_POST['terminal']:'') . "\r\n" .
 		"Дата/Время: ". date("H:i:s d M Y") . "\r\n";
 		
 		$headers  = 'MIME-Version: 1.0' . "\r\n";
@@ -319,6 +319,13 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
             <div class="item">
               <a name="form_submit"></a>
               <?php if($sent) { ?>
+                <?php if(!$error) { ?>
+                    <script type="text/javascript">
+                        (function (w, c) {
+                            w.yaCounter152220.reachGoal('charity_success');
+                        });
+                    </script>
+                <?php } ?>
                 <div class="submit_box done">
               <?php } else {?>
                 <div class="submit_box">

@@ -73,6 +73,11 @@ class YandexKassa
     /**
      * @ORM\Column(type="smallint")
      */
+    protected $sb = 0;
+
+    /**
+     * @ORM\Column(type="smallint")
+     */
     protected $sandbox = 1;
 
     /**
@@ -462,5 +467,28 @@ class YandexKassa
     public function getCertPass()
     {
         return $this->certPass;
+    }
+
+    /**
+     * Set sb
+     *
+     * @param integer $sb
+     * @return YandexKassa
+     */
+    public function setSb($sb)
+    {
+        $this->sb = $sb;
+
+        return $this;
+    }
+
+    /**
+     * Get sb
+     *
+     * @return integer 
+     */
+    public function getSb()
+    {
+        return $this->sb;
     }
 }
