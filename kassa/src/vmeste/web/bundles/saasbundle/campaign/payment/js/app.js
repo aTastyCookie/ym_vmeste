@@ -83,7 +83,6 @@ var Donation = (function (app, $) {
                 alert('payer_rec');
             }
 
-            return true;
         });
 
     function check_email(e) {
