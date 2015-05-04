@@ -92,6 +92,8 @@ var Donation = (function (app, $) {
 
   app.init = function () {
     visual();
+    window.yaCounter152220.reachGoal('guest');
+    alert('guest');
   };
 
   $(function () {
