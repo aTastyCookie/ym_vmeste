@@ -48,6 +48,42 @@ var Donation = (function (app, $) {
         })
         .on('focusout', '#times', function () {
           $('.times_box').removeClass('monthly')
+        })
+
+        .on('click', '#button_pay', function(e) {
+            e.preventDefault();
+            window.yaCounter152220.reachGoal('payer');
+            alert('payer');
+
+            if($('#bc_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_card');
+                alert('payer_card');
+            } else if($('#yd_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_ya');
+                alert('payer_ya');
+            } else if($('#wm_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_wm');
+                alert('payer_wm');
+            } else if($('#nalik_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_cashin');
+                alert('payer_cashin');
+            } else if($('#mobile_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_mob');
+                alert('payer_mob');
+            } else if($('#sb_option').prop('checked') == true) {
+                window.yaCounter152220.reachGoal('payer_sbol');
+                alert('payer_sbol');
+            }
+
+            if($('#times').val() != '1') {
+                window.yaCounter152220.reachGoal('payer_o');
+                alert('payer_o');
+            } else {
+                window.yaCounter152220.reachGoal('payer_rec');
+                alert('payer_rec');
+            }
+
+            return true;
         });
 
     function check_email(e) {
@@ -106,6 +142,8 @@ var Donation = (function (app, $) {
 
   app.init = function () {
     visual();
+      window.yaCounter152220.reachGoal('guest');
+      alert('guest');
   };
 
   $(function () {
