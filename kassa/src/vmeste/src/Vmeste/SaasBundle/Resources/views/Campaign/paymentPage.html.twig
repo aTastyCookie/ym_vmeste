@@ -202,7 +202,7 @@
         <div class="line"></div>
         <div class="content">
             <div class="make_donation">
-                <button type="submit" class="btn yellow">Перевести</button>
+                <button type="submit" class="btn yellow" id="button_pay">Перевести</button>
                 <div id="monthly_type_icon" class="monthly_type_icon"><img
                             src="{{ asset('bundles/saasbundle/campaign/payment/img/visa-3.jpg') }}"></div>
                 <p class="tip">Нажимая кнопку, я принимаю
@@ -233,6 +233,10 @@
             } catch(e) {}
         });
     })(window, 'yandex_metrika_callbacks');
+    (function (w, c) {
+        w.yaCounter152220.reachGoal('guest');
+        alert('guest');
+    })();
 </script>
 <script src="//mc.yandex.ru/metrika/watch_visor.js" type="text/javascript" defer="defer"></script>
 <noscript><div><img src="//mc.yandex.ru/watch/152220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
