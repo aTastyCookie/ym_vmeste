@@ -51,7 +51,6 @@ var Donation = (function (app, $) {
         })
 
         .on('click', '#button_pay', function(e) {
-            e.preventDefault();
             window.yaCounter152220.reachGoal('payer');
             alert('payer');
 
