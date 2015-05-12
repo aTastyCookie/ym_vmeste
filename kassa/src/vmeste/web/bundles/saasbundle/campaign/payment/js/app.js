@@ -48,6 +48,33 @@ var Donation = (function (app, $) {
         })
         .on('focusout', '#times', function () {
           $('.times_box').removeClass('monthly')
+        })
+
+        .on('click', '#button_pay', function(e) {
+            window.yaCounter152220.reachGoal('payer');
+            var event = '';
+            if($('#bc_option').prop('checked') == true) {
+                event = 'payer_card';
+            } else if($('#yd_option').prop('checked') == true) {
+                event = 'payer_ya';
+            } else if($('#wm_option').prop('checked') == true) {
+                event = 'payer_wm';
+            } else if($('#nalik_option').prop('checked') == true) {
+                event = 'payer_cashin';
+            } else if($('#mobile_option').prop('checked') == true) {
+                event = 'payer_mob';
+            } else if($('#sb_option').prop('checked') == true) {
+                event = 'payer_sbol';
+            }
+
+            window.yaCounter152220.reachGoal(event);
+
+            if($('#times').val() != '1') {
+                window.yaCounter152220.reachGoal('payer_o');
+            } else {
+                window.yaCounter152220.reachGoal('payer_rec');
+            }
+
         });
 
     function check_email(e) {
@@ -106,6 +133,7 @@ var Donation = (function (app, $) {
 
   app.init = function () {
     visual();
+      window.yaCounter152220.reachGoal('guest');
   };
 
   $(function () {

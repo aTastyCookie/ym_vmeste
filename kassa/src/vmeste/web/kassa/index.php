@@ -323,7 +323,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
                     <script type="text/javascript">
                         (function (w, c) {
                             w.yaCounter152220.reachGoal('charity_success');
-                        });
+                        })();
                     </script>
                 <?php } ?>
                 <div class="submit_box done">

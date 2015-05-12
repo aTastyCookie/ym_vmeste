@@ -35,9 +35,7 @@ var Donation = (function (app, $) {
           } else {
             return false;
           }
-
         });
-
 
     check_payment_options.call($('#times'));
   }
