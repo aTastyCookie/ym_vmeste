@@ -28,54 +28,55 @@ var Donation = (function (app, $) {
           $(this).closest('.item').removeClass('error');
         })
         .on('submit', '#payment_form', function (e) {
-          check_email(e);
+            var error = false;
+            error = check_email(e);
 
-          $text_inputs.each(function (i, input) {
-            if ($(input).attr('id') != 'fio' && $(input).val() == "") {
-              var $item = $(input).closest('.item'),
-                  error_box = $item.find('.error_msg');
-              $item.addClass('error').find('.error_msg').html();
-              error_box.html($(error_box).data('missing'));
-              e.preventDefault();
-            } else if ($(input).attr('id') == 'fio' && $(input).val().length > 12) {
-              var $item = $(input).closest('.item'),
-                  error_box = $item.find('.error_msg');
-              $item.addClass('error').find('.error_msg').html();
-              error_box.html($(error_box).data('missing'));
-              e.preventDefault();
+            $text_inputs.each(function (i, input) {
+                if ($(input).attr('id') != 'fio' && $(input).val() == "") {
+                    var $item = $(input).closest('.item'),
+                        error_box = $item.find('.error_msg');
+                    $item.addClass('error').find('.error_msg').html();
+                    error_box.html($(error_box).data('missing'));
+                    error = true;
+                    e.preventDefault();
+                } else if ($(input).attr('id') == 'fio' && $(input).val().length > 12) {
+                    var $item = $(input).closest('.item'),
+                        error_box = $item.find('.error_msg');
+                    $item.addClass('error').find('.error_msg').html();
+                    error_box.html($(error_box).data('missing'));
+                    error = true;
+                    e.preventDefault();
+                }
+            });
+            if(!error) {
+                window.yaCounter152220.reachGoal('payer');
+                var event = '';
+                if($('#bc_option').prop('checked') == true) {
+                    event = 'payer_card';
+                } else if($('#yd_option').prop('checked') == true) {
+                    event = 'payer_ya';
+                } else if($('#wm_option').prop('checked') == true) {
+                    event = 'payer_wm';
+                } else if($('#nalik_option').prop('checked') == true) {
+                    event = 'payer_cashin';
+                } else if($('#mobile_option').prop('checked') == true) {
+                    event = 'payer_mob';
+                } else if($('#sb_option').prop('checked') == true) {
+                    event = 'payer_sbol';
+                }
+
+                window.yaCounter152220.reachGoal(event);
+
+                if($('#times').val() != '1') {
+                    window.yaCounter152220.reachGoal('payer_o');
+                } else {
+                    window.yaCounter152220.reachGoal('payer_rec');
+                }
             }
-          });
         })
         .on('focusout', '#times', function () {
           $('.times_box').removeClass('monthly')
         })
-
-        .on('click', '#button_pay', function(e) {
-            window.yaCounter152220.reachGoal('payer');
-            var event = '';
-            if($('#bc_option').prop('checked') == true) {
-                event = 'payer_card';
-            } else if($('#yd_option').prop('checked') == true) {
-                event = 'payer_ya';
-            } else if($('#wm_option').prop('checked') == true) {
-                event = 'payer_wm';
-            } else if($('#nalik_option').prop('checked') == true) {
-                event = 'payer_cashin';
-            } else if($('#mobile_option').prop('checked') == true) {
-                event = 'payer_mob';
-            } else if($('#sb_option').prop('checked') == true) {
-                event = 'payer_sbol';
-            }
-
-            window.yaCounter152220.reachGoal(event);
-
-            if($('#times').val() != '1') {
-                window.yaCounter152220.reachGoal('payer_o');
-            } else {
-                window.yaCounter152220.reachGoal('payer_rec');
-            }
-
-        });
 
     function check_email(e) {
       var r = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
