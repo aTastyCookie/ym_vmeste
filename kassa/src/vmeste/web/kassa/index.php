@@ -89,6 +89,9 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
 
         w.jQuery('body').trigger('ya-counter-152220-inited');
 
+        <?php if(!$error && $sent) { ?>
+          w.yaCounter152220.reachGoal('charity_success');
+        <?php } ?>
       } catch (e) {
       }
 
@@ -319,13 +322,7 @@ if(isset($_POST['email']) && isset($_POST['phone'])) {
             <div class="item">
               <a name="form_submit"></a>
               <?php if($sent) { ?>
-                <?php if(!$error) { ?>
-                    <script type="text/javascript">
-                        (function (w, c) {
-                            w.yaCounter152220.reachGoal('charity_success');
-                        })();
-                    </script>
-                <?php } ?>
+
                 <div class="submit_box done">
               <?php } else {?>
                 <div class="submit_box">
