@@ -753,12 +753,12 @@ class TransactionController extends Controller
                 . str_replace('"', "", $transaction->getPaymentStatus()) . '"' . $separator . '"';
             $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
             $initial = $transaction->getInitial();
+            $output .= '"' . $separator . '"';
             switch($initial) {
                 case 1: $output .= 'инитный'; break;
                 case 2: $output .= 'повтор'; break;
                 default: $output .= ''; break;
             }
-            $output .= '"' . $separator . '"';
             $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 
