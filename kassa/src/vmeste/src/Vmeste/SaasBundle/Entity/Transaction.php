@@ -358,4 +358,27 @@ class Transaction
     {
         return $this->donor_id;
     }
+
+    /**
+     * Set initial
+     *
+     * @param integer $initial
+     * @return Transaction
+     */
+    public function setInitial($initial)
+    {
+        $this->initial = $initial;
+
+        return $this;
+    }
+
+    /**
+     * Get initial
+     *
+     * @return integer 
+     */
+    public function getInitial()
+    {
+        return $this->initial;
+    }
 }
