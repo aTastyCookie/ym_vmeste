@@ -195,13 +195,17 @@ class TransactionController extends Controller
                     $rb = $request->request->get('rebillingOn', false);
                     if($rb === 'false') $rb = false;
                     $donor = $existingRecurrent = false;
-
+                    $initial = 0;
                     if($rb) {
+                        $initial = 1;
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
                                 array('invoice_id' => $baseInvoice));
-                            if($existingRecurrent) $donor = $existingRecurrent->getDonor();
+                            if($existingRecurrent) {
+                                $donor = $existingRecurrent->getDonor();
+                                $initial = 2;
+                            }
                         }
                     }
 
@@ -235,6 +239,10 @@ class TransactionController extends Controller
                     $transaction->setInvoiceId($invoiceId);
                     $transaction->setGross($amount);
                     $transaction->setCurrency("RUB");
+                    // 0 - one-off,
+                    // 1 - initial,
+                    // 2 - recurrent
+                    $transaction->setInitial($initial);
                     $transaction->setPaymentStatus(self::PAYMENT_COMPLETED);
                     $transaction->setTransactionType(Clear::string_without_quotes($request->request->get('paymentType')));
                     $transaction->setDetails($requestDetails);
@@ -593,11 +601,9 @@ class TransactionController extends Controller
 
         $totalItems = count($paginator);
 
-
         $pageCount = (int)ceil($totalItems / $limit);
 
         $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
-
 
         return array(
             'transactions' => $paginator,
