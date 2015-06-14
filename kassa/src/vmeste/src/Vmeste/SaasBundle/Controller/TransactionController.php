@@ -678,7 +678,6 @@ class TransactionController extends Controller
 
     public function reportExportAction()
     {
-
         $startTimestamp = $endTimestamp = 0;
 
         if ($this->getRequest()->query->get("start", null) != null
@@ -740,6 +739,7 @@ class TransactionController extends Controller
             . '"Способ оплаты"' . $separator
             . '"Статус"' . $separator
             . '"Признак подписчика"' . $separator
+            . '"Инитный"' . $separator
             . '"Комментарии"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
@@ -752,6 +752,12 @@ class TransactionController extends Controller
                 . str_replace('"', "", $transaction->getTransactionType()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getPaymentStatus()) . '"' . $separator . '"';
             $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
+            $initial = $transaction->getInitial();
+            switch($initial) {
+                case 1: $output .= 'инитный'; break;
+                case 2: $output .= 'повтор'; break;
+                default: $output .= ''; break;
+            }
             $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 
