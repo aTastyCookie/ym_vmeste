@@ -646,9 +646,10 @@ class TransactionController extends Controller
             $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
                 ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d')
                 ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-                ->where('d.name LIKE :name OR d.email LIKE :email')
+                ->where('d.name LIKE :name OR d.email LIKE :email OR t.invoiceId = :invoiceId')
                 ->setParameter('name', '%' . $searchRequest . '%')
-                ->setParameter('email', '%' . $searchRequest . '%');
+                ->setParameter('email', '%' . $searchRequest . '%')
+                ->setParameter('invoiceId', $searchRequest);
 
 
             $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
