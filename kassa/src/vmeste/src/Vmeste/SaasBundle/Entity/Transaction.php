@@ -74,7 +74,7 @@ class Transaction
     protected $details;
 
     /**
-     * @ORM\Column(type="smallint", name="initial", nullable=false)
+     * @ORM\Column(type="smallint", name="initial", nullable=true)
      */
     protected $initial = 0;
 
