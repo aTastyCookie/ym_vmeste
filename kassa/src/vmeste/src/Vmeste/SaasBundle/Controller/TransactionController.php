@@ -758,6 +758,7 @@ class TransactionController extends Controller
                 case 2: $output .= 'повтор'; break;
                 default: $output .= ''; break;
             }
+            $output .= '"' . $separator . '"';
             $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 
