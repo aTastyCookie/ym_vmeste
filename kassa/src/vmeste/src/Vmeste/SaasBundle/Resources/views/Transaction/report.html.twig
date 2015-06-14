@@ -42,7 +42,7 @@
 Последняя ошибка: {{ transaction.donor.recurrent.lastError }}">1</span> {% else %}0{% endif %} /
                     {% if transaction.initial == 1 %}инитный
                     {% elseif transaction.initial == 2 %}повтор
-                    {% else %} однократный
+                    {% else %}
                     {% endif %}
                 </td>
             </tr>
