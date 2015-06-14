@@ -74,9 +74,9 @@ class Transaction
     protected $details;
 
     /**
-     * @ORM\Column(type="smallint", name="initial")
+     * @ORM\Column(type="smallint", name="initial", nullable=false)
      */
-    protected $initial;
+    protected $initial = 0;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned"=true})
