@@ -96,15 +96,21 @@ class TransactionController extends Controller
                 $code = 1;
                 $message = 'Bad md5';
             } else {
-                $campaignId = $this->getCampaignId($orderNumber);
-                $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
-
-                if ($campaign != null) {
-
-
+                $email = Clear::string_without_quotes($request->request->get('customerEmail', ""));
+                if(empty($email)) {
+                    $code = 100;
+                    $message = "Empty email";
                 } else {
-                    $code = 200;
-                    $message = "Incorrect campaing";
+                    $campaignId = $this->getCampaignId($orderNumber);
+                    $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+                    if ($campaign != null) {
+
+
+                    } else {
+                        $code = 200;
+                        $message = "Incorrect campaing";
+                    }
                 }
             }
         }

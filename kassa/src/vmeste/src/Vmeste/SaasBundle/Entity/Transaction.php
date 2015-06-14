@@ -74,6 +74,11 @@ class Transaction
     protected $details;
 
     /**
+     * @ORM\Column(type="smallint", name="initial")
+     */
+    protected $initial;
+
+    /**
      * @ORM\Column(type="integer", options={"unsigned"=true})
      */
     protected $created;
