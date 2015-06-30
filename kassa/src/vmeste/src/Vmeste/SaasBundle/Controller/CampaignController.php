@@ -588,6 +588,7 @@ class CampaignController extends Controller
             'transactions' => $paginator,
             'pages' => $pageNumberArray,
             'page' => $page,
+            'campaignId' => $campaignId
         );
     }
 
@@ -606,6 +607,8 @@ class CampaignController extends Controller
         } else {
             $recurrent = '';
         }
+
+        $campaignId = Clear::integer($this->getRequest()->query->get("campaignId", null), null);
 
         /*$query = $em->createQuery("SELECT c.title, d.name, d.email, r.id as rid
                                     FROM Vmeste\SaasBundle\Entity\Campaign c
@@ -626,6 +629,7 @@ class CampaignController extends Controller
             ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
             ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d');
 
+
         if (Clear::integer($this->getRequest()->query->get("recurrent", 0), 0) == 1) {
             $queryBuilder
                 ->leftJoin('Vmeste\SaasBundle\Entity\Recurrent', 'r', 'WITH', 'r.donor = d and r.campaign = c')
@@ -635,6 +639,13 @@ class CampaignController extends Controller
         } else {
             $queryBuilder->where('c.user = ?1');
         }
+
+
+        if (!is_null($campaignId)) {
+            $queryBuilder->andWhere('c.id = ?2')
+                ->setParameter(2, $campaignId);
+        }
+
         $queryBuilder->setParameter(1, $user)->orderBy('c.title', 'ASC');
 
         $report = $queryBuilder->getQuery()->getResult();
