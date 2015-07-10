@@ -74,6 +74,11 @@ class Transaction
     protected $details;
 
     /**
+     * @ORM\Column(type="smallint", name="initial", nullable=true)
+     */
+    protected $initial = 0;
+
+    /**
      * @ORM\Column(type="integer", options={"unsigned"=true})
      */
     protected $created;
@@ -352,5 +357,28 @@ class Transaction
     public function getDonorId()
     {
         return $this->donor_id;
+    }
+
+    /**
+     * Set initial
+     *
+     * @param integer $initial
+     * @return Transaction
+     */
+    public function setInitial($initial)
+    {
+        $this->initial = $initial;
+
+        return $this;
+    }
+
+    /**
+     * Get initial
+     *
+     * @return integer 
+     */
+    public function getInitial()
+    {
+        return $this->initial;
     }
 }

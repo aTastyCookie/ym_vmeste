@@ -16,6 +16,7 @@
             <th style="width: 100px; text-align: right;">Email</th>
             <th style="width: 100px; text-align: right;">Пожертвовано</th>
             <th style="width: 120px;">Дата создания</th>
+            <th>Invoice</th>
             <th style="width: 80px;">Действия</th>
         </tr>
 
@@ -26,6 +27,7 @@
                 <td>{{ transaction.donor.email }}</td>
                 <td>{{ transaction.gross }} {{ transaction.currency }}</td>
                 <td>{{ transaction.changed | date("d/m/Y") }}</td>
+                <td>{{ transaction.invoiceId }}</td>
                 <td></td>
             </tr>
         {% endfor %}

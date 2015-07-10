@@ -37,11 +37,14 @@
     </table>
 
     {% for pageId in pages %}
-        <a href="{{ path('campaign_report', { 'page': pageId }) }}">{{ pageId }}</a>
+        <a href="{{ path('campaign_report', { 'page': pageId, 'campaignId': campaignId }) }}">{{ pageId }}</a>
     {% endfor %}
 
     <p>
-        Отчет по донорам: <a href="{{ path('campaign_report_export') }}" target="_blank">Все</a> или <a href="{{ path('campaign_report_export') }}?recurrent=1">Подписчики на ежемесячные пожертвования</a>
+        Отчет по донорам: <a href="{{ path('campaign_report_export', { 'campaignId': campaignId }) }}"
+                             target="_blank">Все</a> или
+        <a href="{{ path('campaign_report_export', { 'campaignId': campaignId, 'recurrent': 1 }) }}">
+            Подписчики на ежемесячные пожертвования</a>
     </p>
 
 

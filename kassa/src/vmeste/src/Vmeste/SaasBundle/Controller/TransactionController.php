@@ -96,15 +96,21 @@ class TransactionController extends Controller
                 $code = 1;
                 $message = 'Bad md5';
             } else {
-                $campaignId = $this->getCampaignId($orderNumber);
-                $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
-
-                if ($campaign != null) {
-
-
+                $email = Clear::string_without_quotes($request->request->get('customerEmail', ""));
+                if(empty($email)) {
+                    $code = 100;
+                    $message = "Empty email";
                 } else {
-                    $code = 200;
-                    $message = "Incorrect campaing";
+                    $campaignId = $this->getCampaignId($orderNumber);
+                    $campaign = $em->getRepository('Vmeste\SaasBundle\Entity\Campaign')->findOneBy(array('id' => $campaignId));
+
+                    if ($campaign != null) {
+
+
+                    } else {
+                        $code = 200;
+                        $message = "Incorrect campaing";
+                    }
                 }
             }
         }
@@ -189,13 +195,17 @@ class TransactionController extends Controller
                     $rb = $request->request->get('rebillingOn', false);
                     if($rb === 'false') $rb = false;
                     $donor = $existingRecurrent = false;
-
+                    $initial = 0;
                     if($rb) {
+                        $initial = 1;
                         $baseInvoice = $request->request->get('baseInvoiceId', false);
                         if($baseInvoice) {
                             $existingRecurrent = $em->getRepository('Vmeste\SaasBundle\Entity\Recurrent')->findOneBy(
                                 array('invoice_id' => $baseInvoice));
-                            if($existingRecurrent) $donor = $existingRecurrent->getDonor();
+                            if($existingRecurrent) {
+                                $donor = $existingRecurrent->getDonor();
+                                $initial = 2;
+                            }
                         }
                     }
 
@@ -229,6 +239,10 @@ class TransactionController extends Controller
                     $transaction->setInvoiceId($invoiceId);
                     $transaction->setGross($amount);
                     $transaction->setCurrency("RUB");
+                    // 0 - one-off,
+                    // 1 - initial,
+                    // 2 - recurrent
+                    $transaction->setInitial($initial);
                     $transaction->setPaymentStatus(self::PAYMENT_COMPLETED);
                     $transaction->setTransactionType(Clear::string_without_quotes($request->request->get('paymentType')));
                     $transaction->setDetails($requestDetails);
@@ -587,11 +601,9 @@ class TransactionController extends Controller
 
         $totalItems = count($paginator);
 
-
         $pageCount = (int)ceil($totalItems / $limit);
 
         $pageNumberArray = PaginationUtils::generatePaginationPageNumbers($page, $pageOnSidesLimit, $pageCount);
-
 
         return array(
             'transactions' => $paginator,
@@ -634,9 +646,10 @@ class TransactionController extends Controller
             $queryBuilder->select('t')->from('Vmeste\SaasBundle\Entity\Transaction', 't')
                 ->innerJoin('Vmeste\SaasBundle\Entity\Donor', 'd', 'WITH', 't.donor = d')
                 ->innerJoin('Vmeste\SaasBundle\Entity\Campaign', 'c', 'WITH', 't.campaign = c')
-                ->where('d.name LIKE :name OR d.email LIKE :email')
+                ->where('d.name LIKE :name OR d.email LIKE :email OR t.invoiceId = :invoiceId')
                 ->setParameter('name', '%' . $searchRequest . '%')
-                ->setParameter('email', '%' . $searchRequest . '%');
+                ->setParameter('email', '%' . $searchRequest . '%')
+                ->setParameter('invoiceId', $searchRequest);
 
 
             $queryBuilder->setFirstResult(($page - 1) * $limit)->setMaxResults($limit);
@@ -665,7 +678,6 @@ class TransactionController extends Controller
 
     public function reportExportAction()
     {
-
         $startTimestamp = $endTimestamp = 0;
 
         if ($this->getRequest()->query->get("start", null) != null
@@ -727,6 +739,7 @@ class TransactionController extends Controller
             . '"Способ оплаты"' . $separator
             . '"Статус"' . $separator
             . '"Признак подписчика"' . $separator
+            . '"Инитный"' . $separator
             . '"Комментарии"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
@@ -739,6 +752,13 @@ class TransactionController extends Controller
                 . str_replace('"', "", $transaction->getTransactionType()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getPaymentStatus()) . '"' . $separator . '"';
             $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
+            $initial = $transaction->getInitial();
+            $output .= '"' . $separator . '"';
+            switch($initial) {
+                case 1: $output .= 'инитный'; break;
+                case 2: $output .= 'повтор'; break;
+                default: $output .= ''; break;
+            }
             $output .= '"' . $separator . '"' . str_replace('"', "", $transaction->getDonor()->getDetails()) . '"' . "\r\n";
         }
 

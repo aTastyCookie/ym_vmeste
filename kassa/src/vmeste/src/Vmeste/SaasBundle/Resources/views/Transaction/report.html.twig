@@ -9,7 +9,7 @@
         <input type="submit" class="btn" value="Search">
     </form>
 <style>
-    .table-striped {font-size: 13px;}
+    .table-striped {font-size: 12px;}
 </style>
     <table class="table table-striped">
         <tr>
@@ -19,6 +19,7 @@
             <th style="width: 100px;">Пожертвовано</th>
             <th style="width: 140px;">Дата платежа</th>
             <th>Платежный метод</th>
+            <th>Invoice</th>
             <th>Статус</th>
             <th>Признак подписчика</th>
         </tr>
@@ -31,12 +32,18 @@
                 <td>{{ transaction.gross }} {{ transaction.currency }}</td>
                 <td>{{ transaction.changed | date("d/m/Y H:i:s") }}</td>
                 <td>{{ transaction.transactionType }}</td>
+                <td>{{ transaction.invoiceId }}</td>
                 <td>{{ transaction.paymentStatus }}</td>
-                <td>{% if transaction.donor.recurrent and transaction.paymentStatus == 'COMPLETED' %}
-                        <span style="cursor: help" title="Следующее списание: {{ transaction.donor.recurrent.nextDate  | date("d/m/Y H:i:s")}}
+                <td>
+                    {% if transaction.donor.recurrent and transaction.paymentStatus == 'COMPLETED' %}
+<span style="cursor: help" title="Следующее списание: {{ transaction.donor.recurrent.nextDate  | date("d/m/Y H:i:s")}}
 Предыдущее списание: {{ transaction.donor.recurrent.successDate  | date("d/m/Y H:i:s")}}
 Последний статус: {{ transaction.donor.recurrent.lastStatus }}
-Последняя ошибка: {{ transaction.donor.recurrent.lastError }}">1</span> {% else %}0{% endif %}
+Последняя ошибка: {{ transaction.donor.recurrent.lastError }}">1</span> {% else %}0{% endif %} /
+                    {% if transaction.initial == 1 %}инитный
+                    {% elseif transaction.initial == 2 %}повтор
+                    {% else %}
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
