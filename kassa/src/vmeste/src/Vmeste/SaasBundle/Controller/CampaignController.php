@@ -693,7 +693,7 @@ class CampaignController extends Controller
                 case 2: $output .= 'повтор'; break;
                 default: $output .= ''; break;
             }
-            $output .= "\r\n";
+            $output .= '"' . $separator . '"' . "\r\n";
         }
 
         $response = new Response($output, 200, $responseHeaders);
