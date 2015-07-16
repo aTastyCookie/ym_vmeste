@@ -686,7 +686,7 @@ class CampaignController extends Controller
             $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"'
-                . str_replace('"', "", $transaction->getDonor()->getGross()) . '"' . $separator . '"'
+                . str_replace('"', "", $transaction->getGross()) . '"' . $separator . '"'
                 . str_replace('"', "", date("Y-m-d H:i:s", $transaction->getCreated())) . '"' . $separator . '"';
 
             $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
