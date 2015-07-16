@@ -30,7 +30,17 @@
                 <td>{{ transaction.donor.created | date("d/m/Y H:i:s") }}</td>
                 <td>{{ transaction.transactionType }}</td>
                 <td>{{ transaction.paymentStatus }}</td>
-                <td>{% if transaction.donor.recurrent %}1{% else %}0{% endif %}</td>
+                <td>
+                    {% if transaction.donor.recurrent and transaction.paymentStatus == 'COMPLETED' %}
+                        <span style="cursor: help" title="Следующее списание: {{ transaction.donor.recurrent.nextDate  | date("d/m/Y H:i:s")}}
+Предыдущее списание: {{ transaction.donor.recurrent.successDate  | date("d/m/Y H:i:s")}}
+Последний статус: {{ transaction.donor.recurrent.lastStatus }}
+Последняя ошибка: {{ transaction.donor.recurrent.lastError }}">1</span> {% else %}0{% endif %} /
+                    {% if transaction.initial == 1 %}инитный
+                    {% elseif transaction.initial == 2 %}повтор
+                    {% else %}
+                    {% endif %}
+                </td>
                 <td></td>
             </tr>
         {% endfor %}
