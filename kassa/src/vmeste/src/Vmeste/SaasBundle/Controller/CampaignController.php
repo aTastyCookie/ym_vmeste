@@ -677,16 +677,23 @@ class CampaignController extends Controller
             '"Проект"' . $separator
             . '"ФИО"' . $separator
             . '"Email"' . $separator
-            . '"Признак подписчика"' . "\r\n";
+            . '"Признак подписчика"' . $separator
+            . '"Инитный"' . $separator . "\r\n";
 
         foreach ($report as $transaction) {
             $output .= '"' . str_replace('"', '', $transaction->getCampaign()->getTitle()) . '"' . $separator . '"'
                 . str_replace('"', '', $transaction->getDonor()->getName()) . '"' . $separator . '"'
                 . str_replace('"', "", $transaction->getDonor()->getEmail()) . '"' . $separator . '"';
-            if ($transaction->getDonor()->getRecurrent() != null)
-                $output .= '1' . '"' . "\r\n";
-            else
-                $output .= '0' . '"' . "\r\n";
+
+            $transaction->getDonor()->getRecurrent() != null ? $output .= '1' : $output .= '0';
+            $initial = $transaction->getInitial();
+            $output .= '"' . $separator . '"';
+            switch($initial) {
+                case 1: $output .= 'инитный'; break;
+                case 2: $output .= 'повтор'; break;
+                default: $output .= ''; break;
+            }
+            $output .= "\r\n";
         }
 
         $response = new Response($output, 200, $responseHeaders);
